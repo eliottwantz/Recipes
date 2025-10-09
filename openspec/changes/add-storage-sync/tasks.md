@@ -1,5 +1,0 @@
-- [ ] 1. Add the SQLiteData package dependency to the Recipes target and ensure CloudKit entitlements remain enabled.
-- [ ] 2. Create a storage coordinator that provisions the SQLite database with `defaultDatabase(...)`, applies schema migrations, and configures the CloudKit-backed `SyncEngine` per SQLiteData guidance.
-- [ ] 3. Define the `Recipe` schema and Swift model that map to the database table and CloudKit record.
-- [ ] 4. Initialize the storage coordinator from `RecipesApp` so the database is prepared and syncing when the app launches.
-- [ ] 5. Validate with `xcodebuild -scheme Recipes -destination 'platform=iOS Simulator,name=iPhone 16' build | xcbeautify` to confirm the project compiles with the new persistence layer.
