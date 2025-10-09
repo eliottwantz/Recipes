@@ -1,0 +1,69 @@
+import SQLiteData
+import SwiftUI
+
+struct RecipeListView: View {
+    @FetchAll(
+        Recipe
+            .order { $0.updatedAt.desc() },
+        animation: .default
+    )
+    private var recipes
+
+    var body: some View {
+        Group {
+            if recipes.isEmpty {
+                emptyState
+            } else {
+                List(recipes) { recipe in
+                    RecipeRow(recipe: recipe)
+                }
+                .listStyle(.plain)
+            }
+        }
+        .navigationTitle("Recipes")
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "text.book.closed")
+                .font(.system(size: 44))
+                .foregroundStyle(.tertiary)
+            Text("No Recipes Yet")
+                .font(.title3.weight(.semibold))
+            Text("Add a new recipe to start building your collection.")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .background(Color(.systemGroupedBackground))
+    }
+}
+
+private struct RecipeRow: View {
+    let recipe: Recipe
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(recipe.title)
+                .font(.headline)
+                .foregroundStyle(.primary)
+            if !recipe.summary.isEmpty {
+                Text(recipe.summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
+    }
+}
+
+#Preview {
+    StorageBootstrap.configure()
+    return NavigationStack {
+        RecipeListView()
+    }
+}
