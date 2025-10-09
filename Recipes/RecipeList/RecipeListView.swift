@@ -12,7 +12,12 @@ struct RecipeListView: View {
     var body: some View {
         Group {
             if recipes.isEmpty {
-                emptyState
+                ContentUnavailableView(
+                    "No Recipes Yet",
+                    systemImage: "text.book.closed",
+                    description: Text("Add a new recipe to start building your collection.")
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(recipes) { recipe in
                     RecipeRow(recipe: recipe)
@@ -21,23 +26,6 @@ struct RecipeListView: View {
             }
         }
         .navigationTitle("Recipes")
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "text.book.closed")
-                .font(.system(size: 44))
-                .foregroundStyle(.tertiary)
-            Text("No Recipes Yet")
-                .font(.title3.weight(.semibold))
-            Text("Add a new recipe to start building your collection.")
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .background(Color(.systemGroupedBackground))
     }
 }
 

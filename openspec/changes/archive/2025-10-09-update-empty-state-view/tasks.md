@@ -1,0 +1,3 @@
+- [x] Review `browse-recipes` spec requirement for empty states and codify use of `ContentUnavailableView`
+- [x] Update the recipe list SwiftUI view to render `ContentUnavailableView` for empty collections
+- [x] Run `openspec validate update-empty-state-view --strict` to confirm the proposal structure
