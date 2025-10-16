@@ -16,6 +16,6 @@ struct ContentView: View {
 }
 
 #Preview {
-    StorageBootstrap.configure()
+    StorageBootstrap.configurePreview()
     return ContentView()
 }

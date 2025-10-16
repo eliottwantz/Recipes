@@ -2,56 +2,56 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeListView: View {
-    @FetchAll(
-        Recipe
-            .order { $0.updatedAt.desc() },
-        animation: .default
-    )
-    private var recipes
+  @FetchAll(
+    Recipe
+      .order { $0.updatedAt.desc() },
+    animation: .default
+  )
+  private var recipes
 
-    var body: some View {
-        Group {
-            if recipes.isEmpty {
-                ContentUnavailableView(
-                    "No Recipes Yet",
-                    systemImage: "text.book.closed",
-                    description: Text("Add a new recipe to start building your collection.")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                List(recipes) { recipe in
-                    RecipeRow(recipe: recipe)
-                }
-                .listStyle(.plain)
-            }
+  var body: some View {
+    Group {
+      if recipes.isEmpty {
+        ContentUnavailableView(
+          "No Recipes Yet",
+          systemImage: "text.book.closed",
+          description: Text("Add a new recipe to start building your collection.")
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      } else {
+        List(recipes) { recipe in
+          RecipeRow(recipe: recipe)
         }
-        .navigationTitle("Recipes")
+        .listStyle(.plain)
+      }
     }
+    .navigationTitle("Recipes")
+  }
 }
 
 private struct RecipeRow: View {
-    let recipe: Recipe
+  let recipe: Recipe
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(recipe.title)
-                .font(.headline)
-                .foregroundStyle(.primary)
-            if !recipe.summary.isEmpty {
-                Text(recipe.summary)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(3)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 8)
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text(recipe.title)
+        .font(.headline)
+        .foregroundStyle(.primary)
+      if !recipe.summary.isEmpty {
+        Text(recipe.summary)
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+          .lineLimit(3)
+      }
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.vertical, 8)
+  }
 }
 
 #Preview {
-    StorageBootstrap.configure()
-    return NavigationStack {
-        RecipeListView()
-    }
+  StorageBootstrap.configurePreview()
+  return NavigationStack {
+    RecipeListView()
+  }
 }

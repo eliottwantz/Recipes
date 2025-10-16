@@ -9,13 +9,13 @@ import SwiftUI
 
 @main
 struct RecipesApp: App {
-    init() {
-        StorageBootstrap.configure()
-    }
+  init() {
+    StorageBootstrap.configure()
+  }
 
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
     }
+  }
 }
