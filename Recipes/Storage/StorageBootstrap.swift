@@ -12,8 +12,7 @@ enum StorageBootstrap {
       } catch {
         assertionFailure("Failed to configure database: \(error)")
       }
-      #if targetEnvironment(simulator)
-      #else
+      #if !targetEnvironment(simulator)
         $0.defaultSyncEngine = try! SyncEngine(
           for: $0.defaultDatabase,
           tables: Recipe.self,
@@ -30,6 +29,16 @@ enum StorageBootstrap {
         print("Failed to configure preview database: \(error)")
       }
     }
+  }
+
+  static func configurePreviewWithInitialFetcher<T>(
+    _ fetcher: (_ database: any DatabaseWriter) throws -> T
+  ) -> T {
+    let result: T = try! prepareDependencies {
+      $0.defaultDatabase = try appDatabase()
+      return try! fetcher($0.defaultDatabase)
+    }
+    return result
   }
 
   static private func appDatabase() throws -> any DatabaseWriter {
@@ -58,8 +67,13 @@ enum StorageBootstrap {
 
     let path = URL.applicationSupportDirectory.appendingPathComponent("Recipes.sqlite").path
     let database = try SQLiteData.defaultDatabase(path: path, configuration: configuration)
-    logger.info("DB PATH:\n\(database.path)")
-    print("DB PATH:\n\(database.path)")
+    #if DEBUG
+      if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+        print("DB PATH:\n\(database.path)")
+      } else {
+        logger.info("DB PATH:\n\(database.path)")
+      }
+    #endif
 
     var migrator = DatabaseMigrator()
     #if DEBUG

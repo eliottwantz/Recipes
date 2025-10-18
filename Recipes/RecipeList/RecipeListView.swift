@@ -20,7 +20,11 @@ struct RecipeListView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
       } else {
         List(recipes) { recipe in
-          RecipeRow(recipe: recipe)
+          NavigationLink {
+            RecipeDetailView(recipe: recipe)
+          } label: {
+            RecipeRow(recipe: recipe)
+          }
         }
         .listStyle(.plain)
       }

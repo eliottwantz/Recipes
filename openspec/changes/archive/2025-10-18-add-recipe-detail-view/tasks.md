@@ -1,0 +1,4 @@
+- [x] 1. Inspect existing recipe model and list view to confirm available fields.
+- [x] 2. Implement `RecipeDetailView` showing metadata, ingredients, and instructions for a provided recipe.
+- [x] 3. Add preview/sample data to verify layout in SwiftUI previews.
+- [x] 4. Run `xcodebuild -scheme Recipes -destination 'platform=iOS Simulator,name=iPhone 16' build | xcbeautify` to ensure the project builds with the new view. (Blocked: simulator services unavailable in sandboxed environment.)
