@@ -65,7 +65,8 @@ enum StorageBootstrap {
       }
     #endif
 
-    let path = URL.applicationSupportDirectory.appendingPathComponent("Recipes.sqlite").path
+    let path = URL.applicationSupportDirectory.appendingPathComponent("Recipes.sqlite")
+      .absoluteString
     let database = try SQLiteData.defaultDatabase(path: path, configuration: configuration)
     #if DEBUG
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
