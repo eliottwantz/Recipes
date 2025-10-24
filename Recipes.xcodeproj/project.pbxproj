@@ -8,10 +8,36 @@
 
 /* Begin PBXBuildFile section */
 		5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5517C2962E973F1500F64C53 /* SQLiteData */; };
+		555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		555EDC702EAC3960006DC041 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5517C27B2E9720AB00F64C53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 555EDC672EAC3960006DC041;
+			remoteInfo = RecipeShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		555EDC732EAC3960006DC041 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		5517C2832E9720AB00F64C53 /* Recipes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recipes.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecipeShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -22,6 +48,13 @@
 			);
 			target = 5517C2822E9720AB00F64C53 /* Recipes */;
 		};
+		555EDC772EAC3960006DC041 /* Exceptions for "RecipeShareExtension" folder in "RecipeShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +64,14 @@
 				5517C2932E97365B00F64C53 /* Exceptions for "Recipes" folder in "Recipes" target */,
 			);
 			path = Recipes;
+			sourceTree = "<group>";
+		};
+		555EDC692EAC3960006DC041 /* RecipeShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				555EDC772EAC3960006DC041 /* Exceptions for "RecipeShareExtension" folder in "RecipeShareExtension" target */,
+			);
+			path = RecipeShareExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +85,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		555EDC652EAC3960006DC041 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -51,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				5517C2852E9720AB00F64C53 /* Recipes */,
+				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
 				5517C2842E9720AB00F64C53 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				5517C2832E9720AB00F64C53 /* Recipes.app */,
+				555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,10 +123,12 @@
 				5517C27F2E9720AB00F64C53 /* Sources */,
 				5517C2802E9720AB00F64C53 /* Frameworks */,
 				5517C2812E9720AB00F64C53 /* Resources */,
+				555EDC732EAC3960006DC041 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				555EDC712EAC3960006DC041 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				5517C2852E9720AB00F64C53 /* Recipes */,
@@ -89,6 +141,28 @@
 			productReference = 5517C2832E9720AB00F64C53 /* Recipes.app */;
 			productType = "com.apple.product-type.application";
 		};
+		555EDC672EAC3960006DC041 /* RecipeShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 555EDC762EAC3960006DC041 /* Build configuration list for PBXNativeTarget "RecipeShareExtension" */;
+			buildPhases = (
+				555EDC642EAC3960006DC041 /* Sources */,
+				555EDC652EAC3960006DC041 /* Frameworks */,
+				555EDC662EAC3960006DC041 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
+			);
+			name = RecipeShareExtension;
+			packageProductDependencies = (
+			);
+			productName = RecipeShareExtension;
+			productReference = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -100,6 +174,9 @@
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					5517C2822E9720AB00F64C53 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					555EDC672EAC3960006DC041 = {
 						CreatedOnToolsVersion = 26.0;
 					};
 				};
@@ -122,12 +199,20 @@
 			projectRoot = "";
 			targets = (
 				5517C2822E9720AB00F64C53 /* Recipes */,
+				555EDC672EAC3960006DC041 /* RecipeShareExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		5517C2812E9720AB00F64C53 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		555EDC662EAC3960006DC041 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -144,7 +229,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		555EDC642EAC3960006DC041 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		555EDC712EAC3960006DC041 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
+			targetProxy = 555EDC702EAC3960006DC041 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		5517C28C2E9720AC00F64C53 /* Debug */ = {
@@ -361,6 +461,69 @@
 			};
 			name = Release;
 		};
+		555EDC742EAC3960006DC041 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RecipeShareExtension/RecipeShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TU3N92HFXF;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RecipeShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RecipeShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.develiott.Recipes.RecipeShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		555EDC752EAC3960006DC041 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RecipeShareExtension/RecipeShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TU3N92HFXF;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RecipeShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RecipeShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.develiott.Recipes.RecipeShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -378,6 +541,15 @@
 			buildConfigurations = (
 				5517C28F2E9720AC00F64C53 /* Debug */,
 				5517C2902E9720AC00F64C53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		555EDC762EAC3960006DC041 /* Build configuration list for PBXNativeTarget "RecipeShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				555EDC742EAC3960006DC041 /* Debug */,
+				555EDC752EAC3960006DC041 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
