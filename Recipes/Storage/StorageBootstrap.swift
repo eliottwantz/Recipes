@@ -2,6 +2,7 @@ import CloudKit
 import Dependencies
 import Foundation
 import OSLog
+import RecipeImportFeature
 import SQLiteData
 
 enum StorageBootstrap {
@@ -65,9 +66,11 @@ enum StorageBootstrap {
       }
     #endif
 
-    let path = URL.applicationSupportDirectory.appendingPathComponent("Recipes.sqlite")
-      .absoluteString
-    let database = try SQLiteData.defaultDatabase(path: path, configuration: configuration)
+    let databaseURL = try sharedDatabaseURL()
+    let database = try SQLiteData.defaultDatabase(
+      path: databaseURL.path,
+      configuration: configuration
+    )
     #if DEBUG
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         print("DB PATH:\n\(database.path)")
@@ -184,3 +187,28 @@ enum StorageBootstrap {
 }
 
 nonisolated private let logger = Logger(subsystem: "Recepies", category: "Database")
+
+extension StorageBootstrap {
+  private static func sharedDatabaseURL() throws -> URL {
+    guard
+      let containerURL = FileManager.default
+        .containerURL(forSecurityApplicationGroupIdentifier: AppGroup.identifier)
+    else {
+      throw StorageError.missingAppGroupContainer
+    }
+
+    if FileManager.default.fileExists(atPath: containerURL.path) == false {
+      try FileManager.default.createDirectory(at: containerURL, withIntermediateDirectories: true)
+    }
+
+    return containerURL.appendingPathComponent(AppGroup.databaseFilename)
+  }
+}
+
+private enum StorageError: LocalizedError {
+  case missingAppGroupContainer
+
+  var errorDescription: String? {
+    "The shared app group container could not be located."
+  }
+}

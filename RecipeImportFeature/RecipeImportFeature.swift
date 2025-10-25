@@ -16,6 +16,10 @@ public struct RecipeImportPipeline {
     }
 
     let html = try await fetchHTML(from: url, session: session)
+    return try importedRecipe(fromHTML: html)
+  }
+
+  public func importedRecipe(fromHTML html: String) throws -> ImportedRecipe {
     let json = try extractRecipeJSON(from: html)
     return try ImportedRecipe(json: json)
   }

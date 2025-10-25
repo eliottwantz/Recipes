@@ -6,11 +6,11 @@
 	<dict>
 		<key>NSExtensionAttributes</key>
 		<dict>
+			<key>NSExtensionJavaScriptPreprocessingFile</key>
+			<string>SharePreprocessor</string>
 			<key>NSExtensionActivationRule</key>
 			<dict>
-				<key>NSExtensionActivationSupportsURLWithMaxCount</key>
-				<integer>1</integer>
-				<key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
+				<key>NSExtensionActivationSupportsWebPageWithMaxCount</key>
 				<integer>1</integer>
 			</dict>
 		</dict>

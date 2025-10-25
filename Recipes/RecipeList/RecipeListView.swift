@@ -3,15 +3,12 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeListView: View {
-  @FetchAll(
-    Recipe
-      .order { $0.updatedAt.desc() },
-    animation: .default
-  )
+  @FetchAll(Recipe.order { $0.updatedAt.desc() })
   private var recipes
-  
+
+  @Environment(\.scenePhase) private var scenePhase
   @Dependency(RecipeImportManager.self) private var recipeImportManager
-  
+
   @State private var showAddForm = false
   @State private var recipeUrl = ""
   @State private var isImporting = false
@@ -89,14 +86,17 @@ struct RecipeListView: View {
         }
       }
     }
-    .alert("Import Failed", isPresented: Binding(
-      get: { importError != nil },
-      set: { isPresented in
-        if !isPresented {
-          importError = nil
+    .alert(
+      "Import Failed",
+      isPresented: Binding(
+        get: { importError != nil },
+        set: { isPresented in
+          if !isPresented {
+            importError = nil
+          }
         }
-      }
-    )) {
+      )
+    ) {
       Button("OK", role: .cancel) {
         importError = nil
       }
@@ -108,6 +108,13 @@ struct RecipeListView: View {
         recipeUrl = ""
         isImporting = false
         importError = nil
+      }
+    }
+    .onChange(of: scenePhase) { oldValue, newValue in
+      if oldValue == .inactive && newValue == .active {
+        Task {
+          try await $recipes.load()
+        }
       }
     }
   }
@@ -133,9 +140,9 @@ private struct RecipeRow: View {
   }
 }
 
-private extension RecipeListView {
+extension RecipeListView {
   @MainActor
-  func handleImport() {
+  fileprivate func handleImport() {
     let trimmed = recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }
     guard let url = URL(string: trimmed) else {
