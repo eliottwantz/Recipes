@@ -121,6 +121,11 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		55FA1DF02EAD1A5500468B17 /* SharedStorage */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SharedStorage;
+			sourceTree = "<group>";
+		};
 		55FA1DCD2EAC3C6400468B17 /* RecipeImportFeature */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = RecipeImportFeature;
@@ -163,6 +168,7 @@
 				5594D4192EAD0B09001852BF /* Models */,
 				5517C2852E9720AB00F64C53 /* Recipes */,
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
+				55FA1DF02EAD1A5500468B17 /* SharedStorage */,
 				55FA1DCD2EAC3C6400468B17 /* RecipeImportFeature */,
 				55FA1DD82EAC3EBD00468B17 /* Frameworks */,
 				5517C2842E9720AB00F64C53 /* Products */,
@@ -218,6 +224,7 @@
 			fileSystemSynchronizedGroups = (
 				5517C2852E9720AB00F64C53 /* Recipes */,
 				5594D4192EAD0B09001852BF /* Models */,
+				55FA1DF02EAD1A5500468B17 /* SharedStorage */,
 			);
 			name = Recipes;
 			packageProductDependencies = (
@@ -244,6 +251,7 @@
 			fileSystemSynchronizedGroups = (
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
 				5594D4192EAD0B09001852BF /* Models */,
+				55FA1DF02EAD1A5500468B17 /* SharedStorage */,
 			);
 			name = RecipeShareExtension;
 			packageProductDependencies = (
