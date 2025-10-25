@@ -134,8 +134,9 @@ struct ShareReviewView: View {
   }
 
   private var isSaveDisabled: Bool {
-    viewModel.isSaving || viewModel.draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
-      .isEmpty
+    viewModel.isSaving
+      || viewModel.draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        .isEmpty
   }
 
   private func cancel() {

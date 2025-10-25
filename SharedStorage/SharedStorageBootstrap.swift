@@ -13,7 +13,7 @@ enum SharedStorageBootstrap {
     var configuration = Configuration()
     configuration.foreignKeysEnabled = true
 
-        #if DEBUG
+    #if DEBUG
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
         configuration.prepareDatabase { db in
           try db.attachMetadatabase()

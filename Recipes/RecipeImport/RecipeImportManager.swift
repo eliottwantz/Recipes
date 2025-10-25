@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
-import SQLiteData
 import RecipeImportFeature
+import SQLiteData
 
 protocol RecipeImportManaging {
   func importRecipe(from url: URL) async throws -> Recipe
@@ -28,7 +28,7 @@ extension RecipeImportManager: DependencyKey {
     @Dependency(\.date.now) var now
 
     let pipeline = RecipeImportPipeline()
-    
+
     let importedRecipe = try await pipeline.importedRecipe(from: url, session: urlSession)
     return try persist(importedRecipe, in: database, now: now)
   }
@@ -64,7 +64,7 @@ extension RecipeImportManager {
     try database.write { db in
       try Recipe.insert { recipe }.execute(db)
     }
-    
+
     return recipe
   }
 }

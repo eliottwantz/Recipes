@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        NavigationStack {
-            RecipeListView()
-        }
+  var body: some View {
+    NavigationStack {
+      RecipeListView()
     }
+  }
 }
 
 #Preview {
-    StorageBootstrap.configurePreview()
-    return ContentView()
+  StorageBootstrap.configurePreview()
+  return ContentView()
 }
