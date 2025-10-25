@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5517C2962E973F1500F64C53 /* SQLiteData */; };
 		555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5594D41D2EAD0BE7001852BF /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5594D41C2EAD0BE7001852BF /* SQLiteData */; };
 		55FA1DD22EAC3C6400468B17 /* RecipeImportFeature.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55FA1DCC2EAC3C6400468B17 /* RecipeImportFeature.framework */; };
 		55FA1DD32EAC3C6400468B17 /* RecipeImportFeature.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 55FA1DCC2EAC3C6400468B17 /* RecipeImportFeature.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		55FA1DD92EAC3EBD00468B17 /* RecipeImportFeature.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55FA1DCC2EAC3C6400468B17 /* RecipeImportFeature.framework */; };
@@ -115,6 +116,11 @@
 			path = RecipeShareExtension;
 			sourceTree = "<group>";
 		};
+		5594D4192EAD0B09001852BF /* Models */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Models;
+			sourceTree = "<group>";
+		};
 		55FA1DCD2EAC3C6400468B17 /* RecipeImportFeature */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = RecipeImportFeature;
@@ -136,6 +142,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5594D41D2EAD0BE7001852BF /* SQLiteData in Frameworks */,
 				55FA1DD92EAC3EBD00468B17 /* RecipeImportFeature.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -153,6 +160,7 @@
 		5517C27A2E9720AB00F64C53 = {
 			isa = PBXGroup;
 			children = (
+				5594D4192EAD0B09001852BF /* Models */,
 				5517C2852E9720AB00F64C53 /* Recipes */,
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
 				55FA1DCD2EAC3C6400468B17 /* RecipeImportFeature */,
@@ -209,6 +217,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				5517C2852E9720AB00F64C53 /* Recipes */,
+				5594D4192EAD0B09001852BF /* Models */,
 			);
 			name = Recipes;
 			packageProductDependencies = (
@@ -234,9 +243,11 @@
 			);
 			fileSystemSynchronizedGroups = (
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
+				5594D4192EAD0B09001852BF /* Models */,
 			);
 			name = RecipeShareExtension;
 			packageProductDependencies = (
+				5594D41C2EAD0BE7001852BF /* SQLiteData */,
 			);
 			productName = RecipeShareExtension;
 			productReference = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */;
@@ -797,6 +808,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		5517C2962E973F1500F64C53 /* SQLiteData */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */;
+			productName = SQLiteData;
+		};
+		5594D41C2EAD0BE7001852BF /* SQLiteData */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */;
 			productName = SQLiteData;
