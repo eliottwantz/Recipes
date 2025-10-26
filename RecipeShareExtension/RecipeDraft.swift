@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import RecipeImportFeature
 
 /// Mutable recipe representation that mirrors the persisted `Recipe` model.
 struct RecipeDraft: Equatable {

@@ -1,6 +1,6 @@
 //
-//  RecipeImportFeature.swift
-//  RecipeImportFeature
+//  RecipeImportPipeline.swift
+//  SharedRecipeImport
 //
 //  Created by Eliott on 2025-10-24.
 //
@@ -183,7 +183,8 @@ public struct ImportedRecipe {
         }
         if let dictionary = element as? [String: Any] {
           if let text = dictionary["text"] as? String {
-            return [text.trimmingCharacters(in: .whitespacesAndNewlines)]
+            let retval = [text.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: "\r\n").joined()]
+            return retval
           }
           if let inner = dictionary["itemListElement"] {
             return parseInstructions(inner)
@@ -335,3 +336,5 @@ private enum DurationParser {
     return Int((interval / 60).rounded())
   }
 }
+
+

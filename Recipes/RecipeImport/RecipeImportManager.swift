@@ -1,6 +1,5 @@
 import Dependencies
 import Foundation
-import RecipeImportFeature
 import SQLiteData
 
 protocol RecipeImportManaging {
@@ -27,7 +26,7 @@ extension RecipeImportManager: DependencyKey {
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.date.now) var now
 
-    let pipeline = RecipeImportPipeline()
+    let pipeline = await RecipeImportPipeline()
 
     let importedRecipe = try await pipeline.importedRecipe(from: url, session: urlSession)
     return try persist(importedRecipe, in: database, now: now)

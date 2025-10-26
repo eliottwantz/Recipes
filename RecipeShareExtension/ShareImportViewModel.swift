@@ -8,7 +8,6 @@
 import Combine
 import Dependencies
 import Foundation
-import RecipeImportFeature
 import SQLiteData
 import UIKit
 import UniformTypeIdentifiers
