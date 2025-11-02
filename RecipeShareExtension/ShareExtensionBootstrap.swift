@@ -14,9 +14,9 @@ enum ShareExtensionBootstrap {
 
   static func configure() {
     guard !isConfigured else { return }
-    prepareDependencies { values in
+    prepareDependencies {
       do {
-        values.defaultDatabase = try SharedStorageBootstrap.makeDatabase()
+        $0.defaultDatabase = try StorageBootstrap.appDatabase()
         isConfigured = true
       } catch {
         logger.error(

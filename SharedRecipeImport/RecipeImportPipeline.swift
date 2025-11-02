@@ -7,21 +7,55 @@
 
 import Foundation
 
+public struct ExtractedRecipeDetail {
+  var recipe: RecipeRecord.Draft
+  var instructions: [String]
+  var ingredients: [String]
+}
+
 public struct RecipeImportPipeline {
   public init() {}
 
-  public func importedRecipe(from url: URL, session: URLSession) async throws -> ImportedRecipe {
+  public func importedRecipe(from url: URL, session: URLSession) async throws
+    -> ExtractedRecipeDetail
+  {
     guard url.scheme?.lowercased().hasPrefix("http") == true else {
       throw RecipeImportError.unsupportedScheme(url.scheme)
     }
 
     let html = try await fetchHTML(from: url, session: session)
-    return try importedRecipe(fromHTML: html)
+    return try extractRecipe(from: html)
   }
 
-  public func importedRecipe(fromHTML html: String) throws -> ImportedRecipe {
+  public func importedRecipe(fromHTML html: String) throws -> ExtractedRecipeDetail {
+    return try extractRecipe(from: html)
+  }
+
+  private func extractRecipe(from html: String) throws -> ExtractedRecipeDetail {
     let json = try extractRecipeJSON(from: html)
-    return try ImportedRecipe(json: json)
+    guard let name = json["name"] as? String else {
+      throw RecipeImportError.missingRequiredField("name")
+    }
+    let title = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    let summary = (json["description"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    let ingredients = Self.parseIngredients(json["recipeIngredient"])
+    let instructions = Self.parseInstructions(json["recipeInstructions"])
+    let prepMinutes = Self.parseDuration(json["prepTime"])
+    let cookMinutes = Self.parseDuration(json["cookTime"])
+    let servings = Self.parseServings(json["recipeYield"])
+
+    return ExtractedRecipeDetail(
+      recipe: .init(
+        title: title,
+        summary: summary,
+        prepTimeMinutes: prepMinutes,
+        cookTimeMinutes: cookMinutes,
+        servings: servings
+      ),
+      instructions: instructions,
+      ingredients: ingredients
+    )
   }
 
   public nonisolated func fetchHTML(from url: URL, session: URLSession) async throws -> String {
@@ -123,30 +157,6 @@ public struct RecipeImportPipeline {
       return false
     }
   }
-}
-
-public struct ImportedRecipe {
-  public let title: String
-  public let summary: String?
-  public let ingredients: [String]
-  public let instructions: [String]
-  public let prepMinutes: Int?
-  public let cookMinutes: Int?
-  public let servings: Int?
-
-  public init(json: [String: Any]) throws {
-    guard let name = json["name"] as? String else {
-      throw RecipeImportError.missingRequiredField("name")
-    }
-    title = name.trimmingCharacters(in: .whitespacesAndNewlines)
-    summary = (json["description"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-
-    ingredients = ImportedRecipe.parseIngredients(json["recipeIngredient"])
-    instructions = ImportedRecipe.parseInstructions(json["recipeInstructions"])
-    prepMinutes = ImportedRecipe.parseDuration(json["prepTime"])
-    cookMinutes = ImportedRecipe.parseDuration(json["cookTime"])
-    servings = ImportedRecipe.parseServings(json["recipeYield"])
-  }
 
   private static func parseIngredients(_ value: Any?) -> [String] {
     if let string = value as? String {
@@ -183,7 +193,9 @@ public struct ImportedRecipe {
         }
         if let dictionary = element as? [String: Any] {
           if let text = dictionary["text"] as? String {
-            let retval = [text.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: "\r\n").joined()]
+            let retval = [
+              text.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: "\r\n").joined()
+            ]
             return retval
           }
           if let inner = dictionary["itemListElement"] {
@@ -336,5 +348,3 @@ private enum DurationParser {
     return Int((interval / 60).rounded())
   }
 }
-
-

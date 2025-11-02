@@ -3,7 +3,7 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeListView: View {
-  @FetchAll(Recipe.order { $0.updatedAt.desc() })
+  @FetchAll(RecipeRecord.order { $0.updatedAt.desc() })
   private var recipes
 
   @Environment(\.scenePhase) private var scenePhase
@@ -26,7 +26,7 @@ struct RecipeListView: View {
       } else {
         List(recipes) { recipe in
           NavigationLink {
-            RecipeDetailView(recipe: recipe)
+            RecipeDetailView(recipeId: recipe.id)
           } label: {
             RecipeRow(recipe: recipe)
           }
@@ -121,15 +121,15 @@ struct RecipeListView: View {
 }
 
 private struct RecipeRow: View {
-  let recipe: Recipe
+  let recipe: RecipeRecord
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
       Text(recipe.title)
         .font(.headline)
         .foregroundStyle(.primary)
-      if !recipe.summary.isEmpty {
-        Text(recipe.summary)
+      if let summary = recipe.summary, !summary.isEmpty {
+        Text(summary)
           .font(.subheadline)
           .foregroundStyle(.secondary)
           .lineLimit(3)

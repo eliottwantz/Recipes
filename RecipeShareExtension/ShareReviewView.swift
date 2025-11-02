@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit
 
 struct ShareReviewView: View {
-  @ObservedObject var viewModel: ShareImportViewModel
+  @Bindable var viewModel: ShareImportViewModel
   let context: NSExtensionContext
 
   var body: some View {
@@ -65,78 +65,82 @@ struct ShareReviewView: View {
         cancel: cancel
       )
     case .loaded:
-      Form {
-        Section("Details") {
-          TextField("Title", text: $viewModel.draft.title)
-            .textContentType(.name)
-            .submitLabel(.done)
-
-          TextEditor(text: $viewModel.draft.summary)
-            .frame(minHeight: 80)
-            .overlay(alignment: .topLeading) {
-              if viewModel.draft.summary.isEmpty {
-                Text("Summary")
-                  .foregroundStyle(.secondary)
-                  .padding(.top, 8)
-                  .padding(.leading, 5)
-              }
-            }
-        }
-
-        Section("Ingredients") {
-          TextEditor(
-            text: Binding(
-              get: { viewModel.draft.ingredientsText },
-              set: { viewModel.draft.ingredientsText = $0 }
-            )
-          )
-          .frame(minHeight: 160)
-          .font(.system(.body, design: .monospaced))
-        }
-
-        Section("Instructions") {
-          TextEditor(
-            text: Binding(
-              get: { viewModel.draft.instructionsText },
-              set: { viewModel.draft.instructionsText = $0 }
-            )
-          )
-          .frame(minHeight: 200)
-        }
-
-        Section("Servings & Timing") {
-          StepperField(
-            title: "Servings",
-            value: Binding(
-              get: { viewModel.draft.servings ?? 0 },
-              set: { viewModel.draft.servings = $0 == 0 ? nil : $0 }
-            )
-          )
-
-          StepperField(
-            title: "Prep Minutes",
-            value: Binding(
-              get: { viewModel.draft.prepTimeMinutes ?? 0 },
-              set: { viewModel.draft.prepTimeMinutes = $0 == 0 ? nil : $0 }
-            )
-          )
-
-          StepperField(
-            title: "Cook Minutes",
-            value: Binding(
-              get: { viewModel.draft.cookTimeMinutes ?? 0 },
-              set: { viewModel.draft.cookTimeMinutes = $0 == 0 ? nil : $0 }
-            )
-          )
-        }
-      }
+//      if let draft = viewModel.draft {
+//        Form {
+//          Section("Details") {
+//            TextField("Title", text: $viewModel.draft.recipe.title)
+//              .textContentType(.name)
+//              .submitLabel(.done)
+//
+//            TextEditor(text: $viewModel.draft.recipe.summary)
+//              .frame(minHeight: 80)
+//              .overlay(alignment: .topLeading) {
+//                if viewModel.draft.summary.isEmpty {
+//                  Text("Summary")
+//                    .foregroundStyle(.secondary)
+//                    .padding(.top, 8)
+//                    .padding(.leading, 5)
+//                }
+//              }
+//          }
+//
+//          Section("Ingredients") {
+//            TextEditor(
+//              text: Binding(
+//                get: { viewModel.draft.ingredientsText },
+//                set: { viewModel.draft.ingredientsText = $0 }
+//              )
+//            )
+//            .frame(minHeight: 160)
+//            .font(.system(.body, design: .monospaced))
+//          }
+//
+//          Section("Instructions") {
+//            TextEditor(
+//              text: Binding(
+//                get: { viewModel.draft.instructionsText },
+//                set: { viewModel.draft.instructionsText = $0 }
+//              )
+//            )
+//            .frame(minHeight: 200)
+//          }
+//
+//          Section("Servings & Timing") {
+//            StepperField(
+//              title: "Servings",
+//              value: Binding(
+//                get: { viewModel.draft.servings ?? 0 },
+//                set: { viewModel.draft.servings = $0 == 0 ? nil : $0 }
+//              )
+//            )
+//
+//            StepperField(
+//              title: "Prep Minutes",
+//              value: Binding(
+//                get: { viewModel.draft.prepTimeMinutes ?? 0 },
+//                set: { viewModel.draft.prepTimeMinutes = $0 == 0 ? nil : $0 }
+//              )
+//            )
+//
+//            StepperField(
+//              title: "Cook Minutes",
+//              value: Binding(
+//                get: { viewModel.draft.cookTimeMinutes ?? 0 },
+//                set: { viewModel.draft.cookTimeMinutes = $0 == 0 ? nil : $0 }
+//              )
+//            )
+//          }
+//        }
+//      }
+        Text("Loaded")
     }
   }
 
   private var isSaveDisabled: Bool {
     viewModel.isSaving
-      || viewModel.draft.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        .isEmpty
+      || viewModel.draft == nil
+      || ((viewModel.draft?.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        .isEmpty) != nil)
   }
 
   private func cancel() {

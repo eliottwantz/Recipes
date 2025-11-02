@@ -2,7 +2,7 @@
 //  ShareImportViewModel.swift
 //  RecipeShareExtension
 //
-//  Created by Codex on 2025-10-25.
+//  Created by Eliott on 2025-10-25.
 //
 
 import Combine
@@ -13,8 +13,9 @@ import UIKit
 import UniformTypeIdentifiers
 
 @MainActor
-final class ShareImportViewModel: ObservableObject {
-  enum Phase: Equatable {
+@Observable
+final class ShareImportViewModel {
+  enum Phase {
     case idle
     case loading
     case loaded
@@ -27,13 +28,13 @@ final class ShareImportViewModel: ObservableObject {
     let isRetryable: Bool
   }
 
-  @Published private(set) var phase: Phase = .idle
-  @Published var draft: RecipeDraft = RecipeDraft()
-  @Published var isSaving = false
-  @Published var saveError: ShareError?
+  private(set) var phase: Phase = .idle
+  var draft: ExtractedRecipeDetail? = nil
+  var isSaving = false
+  var saveError: ShareError?
 
-  @Dependency(\.defaultDatabase) private var database
-  @Dependency(\.date.now) private var now
+  @ObservationIgnored @Dependency(\.defaultDatabase) private var database
+  @ObservationIgnored @Dependency(\.date.now) private var now
 
   private let pipeline: RecipeImportPipeline
   private var hasAttemptedInitialLoad = false
@@ -66,6 +67,7 @@ final class ShareImportViewModel: ObservableObject {
     isSaving = true
     saveError = nil
 
+    guard let draft else { return }
     let currentDraft = draft.normalized()
     let timestamp = now
 
@@ -87,10 +89,10 @@ final class ShareImportViewModel: ObservableObject {
     do {
       let payload = try await resolveHTMLPayload(from: context)
       let imported = try pipeline.importedRecipe(fromHTML: payload.html)
-      draft = RecipeDraft(imported: imported)
+      draft = imported
       phase = .loaded
     } catch {
-      draft = RecipeDraft()
+      draft = nil
       let shareError = shareError(for: error)
       phase = .failed(shareError)
     }
@@ -140,26 +142,26 @@ final class ShareImportViewModel: ObservableObject {
     }
   }
 
-  private func persistDraft(_ draft: RecipeDraft, timestamp: Date) throws {
-    guard draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
+  private func persistDraft(_ draft: ExtractedRecipeDetail, timestamp: Date) throws {
+    guard draft.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
       throw ShareImportFailure.missingTitle
     }
 
-    try database.write { db in
-      try Recipe.insert {
-        Recipe.init(
-          id: UUID(),
-          title: draft.title.trimmingCharacters(in: .whitespacesAndNewlines),
-          summary: draft.summary.trimmingCharacters(in: .whitespacesAndNewlines),
-          ingredients: draft.ingredientsText,
-          instructions: draft.instructionsText,
-          prepTimeMinutes: draft.prepTimeMinutes,
-          cookTimeMinutes: draft.cookTimeMinutes,
-          servings: draft.servings
-        )
-      }
-      .execute(db)
-    }
+    //    try database.write { db in
+    //      _ = try RecipeStore.insertRecipe(
+    //        id: UUID(),
+    //        title: draft.title,
+    //        summary: draft.summary,
+    //        ingredients: draft.ingredients,
+    //        instructions: draft.instructions,
+    //        prepTimeMinutes: draft.prepTimeMinutes,
+    //        cookTimeMinutes: draft.cookTimeMinutes,
+    //        servings: draft.servings,
+    //        createdAt: timestamp,
+    //        updatedAt: timestamp,
+    //        in: db
+    //      )
+    //    }
   }
 
   private func shareError(for error: Error) -> ShareError {
@@ -227,7 +229,7 @@ private enum ShareImportFailure: LocalizedError {
     switch self {
     case .missingHTML:
       return
-        "Safari did not provide the page content. Please share again after the page finishes loading."
+        "Please share again after the page finishes loading."
     case .emptyPayload:
       return "The shared item did not include any content."
     case .itemProvider(let error):
@@ -254,11 +256,13 @@ private enum ShareImportFailure: LocalizedError {
   }
 }
 
-extension RecipeDraft {
-  fileprivate func normalized() -> RecipeDraft {
+extension ExtractedRecipeDetail {
+  fileprivate func normalized() -> ExtractedRecipeDetail {
     var copy = self
-    copy.title = copy.title.trimmingCharacters(in: .whitespacesAndNewlines)
-    copy.summary = copy.summary.trimmingCharacters(in: .whitespacesAndNewlines)
+    copy.recipe.title = copy.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines)
+    if let summary = copy.recipe.summary {
+      copy.recipe.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
     copy.ingredients = copy.ingredients.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     copy.instructions = copy.instructions.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     copy.ingredients.removeAll(where: \.isEmpty)
