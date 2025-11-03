@@ -3,7 +3,7 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeListView: View {
-  @FetchAll(RecipeRecord.order { $0.updatedAt.desc() })
+  @FetchAll(Recipe.order { $0.updatedAt.desc() })
   private var recipes
 
   @Environment(\.scenePhase) private var scenePhase
@@ -121,7 +121,7 @@ struct RecipeListView: View {
 }
 
 private struct RecipeRow: View {
-  let recipe: RecipeRecord
+  let recipe: Recipe
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
@@ -176,7 +176,7 @@ extension RecipeListView {
 }
 
 #Preview {
-  StorageBootstrap.configurePreview()
+  Storage.configure()
   return NavigationStack {
     RecipeListView()
   }

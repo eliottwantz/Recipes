@@ -3,10 +3,10 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeDetailView: View {
-  let recipeId: RecipeRecord.ID
+  let recipeId: Recipe.ID
   @State private var recipeDetails: RecipeDetail.Value?
   
-  init(recipeId: RecipeRecord.ID) {
+  init(recipeId: Recipe.ID) {
     self.recipeId = recipeId
   }
 
@@ -84,24 +84,24 @@ struct RecipeDetailView: View {
 }
 
 private struct RecipeDetail: FetchKeyRequest {
-  let recipeId: RecipeRecord.ID
+  let recipeId: Recipe.ID
 
   struct Value {
-    let recipe: RecipeRecord?
-    let ingredients: [RecipeIngredientRecord]
-    let instructions: [RecipeInstructionRecord]
+    let recipe: Recipe?
+    let ingredients: [RecipeIngredient]
+    let instructions: [RecipeInstruction]
   }
 
   func fetch(_ db: Database) throws -> Value {
     try Value(
-      recipe: RecipeRecord.where {$0.id == recipeId}.fetchOne(db),
+      recipe: Recipe.where {$0.id == recipeId}.fetchOne(db),
       ingredients:
-        RecipeIngredientRecord
+        RecipeIngredient
         .where { $0.recipeId == recipeId }
         .order(by: \.position)
         .fetchAll(db),
       instructions:
-        RecipeInstructionRecord
+        RecipeInstruction
         .where { $0.recipeId == recipeId }
         .order(by: \.position)
         .fetchAll(db)
@@ -110,9 +110,9 @@ private struct RecipeDetail: FetchKeyRequest {
 }
 
 private struct RecipeDetailContent: View {
-  let recipe: RecipeRecord
-  let ingredients: [RecipeIngredientRecord]
-  let instructions: [RecipeInstructionRecord]
+  let recipe: Recipe
+  let ingredients: [RecipeIngredient]
+  let instructions: [RecipeInstruction]
 
   //  private var ingredients: [RecipeIngredientRecord] {
   //    recipe.ingredients.sorted { $0.position < $1.position }
@@ -282,9 +282,9 @@ extension View {
 }
 
 #Preview {
-  let sample = StorageBootstrap.configurePreviewWithInitialFetcher { database in
+  let sample = Storage.configurePreviewWithInitialFetcher { database in
     try database.read { db in
-      try RecipeRecord.limit(1).fetchOne(db)
+      try Recipe.limit(1).fetchOne(db)
     }
   }
 

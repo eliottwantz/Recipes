@@ -75,9 +75,9 @@
 			path = RecipeShareExtension;
 			sourceTree = "<group>";
 		};
-		55FA1DCD2EAC3C6400468B17 /* SharedRecipeImport */ = {
+		55FA1DCD2EAC3C6400468B17 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SharedRecipeImport;
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		55FA1DF02EAD1A5500468B17 /* Storage */ = {
@@ -113,7 +113,7 @@
 				5517C2852E9720AB00F64C53 /* Recipes */,
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
 				55FA1DF02EAD1A5500468B17 /* Storage */,
-				55FA1DCD2EAC3C6400468B17 /* SharedRecipeImport */,
+				55FA1DCD2EAC3C6400468B17 /* Shared */,
 				55FA1DD82EAC3EBD00468B17 /* Frameworks */,
 				5517C2842E9720AB00F64C53 /* Products */,
 			);
@@ -154,7 +154,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				5517C2852E9720AB00F64C53 /* Recipes */,
-				55FA1DCD2EAC3C6400468B17 /* SharedRecipeImport */,
+				55FA1DCD2EAC3C6400468B17 /* Shared */,
 				55FA1DF02EAD1A5500468B17 /* Storage */,
 			);
 			name = Recipes;
@@ -179,7 +179,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
-				55FA1DCD2EAC3C6400468B17 /* SharedRecipeImport */,
+				55FA1DCD2EAC3C6400468B17 /* Shared */,
 				55FA1DF02EAD1A5500468B17 /* Storage */,
 			);
 			name = RecipeShareExtension;

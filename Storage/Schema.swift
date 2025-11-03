@@ -2,7 +2,7 @@ import Foundation
 import SQLiteData
 
 @Table("recipes")
-public nonisolated struct RecipeRecord: Identifiable, Hashable, Sendable {
+public nonisolated struct Recipe: Identifiable, Hashable, Sendable {
   public let id: UUID
   var title = ""
   var summary: String?
@@ -13,18 +13,20 @@ public nonisolated struct RecipeRecord: Identifiable, Hashable, Sendable {
   var updatedAt: Date = .now
 }
 
+extension Recipe.Draft: Identifiable {}
+
 @Table("recipe_ingredients")
-nonisolated struct RecipeIngredientRecord: Identifiable, Hashable, Sendable {
+nonisolated struct RecipeIngredient: Identifiable, Hashable, Sendable {
   let id: UUID
-  var recipeId: RecipeRecord.ID
-  var position: Int
+  var recipeId: Recipe.ID
+  var position: Int = 0
   var text = ""
 }
 
 @Table("recipe_instructions")
-nonisolated struct RecipeInstructionRecord: Identifiable, Hashable, Sendable {
+nonisolated struct RecipeInstruction: Identifiable, Hashable, Sendable {
   let id: UUID
-  var recipeId: RecipeRecord.ID
-  var position: Int
+  var recipeId: Recipe.ID
+  var position: Int = 0
   var text = ""
 }

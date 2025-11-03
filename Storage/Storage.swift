@@ -4,11 +4,46 @@ import Foundation
 import OSLog
 import SQLiteData
 
-enum StorageBootstrap {
+enum Storage {
   static let appGroupIdentifier = "group.com.develiott.Recipes"
   static let databaseFilename = "Recipes.sqlite"
 
-  static func appDatabase(fileManager: FileManager = .default) throws -> any DatabaseWriter {
+  static func sharedDatabaseURL() throws -> URL {
+    let fileManager: FileManager = .default
+    guard
+      let containerURL = fileManager.containerURL(
+        forSecurityApplicationGroupIdentifier: appGroupIdentifier
+      )
+    else {
+      throw StorageError.missingAppGroupContainer
+    }
+
+    if fileManager.fileExists(atPath: containerURL.path) == false {
+      try fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
+    }
+
+    return containerURL.appendingPathComponent(databaseFilename)
+  }
+
+  static func configure() {
+    try! prepareDependencies {
+      try $0.bootstrapDatabase()
+    }
+  }
+
+  static func configurePreviewWithInitialFetcher<T>(
+    _ fetcher: (_ database: any DatabaseWriter) throws -> T
+  ) -> T {
+    let result: T = try! prepareDependencies {
+      try $0.bootstrapDatabase()
+      return try! fetcher($0.defaultDatabase)
+    }
+    return result
+  }
+}
+
+extension DependencyValues {
+  mutating func bootstrapDatabase() throws {
     @Dependency(\.context) var context
 
     var configuration = Configuration()
@@ -28,13 +63,13 @@ enum StorageBootstrap {
           if context == .preview {
             print("\($0.expandedDescription)")
           } else {
-            storageLogger.debug("\($0.expandedDescription)")
+            logger.debug("\($0.expandedDescription)")
           }
         }
       }
     #endif
 
-    let databaseURL = try sharedDatabaseURL(fileManager: fileManager)
+    let databaseURL = try Storage.sharedDatabaseURL()
     let database = try SQLiteData.defaultDatabase(
       path: databaseURL.path,
       configuration: configuration
@@ -44,7 +79,7 @@ enum StorageBootstrap {
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         print("DB PATH:\n\(database.path)")
       } else {
-        storageLogger.info("DB PATH:\n\(database.path)")
+        logger.info("DB PATH:\n\(database.path)")
       }
     #endif
 
@@ -86,7 +121,7 @@ enum StorageBootstrap {
         CREATE TABLE "recipe_instructions" (
             "id" TEXT PRIMARY KEY NOT NULL ON CONFLICT REPLACE DEFAULT (uuid()),
             "recipeId" TEXT NOT NULL REFERENCES "recipes"("id") ON DELETE CASCADE ON UPDATE CASCADE,
-            "position" INTEGER NOT NULL,
+            "position" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0,
             "text" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT ''
         ) STRICT
         """
@@ -101,7 +136,7 @@ enum StorageBootstrap {
 
         try db.seed {
           let ids = (0...1).map { _ in uuid() }
-          RecipeRecord(
+          Recipe(
             id: ids[0],
             title: "Heirloom Tomato Bruschetta",
             summary: "Toasted baguette topped with juicy tomatoes, basil, and garlic.",
@@ -111,29 +146,29 @@ enum StorageBootstrap {
             createdAt: now,
             updatedAt: now,
           )
-          RecipeIngredientRecord(id: uuid(), recipeId: ids[0], position: 0, text: "1 baguette")
-          RecipeIngredientRecord(
+          RecipeIngredient(id: uuid(), recipeId: ids[0], position: 0, text: "1 baguette")
+          RecipeIngredient(
             id: uuid(), recipeId: ids[0], position: 1, text: "2 cups diced heirloom tomatoes")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[0], position: 2, text: "2 cloves garlic, minced")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[0], position: 3, text: "6 fresh basil leaves, chopped")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[0], position: 4, text: "2 tbsp extra-virgin olive oil")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[0], position: 5, text: "Salt and pepper to taste")
 
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[0], position: 0,
             text: "Slice baguette and toast until golden.")
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[0], position: 1,
             text: "Toss tomatoes, garlic, basil, and olive oil with salt and pepper.")
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[0], position: 2,
             text: "Spoon tomato mixture over warm baguette slices and serve immediately.")
 
-          RecipeRecord(
+          Recipe(
             id: ids[1],
             title: "Creamy Mushroom Risotto",
             summary: "Classic risotto with sautéed cremini mushrooms and parmesan.",
@@ -144,42 +179,42 @@ enum StorageBootstrap {
             updatedAt: now,
           )
 
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 0, text: "4 cups vegetable broth")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 1, text: "1 cup arborio rice")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 2, text: "8 oz cremini mushrooms, sliced")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 3, text: "1 shallot, minced")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 4, text: "2 cloves garlic, minced")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 5, text: "1/2 cup dry white wine")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 6, text: "1/2 cup grated parmesan")
-          RecipeIngredientRecord(id: uuid(), recipeId: ids[1], position: 7, text: "2 tbsp butter")
-          RecipeIngredientRecord(
+          RecipeIngredient(id: uuid(), recipeId: ids[1], position: 7, text: "2 tbsp butter")
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 8, text: "2 tbsp olive oil")
-          RecipeIngredientRecord(
+          RecipeIngredient(
             id: uuid(), recipeId: ids[1], position: 9, text: "Salt and pepper to taste")
 
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[1], position: 0,
             text: "Warm broth in a saucepan over low heat.")
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[1], position: 1,
             text: "Sauté mushrooms in olive oil until browned.")
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[1], position: 2,
             text: "Cook shallot and garlic in butter until fragrant, then stir in rice.")
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[1], position: 3,
             text: "Deglaze with wine, stir until absorbed, then add broth one ladle at a time.")
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[1], position: 3,
             text: "Fold in mushrooms and parmesan once rice is creamy and al dente.")
-          RecipeInstructionRecord(
+          RecipeInstruction(
             id: uuid(), recipeId: ids[1], position: 4, text: "Season to taste and serve hot.")
         }
 
@@ -187,67 +222,20 @@ enum StorageBootstrap {
     #endif
 
     try migrator.migrate(database)
-    return database
-  }
 
-  static func sharedDatabaseURL(fileManager: FileManager = .default) throws -> URL {
-    guard
-      let containerURL = fileManager.containerURL(
-        forSecurityApplicationGroupIdentifier: appGroupIdentifier
+    defaultDatabase = database
+    #if !targetEnvironment(simulator)
+      defaultSyncEngine = try SyncEngine(
+        for: defaultDatabase,
+        tables: Recipe.self,
+        RecipeIngredient.self,
+        RecipeInstruction.self
       )
-    else {
-      throw StorageError.missingAppGroupContainer
-    }
-
-    if fileManager.fileExists(atPath: containerURL.path) == false {
-      try fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
-    }
-
-    return containerURL.appendingPathComponent(databaseFilename)
+    #endif
   }
-
-  static func configure() {
-    prepareDependencies {
-      do {
-        $0.defaultDatabase = try appDatabase()
-      } catch {
-        assertionFailure("Failed to configure database: \(error)")
-      }
-      #if !targetEnvironment(simulator)
-        $0.defaultSyncEngine = try! SyncEngine(
-          for: $0.defaultDatabase,
-          tables: Recipe.self,
-        )
-      #endif
-    }
-  }
-
-  static func configurePreview() {
-    prepareDependencies {
-      do {
-        $0.defaultDatabase = try appDatabase()
-      } catch {
-        print("Failed to configure preview database: \(error)")
-      }
-    }
-  }
-
-  static func configurePreviewWithInitialFetcher<T>(
-    _ fetcher: (_ database: any DatabaseWriter) throws -> T
-  ) -> T {
-    let result: T = try! prepareDependencies {
-      $0.defaultDatabase = try appDatabase()
-      return try! fetcher($0.defaultDatabase)
-    }
-    return result
-  }
-
-//  static private func appDatabase() throws -> any DatabaseWriter {
-//    try Self.makeDatabase()
-//  }
 }
 
-nonisolated private let storageLogger = Logger(subsystem: "Recepies", category: "Database")
+nonisolated private let logger = Logger(subsystem: "Recepies", category: "Database")
 
 enum StorageError: LocalizedError {
   case missingAppGroupContainer

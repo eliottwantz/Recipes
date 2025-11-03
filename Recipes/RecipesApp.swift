@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct RecipesApp: App {
   init() {
-    StorageBootstrap.configure()
+    Storage.configure()
   }
 
   var body: some Scene {

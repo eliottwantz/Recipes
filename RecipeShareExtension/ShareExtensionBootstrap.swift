@@ -16,7 +16,7 @@ enum ShareExtensionBootstrap {
     guard !isConfigured else { return }
     prepareDependencies {
       do {
-        $0.defaultDatabase = try StorageBootstrap.appDatabase()
+        try $0.bootstrapDatabase()
         isConfigured = true
       } catch {
         logger.error(

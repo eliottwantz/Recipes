@@ -8,7 +8,7 @@
 import Foundation
 
 public struct ExtractedRecipeDetail {
-  var recipe: RecipeRecord.Draft
+  var recipe: Recipe.Draft
   var instructions: [String]
   var ingredients: [String]
 }
