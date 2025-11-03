@@ -2,110 +2,74 @@ import Dependencies
 import SQLiteData
 import SwiftUI
 
-struct RecipeDetailView: View {
+@MainActor
+@Observable
+final class RecipeDetailModel {
   let recipeId: Recipe.ID
-  @State private var recipeDetails: RecipeDetail.Value?
-  
+  @ObservationIgnored @Fetch private var recipeDetail: RecipeDetail.Value
+
+  var recipe: Recipe? { recipeDetail.recipe }
+  var ingredients: [RecipeIngredient] { recipeDetail.ingredients }
+  var instructions: [RecipeInstruction] { recipeDetail.instructions }
+
   init(recipeId: Recipe.ID) {
     self.recipeId = recipeId
+    self._recipeDetail = .init(
+      wrappedValue: .placeholder,
+      RecipeDetail(recipeId: recipeId)
+    )
   }
 
-  @Dependency(\.defaultDatabase) private var database
-  @State private var loadError: String?
+  private struct RecipeDetail: FetchKeyRequest {
+    let recipeId: Recipe.ID
+
+    struct Value {
+      let recipe: Recipe?
+      let ingredients: [RecipeIngredient]
+      let instructions: [RecipeInstruction]
+      
+      static var placeholder: Value { .init(recipe: nil, ingredients: [], instructions: []) }
+    }
+
+    func fetch(_ db: Database) throws -> Value {
+      try Value(
+        recipe: Recipe.where { $0.id == recipeId }.fetchOne(db),
+        ingredients:
+          RecipeIngredient
+          .where { $0.recipeId == recipeId }
+          .order(by: \.position)
+          .fetchAll(db),
+        instructions:
+          RecipeInstruction
+          .where { $0.recipeId == recipeId }
+          .order(by: \.position)
+          .fetchAll(db)
+      )
+    }
+  }
+}
+
+struct RecipeDetailView: View {
+  @Bindable var model: RecipeDetailModel
 
   var body: some View {
     Group {
-      if let recipeDetails, let recipe = recipeDetails.recipe {
+      if let recipe = model.recipe {
         RecipeDetailContent(
           recipe: recipe,
-          ingredients: recipeDetails.ingredients,
-          instructions: recipeDetails.instructions
+          ingredients: model.ingredients,
+          instructions: model.instructions
         )
-      } else if let loadError {
+      } else {
         ContentUnavailableView(
           "Recipe Unavailable",
           systemImage: "exclamationmark.triangle",
-          description: Text(loadError)
+          description: Text("This recipe could not be found")
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-      } else {
-        VStack(spacing: 12) {
-          ProgressView()
-          Text("Loading…")
-            .font(.callout)
-            .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-      }
-    }
-    //    .task(id: recipeId, loadRecipe)
-    .task(id: recipeId) {
-      await withErrorReporting {
-        let details = try await database.read {
-          return try RecipeDetail(recipeId: recipeId).fetch($0)
-        }
-        await MainActor.run {
-          recipeDetails = details
-          if details.recipe == nil {
-            loadError = "This recipe could not be found."
-          } else {
-            loadError = nil
-          }
-        }
       }
     }
     .navigationBarTitleDisplayMode(.inline)
-  }
-
-  //  private func loadRecipe() async {
-  //    await MainActor.run {
-  //      loadError = nil
-  //    }
-  //
-  //    do {
-  //      let response = try await database.read { db in
-  //        return try RecipeDetailRequest(recipeId: recipeId).fetch(db)
-  //      }
-  //      await MainActor.run {
-  //        recipeDetails = response
-  //        if response.recipe == nil {
-  //          loadError = "This recipe could not be found."
-  //        } else {
-  //          loadError = nil
-  //        }
-  //      }
-  //    } catch {
-  //      await MainActor.run {
-  //        loadError = error.localizedDescription
-  //        recipeDetails = nil
-  //      }
-  //    }
-  //  }
-}
-
-private struct RecipeDetail: FetchKeyRequest {
-  let recipeId: Recipe.ID
-
-  struct Value {
-    let recipe: Recipe?
-    let ingredients: [RecipeIngredient]
-    let instructions: [RecipeInstruction]
-  }
-
-  func fetch(_ db: Database) throws -> Value {
-    try Value(
-      recipe: Recipe.where {$0.id == recipeId}.fetchOne(db),
-      ingredients:
-        RecipeIngredient
-        .where { $0.recipeId == recipeId }
-        .order(by: \.position)
-        .fetchAll(db),
-      instructions:
-        RecipeInstruction
-        .where { $0.recipeId == recipeId }
-        .order(by: \.position)
-        .fetchAll(db)
-    )
   }
 }
 
@@ -113,14 +77,6 @@ private struct RecipeDetailContent: View {
   let recipe: Recipe
   let ingredients: [RecipeIngredient]
   let instructions: [RecipeInstruction]
-
-  //  private var ingredients: [RecipeIngredientRecord] {
-  //    recipe.ingredients.sorted { $0.position < $1.position }
-  //  }
-  //
-  //  private var instructions: [RecipeInstructionRecord] {
-  //    recipe.instructions.sorted { $0.position < $1.position }
-  //  }
 
   var body: some View {
     ScrollView {
@@ -290,7 +246,7 @@ extension View {
 
   NavigationStack {
     if let sample {
-      RecipeDetailView(recipeId: sample.id)
+      RecipeDetailView(model: .init(recipeId: sample.id))
     } else {
       Text("No sample recipe")
     }
