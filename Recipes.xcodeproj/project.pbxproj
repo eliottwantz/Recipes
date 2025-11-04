@@ -56,6 +56,13 @@
 			);
 			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
 		};
+		55D88D072EB99E1000DF5B92 /* Exceptions for "Shared" folder in "RecipeShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				RecipeImportManager.swift,
+			);
+			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -77,6 +84,9 @@
 		};
 		55FA1DCD2EAC3C6400468B17 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				55D88D072EB99E1000DF5B92 /* Exceptions for "Shared" folder in "RecipeShareExtension" target */,
+			);
 			path = Shared;
 			sourceTree = "<group>";
 		};

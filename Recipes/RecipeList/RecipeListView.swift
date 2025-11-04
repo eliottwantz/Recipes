@@ -2,17 +2,46 @@ import Dependencies
 import SQLiteData
 import SwiftUI
 
+@Observable
+final class RecipeImportModel {
+  var showAddForm = false
+  var recipeUrl = ""
+  var isImporting = false
+  var importError: String?
+
+  func handleImport() {
+    let trimmed = recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return }
+    guard let url = URL(string: trimmed) else {
+      importError = "Please enter a valid recipe URL."
+      return
+    }
+
+    if isImporting {
+      return
+    }
+    isImporting = true
+
+    Task {
+      do {
+        try await RecipeImportManager.importRecipe(from: url)
+        isImporting = false
+        recipeUrl = ""
+        showAddForm = false
+      } catch {
+        isImporting = false
+        importError = error.localizedDescription
+      }
+    }
+  }
+}
+
 struct RecipeListView: View {
   @FetchAll(Recipe.order { $0.updatedAt.desc() })
   private var recipes
 
   @Environment(\.scenePhase) private var scenePhase
-//  @Dependency(RecipeImportManager.self) private var recipeImportManager
-
-//  @State private var showAddForm = false
-//  @State private var recipeUrl = ""
-//  @State private var isImporting = false
-//  @State private var importError: String?
+  @State private var importModel = RecipeImportModel()
 
   var body: some View {
     Group {
@@ -33,84 +62,89 @@ struct RecipeListView: View {
       }
     }
     .navigationTitle("Recipes")
-    .navigationDestination(for: Recipe.ID.self, destination: { id in
-      RecipeDetailView(model: .init(recipeId: id))
-    })
-//    .toolbar {
-//      ToolbarItem(placement: .primaryAction) {
-//        Button {
-//          showAddForm = true
-//        } label: {
-//          Label("Add", systemImage: "plus")
-//        }
-//      }
-//    }
-//    .sheet(isPresented: $showAddForm) {
-//      Form {
-//        Text("Recipe URL")
-//          .font(.caption)
-//          .foregroundColor(.secondary)
-//        TextField("URL", text: $recipeUrl)
-//          .keyboardType(.URL)
-//          .textInputAutocapitalization(.never)
-//          .disableAutocorrection(true)
-//          .textFieldStyle(RoundedBorderTextFieldStyle())
-//          .disabled(isImporting)
-//        if isImporting {
-//          HStack {
-//            ProgressView()
-//            Text("Importing…")
-//              .foregroundStyle(.secondary)
-//          }
-//        }
-//        Button {
-//          handleImport()
-//        } label: {
-//          Text(isImporting ? "Importing…" : "Import Recipe")
-//            .frame(maxWidth: .infinity)
-//        }
-//        .buttonStyle(.borderedProminent)
-//        .disabled(isImporting || recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-//      }
-//      .submitLabel(.send)
-//      .onSubmit {
-//        handleImport()
-//      }
-//      .toolbar {
-//        ToolbarItem(placement: .cancellationAction) {
-//          Button("Cancel") {
-//            showAddForm = false
-//            recipeUrl = ""
-//            importError = nil
-//          }
-//          .disabled(isImporting)
-//        }
-//      }
-//    }
-//    .alert(
-//      "Import Failed",
-//      isPresented: Binding(
-//        get: { importError != nil },
-//        set: { isPresented in
-//          if !isPresented {
-//            importError = nil
-//          }
-//        }
-//      )
-//    ) {
-//      Button("OK", role: .cancel) {
-//        importError = nil
-//      }
-//    } message: {
-//      Text(importError ?? "")
-//    }
-//    .onChange(of: showAddForm) { _, newValue in
-//      if !newValue {
-//        recipeUrl = ""
-//        isImporting = false
-//        importError = nil
-//      }
-//    }
+    .navigationDestination(
+      for: Recipe.ID.self,
+      destination: { id in
+        RecipeDetailView(model: .init(recipeId: id))
+      }
+    )
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          importModel.showAddForm = true
+        } label: {
+          Label("Add", systemImage: "plus")
+        }
+      }
+    }
+    .sheet(isPresented: $importModel.showAddForm) {
+      Form {
+        Text("Recipe URL")
+          .font(.caption)
+          .foregroundColor(.secondary)
+        TextField("URL", text: $importModel.recipeUrl)
+          .keyboardType(.URL)
+          .textInputAutocapitalization(.never)
+          .disableAutocorrection(true)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+          .disabled(importModel.isImporting)
+        if importModel.isImporting {
+          HStack {
+            ProgressView()
+            Text("Importing…")
+              .foregroundStyle(.secondary)
+          }
+        }
+        Button {
+          importModel.handleImport()
+        } label: {
+          Text(importModel.isImporting ? "Importing…" : "Import Recipe")
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(
+          importModel.isImporting
+            || importModel.recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+      }
+      .submitLabel(.send)
+      .onSubmit {
+        importModel.handleImport()
+      }
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel") {
+            importModel.showAddForm = false
+            importModel.recipeUrl = ""
+            importModel.importError = nil
+          }
+          .disabled(importModel.isImporting)
+        }
+      }
+    }
+    .alert(
+      "Import Failed",
+      isPresented: Binding(
+        get: { importModel.importError != nil },
+        set: { isPresented in
+          if !isPresented {
+            importModel.importError = nil
+          }
+        }
+      )
+    ) {
+      Button("OK", role: .cancel) {
+        importModel.importError = nil
+      }
+    } message: {
+      Text(importModel.importError ?? "")
+    }
+    .onChange(of: importModel.showAddForm) { _, newValue in
+      if !newValue {
+        importModel.recipeUrl = ""
+        importModel.isImporting = false
+        importModel.importError = nil
+      }
+    }
     .onChange(of: scenePhase) { oldValue, newValue in
       if oldValue == .inactive && newValue == .active {
         Task {
@@ -142,38 +176,7 @@ private struct RecipeRow: View {
 }
 
 //extension RecipeListView {
-//  @MainActor
-//  fileprivate func handleImport() {
-//    let trimmed = recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-//    guard !trimmed.isEmpty else { return }
-//    guard let url = URL(string: trimmed) else {
-//      importError = "Please enter a valid recipe URL."
-//      return
-//    }
-//
-//    if isImporting {
-//      return
-//    }
-//
-//    let manager = recipeImportManager
-//    isImporting = true
-//
-//    Task {
-//      do {
-//        _ = try await manager.importRecipe(from: url)
-//        await MainActor.run {
-//          isImporting = false
-//          recipeUrl = ""
-//          showAddForm = false
-//        }
-//      } catch {
-//        await MainActor.run {
-//          isImporting = false
-//          importError = error.localizedDescription
-//        }
-//      }
-//    }
-//  }
+
 //}
 
 #Preview {
