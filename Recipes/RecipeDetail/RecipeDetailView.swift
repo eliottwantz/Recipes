@@ -27,7 +27,7 @@ final class RecipeDetailModel {
       let recipe: Recipe?
       let ingredients: [RecipeIngredient]
       let instructions: [RecipeInstruction]
-      
+
       static var placeholder: Value { .init(recipe: nil, ingredients: [], instructions: []) }
     }
 
@@ -238,9 +238,10 @@ extension View {
 }
 
 #Preview {
-  let sample = Storage.configurePreviewWithInitialFetcher { database in
+  let sample = Storage.configure { database in
     try database.read { db in
-      try Recipe.limit(1).fetchOne(db)
+      print("FETCHING RECIPE FOR PREVIEW")
+      return try Recipe.all.fetchOne(db)
     }
   }
 

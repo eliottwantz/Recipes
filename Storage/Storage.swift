@@ -31,9 +31,7 @@ enum Storage {
     }
   }
 
-  static func configurePreviewWithInitialFetcher<T>(
-    _ fetcher: (_ database: any DatabaseWriter) throws -> T
-  ) -> T {
+  static func configure<T>(_ fetcher: (_ database: any DatabaseWriter) throws -> T) -> T {
     let result: T = try! prepareDependencies {
       try $0.bootstrapDatabase()
       return try! fetcher($0.defaultDatabase)
