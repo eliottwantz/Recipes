@@ -60,70 +60,13 @@ struct ShareReviewView: View {
         cancel: cancel
       )
     case .loaded:
-      Form {
-        Section("Details") {
-          TextField("Title", text: $viewModel.draft.recipe.title)
-            .textContentType(.name)
-            .submitLabel(.done)
-
-          TextEditor(text: $viewModel.draft.recipe.summary)
-            .frame(minHeight: 80)
-            .overlay(alignment: .topLeading) {
-              if viewModel.draft.summary.isEmpty {
-                Text("Summary")
-                  .foregroundStyle(.secondary)
-                  .padding(.top, 8)
-                  .padding(.leading, 5)
-              }
-            }
-        }
-
-        Section("Ingredients") {
-          TextEditor(
-            text: Binding(
-              get: { viewModel.draft.ingredientsText },
-              set: { viewModel.draft.ingredientsText = $0 }
-            )
-          )
-          .frame(minHeight: 160)
-          .font(.system(.body, design: .monospaced))
-        }
-
-        Section("Instructions") {
-          TextEditor(
-            text: Binding(
-              get: { viewModel.draft.instructionsText },
-              set: { viewModel.draft.instructionsText = $0 }
-            )
-          )
-          .frame(minHeight: 200)
-        }
-
-        Section("Servings & Timing") {
-          StepperField(
-            title: "Servings",
-            value: Binding(
-              get: { viewModel.draft.servings ?? 0 },
-              set: { viewModel.draft.servings = $0 == 0 ? nil : $0 }
-            )
-          )
-
-          StepperField(
-            title: "Prep Minutes",
-            value: Binding(
-              get: { viewModel.draft.prepTimeMinutes ?? 0 },
-              set: { viewModel.draft.prepTimeMinutes = $0 == 0 ? nil : $0 }
-            )
-          )
-
-          StepperField(
-            title: "Cook Minutes",
-            value: Binding(
-              get: { viewModel.draft.cookTimeMinutes ?? 0 },
-              set: { viewModel.draft.cookTimeMinutes = $0 == 0 ? nil : $0 }
-            )
-          )
-        }
+      if let draft = viewModel.draft {
+        RecipeFormView(draft: draft)
+      } else {
+        Text("No recipe data available")
+          .foregroundStyle(.secondary)
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .background(Color(.systemGroupedBackground))
       }
     }
   }
@@ -137,6 +80,89 @@ struct ShareReviewView: View {
 
   private func cancel() {
     viewModel.cancel(context: context)
+  }
+}
+
+private struct RecipeFormView: View {
+  @Bindable var draft: ShareImportViewModel.Draft
+
+  var body: some View {
+    Form {
+      Section("Details") {
+        TextField("Title", text: $draft.recipe.title)
+          .textContentType(.name)
+          .submitLabel(.done)
+
+        TextEditor(
+          text: Binding(
+            get: { draft.recipe.summary ?? "" },
+            set: { draft.recipe.summary = $0.isEmpty ? nil : $0 }
+          )
+        )
+        .frame(minHeight: 80)
+        .overlay(alignment: .topLeading) {
+          if draft.recipe.summary?.isEmpty ?? true {
+            Text("Summary")
+              .foregroundStyle(.secondary)
+              .padding(.top, 8)
+              .padding(.leading, 5)
+          }
+        }
+      }
+
+      Section("Ingredients") {
+        TextEditor(
+          text: Binding(
+            get: { draft.ingredientsText },
+            set: { newValue in
+              draft.ingredients = newValue.components(separatedBy: .newlines)
+                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            }
+          )
+        )
+        .frame(minHeight: 160)
+        .font(.system(.body, design: .monospaced))
+      }
+
+      Section("Instructions") {
+        TextEditor(
+          text: Binding(
+            get: { draft.instructionsText },
+            set: { newValue in
+              draft.instructions = newValue.components(separatedBy: .newlines)
+                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            }
+          )
+        )
+        .frame(minHeight: 200)
+      }
+
+      Section("Servings & Timing") {
+        StepperField(
+          title: "Servings",
+          value: Binding(
+            get: { draft.recipe.servings ?? 0 },
+            set: { draft.recipe.servings = $0 == 0 ? nil : $0 }
+          )
+        )
+
+        StepperField(
+          title: "Prep Minutes",
+          value: Binding(
+            get: { draft.recipe.prepTimeMinutes ?? 0 },
+            set: { draft.recipe.prepTimeMinutes = $0 == 0 ? nil : $0 }
+          )
+        )
+
+        StepperField(
+          title: "Cook Minutes",
+          value: Binding(
+            get: { draft.recipe.cookTimeMinutes ?? 0 },
+            set: { draft.recipe.cookTimeMinutes = $0 == 0 ? nil : $0 }
+          )
+        )
+      }
+    }
   }
 }
 

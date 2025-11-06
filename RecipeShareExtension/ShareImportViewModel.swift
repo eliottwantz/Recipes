@@ -9,7 +9,6 @@ import Foundation
 import SQLiteData
 import UniformTypeIdentifiers
 
-@MainActor
 @Observable
 final class ShareImportViewModel {
   enum Phase {
@@ -25,7 +24,7 @@ final class ShareImportViewModel {
   }
 
   private(set) var phase: Phase = .idle
-  var draft: RecipeImportManager.ExtractedRecipeDetail? = nil
+  var draft: ShareImportViewModel.Draft? = nil
   var isSaving = false
   var saveError: ShareError?
 
@@ -55,11 +54,15 @@ final class ShareImportViewModel {
     saveError = nil
 
     guard let draft else { return }
-    let currentDraft = draft.normalized()
+    let extractedRecipeDetail = RecipeImportManager.ExtractedRecipeDetail(
+      recipe: draft.recipe,
+      instructions: draft.instructions,
+      ingredients: draft.ingredients
+    )
     let timestamp = now
 
     do {
-      try persistDraft(currentDraft, timestamp: timestamp)
+      try persistExtractedRecipeDetail(extractedRecipeDetail, timestamp: timestamp)
       isSaving = false
       context.completeRequest(returningItems: [], completionHandler: nil)
     } catch {
@@ -76,7 +79,11 @@ final class ShareImportViewModel {
     do {
       let payload = try await resolveHTMLPayload(from: context)
       let imported = try await RecipeImportManager.extractRecipe(from: payload.html)
-      draft = imported
+      draft = .init(
+        recipe: imported.recipe,
+        ingredients: imported.ingredients,
+        instructions: imported.instructions
+      )
       phase = .loaded
     } catch {
       draft = nil
@@ -129,14 +136,19 @@ final class ShareImportViewModel {
     }
   }
 
-  private func persistDraft(_ draft: RecipeImportManager.ExtractedRecipeDetail, timestamp: Date)
+  private func persistExtractedRecipeDetail(
+    _ extractedRecipeDetail: RecipeImportManager.ExtractedRecipeDetail, timestamp: Date
+  )
     throws
   {
-    guard draft.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
+    guard
+      extractedRecipeDetail.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        == false
+    else {
       throw ShareImportFailure.missingTitle
     }
 
-    try RecipeImportManager.persist(draft, in: database)
+    try RecipeImportManager.persist(extractedRecipeDetail, in: database)
   }
 
   private func shareError(for error: Error) -> ShareError {
@@ -151,6 +163,29 @@ final class ShareImportViewModel {
     return ShareError(
       message: "Something went wrong while importing the recipe.",
     )
+  }
+}
+
+extension ShareImportViewModel {
+  @Observable
+  final class Draft {
+    var recipe: Recipe.Draft
+    var ingredients: [String]
+    var instructions: [String]
+
+    var ingredientsText: String {
+      ingredients.joined(separator: "\n")
+    }
+
+    var instructionsText: String {
+      instructions.joined(separator: "\n")
+    }
+
+    init(recipe: Recipe.Draft, ingredients: [String], instructions: [String]) {
+      self.recipe = recipe
+      self.ingredients = ingredients
+      self.instructions = instructions
+    }
   }
 }
 
