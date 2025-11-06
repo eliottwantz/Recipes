@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct RecipesApp: App {
+ @State private var appRouter = AppRouter()
+  
   init() {
     Storage.configure()
   }
@@ -17,5 +19,6 @@ struct RecipesApp: App {
     WindowGroup {
       ContentView()
     }
+    .environment(\.appRouter, appRouter)
   }
 }

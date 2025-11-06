@@ -8,14 +8,38 @@
 import SwiftUI
 
 struct ContentView: View {
+  @Environment(\.appRouter) private var appRouter
+
   var body: some View {
-    NavigationStack {
-      RecipeListView()
+    @Bindable var appRouter = appRouter
+    
+    TabView(selection: $appRouter.selectedTab) {
+      Tab(value: AppRouter.Tab.recipeList) {
+        NavigationStack {
+          RecipeListView()
+        }
+      } label: {
+        Label("Recipes", systemImage: "book.pages")
+      }
+
+      Tab(value: AppRouter.Tab.settings) {
+        Button {
+          appRouter.selectedTab = .recipeList
+        } label: {
+          Label("Go to recipe list", systemImage: "book.pages")
+        }
+      } label: {
+        Label("Settings", systemImage: "gear")
+      }
+
     }
   }
 }
 
 #Preview {
   Storage.configure()
-  return ContentView()
+  return Group {
+    ContentView()
+  }
+  .environment(\.appRouter, AppRouter())
 }

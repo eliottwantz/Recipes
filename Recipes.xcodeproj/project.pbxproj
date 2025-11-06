@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5517C2962E973F1500F64C53 /* SQLiteData */; };
 		555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5561697B2EBC3D7F00BB649D /* SwiftNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = 5561697A2EBC3D7F00BB649D /* SwiftNavigation */; };
+		5561697D2EBC3D7F00BB649D /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = 5561697C2EBC3D7F00BB649D /* SwiftUINavigation */; };
 		5594D41D2EAD0BE7001852BF /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5594D41C2EAD0BE7001852BF /* SQLiteData */; };
 /* End PBXBuildFile section */
 
@@ -102,7 +104,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5561697B2EBC3D7F00BB649D /* SwiftNavigation in Frameworks */,
 				5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */,
+				5561697D2EBC3D7F00BB649D /* SwiftUINavigation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,6 +174,8 @@
 			name = Recipes;
 			packageProductDependencies = (
 				5517C2962E973F1500F64C53 /* SQLiteData */,
+				5561697A2EBC3D7F00BB649D /* SwiftNavigation */,
+				5561697C2EBC3D7F00BB649D /* SwiftUINavigation */,
 			);
 			productName = Recipes;
 			productReference = 5517C2832E9720AB00F64C53 /* Recipes.app */;
@@ -229,6 +235,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */,
+				556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5517C2842E9720AB00F64C53 /* Products */;
@@ -616,6 +623,14 @@
 				minimumVersion = 1.1.1;
 			};
 		};
+		556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-navigation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -623,6 +638,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */;
 			productName = SQLiteData;
+		};
+		5561697A2EBC3D7F00BB649D /* SwiftNavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */;
+			productName = SwiftNavigation;
+		};
+		5561697C2EBC3D7F00BB649D /* SwiftUINavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */;
+			productName = SwiftUINavigation;
 		};
 		5594D41C2EAD0BE7001852BF /* SQLiteData */ = {
 			isa = XCSwiftPackageProductDependency;
