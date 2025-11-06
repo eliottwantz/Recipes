@@ -72,10 +72,9 @@ struct ShareReviewView: View {
   }
 
   private var isSaveDisabled: Bool {
-    viewModel.isSaving
-      || viewModel.draft == nil
-      || ((viewModel.draft?.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        .isEmpty) != nil)
+    guard let draft = viewModel.draft else { return true }
+    return viewModel.isSaving
+      || draft.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
   }
 
   private func cancel() {
@@ -116,7 +115,6 @@ private struct RecipeFormView: View {
             get: { draft.ingredientsText },
             set: { newValue in
               draft.ingredients = newValue.components(separatedBy: .newlines)
-                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             }
           )
         )
@@ -130,7 +128,6 @@ private struct RecipeFormView: View {
             get: { draft.instructionsText },
             set: { newValue in
               draft.instructions = newValue.components(separatedBy: .newlines)
-                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             }
           )
         )
