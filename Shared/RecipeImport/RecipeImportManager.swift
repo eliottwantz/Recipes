@@ -31,7 +31,7 @@ enum RecipeImportManager {
     return recipe
   }
 
-  private static nonisolated func persist(
+  public static nonisolated func persist(
     _ imported: ExtractedRecipeDetail,
     in database: any DatabaseWriter
   ) throws {
@@ -75,7 +75,7 @@ enum RecipeImportManager {
     }
   }
 
-  private static nonisolated func extractRecipe(from html: String) async throws
+  public static nonisolated func extractRecipe(from html: String) async throws
     -> ExtractedRecipeDetail
   {
     let json = try extractRecipeJSON(from: html)
@@ -394,4 +394,19 @@ enum RecipeImportManager {
     }
   }
 
+}
+
+extension RecipeImportManager.ExtractedRecipeDetail {
+  func normalized() -> Self {
+    var copy = self
+    copy.recipe.title = copy.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines)
+    if let summary = copy.recipe.summary {
+      copy.recipe.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    copy.ingredients = copy.ingredients.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+    copy.instructions = copy.instructions.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+    copy.ingredients.removeAll(where: \.isEmpty)
+    copy.instructions.removeAll(where: \.isEmpty)
+    return copy
+  }
 }

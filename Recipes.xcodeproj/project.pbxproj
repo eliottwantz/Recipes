@@ -185,6 +185,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
+				556169912EBC4D6800BB649D /* Shared */,
 				55FA1DF02EAD1A5500468B17 /* Storage */,
 			);
 			name = RecipeShareExtension;
