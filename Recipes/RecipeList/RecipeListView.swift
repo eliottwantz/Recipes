@@ -2,40 +2,6 @@ import Dependencies
 import SQLiteData
 import SwiftUI
 
-@Observable
-final class RecipeImportModel {
-  var showAddForm = false
-  var recipeUrl = ""
-  var isImporting = false
-  var importError: String?
-
-  func handleImport() {
-    let trimmed = recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !trimmed.isEmpty else { return }
-    guard let url = URL(string: trimmed) else {
-      importError = "Please enter a valid recipe URL."
-      return
-    }
-
-    if isImporting {
-      return
-    }
-    isImporting = true
-
-    Task {
-      do {
-        try await RecipeImportManager.importRecipe(from: url)
-        isImporting = false
-        recipeUrl = ""
-        showAddForm = false
-      } catch {
-        isImporting = false
-        importError = error.localizedDescription
-      }
-    }
-  }
-}
-
 struct RecipeListView: View {
   @FetchAll(Recipe.order { $0.updatedAt.desc() })
   private var recipes
@@ -54,7 +20,7 @@ struct RecipeListView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
       } else {
         List(recipes) { recipe in
-          NavigationLink(value: recipe.id) {
+          NavigationLink(value: recipe) {
             RecipeRow(recipe: recipe)
           }
         }
@@ -63,9 +29,9 @@ struct RecipeListView: View {
     }
     .navigationTitle("Recipes")
     .navigationDestination(
-      for: Recipe.ID.self,
-      destination: { id in
-        RecipeDetailView(model: .init(recipeId: id))
+      for: Recipe.self,
+      destination: { recipe in
+        RecipeDetailView(recipe: recipe)
       }
     )
     .toolbar {
@@ -174,10 +140,6 @@ private struct RecipeRow: View {
     .padding(.vertical, 8)
   }
 }
-
-//extension RecipeListView {
-
-//}
 
 #Preview {
   Storage.configure()
