@@ -20,14 +20,14 @@ Recipes is a lightweight SwiftUI app for browsing, organizing, creating, and sha
 - Gate heavy preview/sample data behind `#if DEBUG` to keep release builds lean.
 
 ### Architecture Patterns
-- Single-scene SwiftUI app rooted in `RecipesApp` with feature-specific view files under `Recipes/<FeatureName>/`, expanding to platform-specific scene modifiers when the macOS target needs custom chrome.
+- Single-scene SwiftUI app rooted in `RecipesApp` with feature-specific view files under `Recipes/Views/<Domain>/<FeatureName>/`, expanding to platform-specific scene modifiers when the macOS target needs custom chrome.
 - Keep `ContentView` focused on shell navigation; spin off feature views (e.g., meal list, detail) into dedicated folders.
 - Favor simple, testable view models when state grows; reuse SwiftUI modifiers/utilities via peer directories under `Recipes/`.
 - Model persistence through SQLiteData with CloudKit replication; isolate storage coordination in dedicated data services to keep views declarative.
 
 ### Testing Strategy
 - No automated tests are required today; rely on SwiftUI previews for rapid layout feedback.
-- Validate builds headlessly with `xcodebuild -scheme Recipes -destination 'platform=iOS Simulator,name=iPhone 16' build | xcbeautify` before merging substantive changes.
+- Validate builds headlessly with `xcodebuild -scheme Recipes -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build | xcbeautify` before merging substantive changes.
 
 ### Git Workflow
 - Work on short-lived feature branches; target `main` for integration.
