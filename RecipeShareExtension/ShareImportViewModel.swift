@@ -24,7 +24,7 @@ final class ShareImportViewModel {
   }
 
   private(set) var phase: Phase = .idle
-  var draft: ShareImportViewModel.Draft? = nil
+  var draft: RecipeImportManager.ExtractedRecipeDetail? = nil
   var isSaving = false
   var saveError: ShareError?
 
@@ -57,8 +57,8 @@ final class ShareImportViewModel {
     guard let draft else { return }
     let extractedRecipeDetail = RecipeImportManager.ExtractedRecipeDetail(
       recipe: draft.recipe,
-      instructions: draft.instructions,
-      ingredients: draft.ingredients
+      ingredients: draft.ingredients,
+      instructions: draft.instructions
     )
     let timestamp = now
 
@@ -167,28 +167,28 @@ final class ShareImportViewModel {
   }
 }
 
-extension ShareImportViewModel {
-  @Observable
-  final class Draft {
-    var recipe: Recipe.Draft
-    var ingredients: [String]
-    var instructions: [String]
-
-    var ingredientsText: String {
-      ingredients.joined(separator: "\n")
-    }
-
-    var instructionsText: String {
-      instructions.joined(separator: "\n")
-    }
-
-    init(recipe: Recipe.Draft, ingredients: [String], instructions: [String]) {
-      self.recipe = recipe
-      self.ingredients = ingredients
-      self.instructions = instructions
-    }
-  }
-}
+//extension ShareImportViewModel {
+//  @Observable
+//  final class Draft {
+//    var recipe: Recipe
+//    var ingredients: [RecipeIngredient]
+//    var instructions: [RecipeInstruction]
+//
+//    var ingredientsText: String {
+//      ingredients.map { $0.text }.joined(separator: "\n")
+//    }
+//
+//    var instructionsText: String {
+//      instructions.map { $0.text }.joined(separator: "\n")
+//    }
+//
+//    init(recipe: Recipe, ingredients: [RecipeIngredient], instructions: [RecipeInstruction]) {
+//      self.recipe = recipe
+//      self.ingredients = ingredients
+//      self.instructions = instructions
+//    }
+//  }
+//}
 
 private struct HTMLPayload: Equatable {
   let html: String

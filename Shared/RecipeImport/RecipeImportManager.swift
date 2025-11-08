@@ -11,9 +11,9 @@ import SQLiteData
 
 nonisolated struct RecipeImportManager {
   nonisolated struct ExtractedRecipeDetail {
-    var recipe: Recipe.Draft
-    var instructions: [String]
-    var ingredients: [String]
+    var recipe: Recipe
+    var ingredients: [RecipeIngredient]
+    var instructions: [RecipeInstruction]
   }
 
   @discardableResult
@@ -40,44 +40,17 @@ nonisolated struct RecipeImportManager {
   }
 
   func persist(
-    _ imported: ExtractedRecipeDetail,
+    _ details: ExtractedRecipeDetail,
     in database: any DatabaseWriter
   ) throws {
     try database.write { db in
-      let recipe = Recipe(
-        id: UUID(),
-        title: imported.recipe.title,
-        summary: imported.recipe.summary,
-        prepTimeMinutes: imported.recipe.prepTimeMinutes,
-        cookTimeMinutes: imported.recipe.cookTimeMinutes,
-        servings: imported.recipe.servings
-      )
+      try Recipe.insert { details.recipe }.execute(db)
 
-      try Recipe.insert { recipe }.execute(db)
-
-      let ingredients = imported.ingredients.enumerated().map { index, text in
-        RecipeIngredient(
-          id: UUID(),
-          recipeId: recipe.id,
-          position: index,
-          text: text
-        )
-      }
-
-      let instructions = imported.instructions.enumerated().map { index, text in
-        RecipeInstruction(
-          id: UUID(),
-          recipeId: recipe.id,
-          position: index,
-          text: text
-        )
-      }
-
-      for ingredient in ingredients {
+      for ingredient in details.ingredients {
         try RecipeIngredient.insert { ingredient }.execute(db)
       }
 
-      for instruction in instructions {
+      for instruction in details.instructions {
         try RecipeInstruction.insert { instruction }.execute(db)
       }
     }
@@ -93,22 +66,24 @@ nonisolated struct RecipeImportManager {
     let title = name.trimmingCharacters(in: .whitespacesAndNewlines)
     let summary = (json["description"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
 
-    let ingredients = parseIngredients(json["recipeIngredient"])
-    let instructions = parseInstructions(json["recipeInstructions"])
+    let recipeId = UUID()
+    let ingredients = parseIngredients(json["recipeIngredient"], recipeId: recipeId)
+    let instructions = parseInstructions(json["recipeInstructions"], recipeId: recipeId)
     let prepMinutes = parseDuration(json["prepTime"])
     let cookMinutes = parseDuration(json["cookTime"])
     let servings = parseServings(json["recipeYield"])
 
     return ExtractedRecipeDetail(
-      recipe: .init(
+      recipe: Recipe(
+        id: recipeId,
         title: title,
         summary: summary,
         prepTimeMinutes: prepMinutes,
         cookTimeMinutes: cookMinutes,
         servings: servings
       ),
-      instructions: instructions,
-      ingredients: ingredients
+      ingredients: ingredients,
+      instructions: instructions
     )
   }
 
@@ -214,20 +189,32 @@ nonisolated struct RecipeImportManager {
     }
   }
 
-  private func parseIngredients(_ value: Any?) -> [String] {
+  private func parseIngredients(_ value: Any?, recipeId: UUID) -> [RecipeIngredient] {
     if let string = value as? String {
-      return [string.trimmingCharacters(in: .whitespacesAndNewlines)]
+      return [
+        RecipeIngredient(
+          id: UUID(), recipeId: recipeId, position: 0,
+          text: string.trimmingCharacters(in: .whitespacesAndNewlines))
+      ]
     }
     if let array = value as? [String] {
-      return array.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+      return array.enumerated().map { index, text in
+        RecipeIngredient(
+          id: UUID(), recipeId: recipeId, position: index,
+          text: text.trimmingCharacters(in: .whitespacesAndNewlines))
+      }
     }
     if let array = value as? [Any] {
       return array.compactMap { element in
         if let string = element as? String {
-          return string.trimmingCharacters(in: .whitespacesAndNewlines)
+          return RecipeIngredient(
+            id: UUID(), recipeId: recipeId, position: 0,
+            text: string.trimmingCharacters(in: .whitespacesAndNewlines))
         }
         if let dictionary = element as? [String: Any], let text = dictionary["text"] as? String {
-          return text.trimmingCharacters(in: .whitespacesAndNewlines)
+          return RecipeIngredient(
+            id: UUID(), recipeId: recipeId, position: 0,
+            text: text.trimmingCharacters(in: .whitespacesAndNewlines))
         }
         return nil
       }
@@ -235,27 +222,41 @@ nonisolated struct RecipeImportManager {
     return []
   }
 
-  private func parseInstructions(_ value: Any?) -> [String] {
+  private func parseInstructions(_ value: Any?, recipeId: UUID) -> [RecipeInstruction] {
     if let string = value as? String {
-      return [string.trimmingCharacters(in: .whitespacesAndNewlines)]
+      return [
+        RecipeInstruction(
+          id: UUID(), recipeId: recipeId, position: 0,
+          text: string.trimmingCharacters(in: .whitespacesAndNewlines))
+      ]
     }
     if let array = value as? [String] {
-      return array.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+      return array.enumerated().map { index, text in
+        RecipeInstruction(
+          id: UUID(), recipeId: recipeId, position: index,
+          text: text.trimmingCharacters(in: .whitespacesAndNewlines))
+      }
     }
     if let array = value as? [Any] {
-      return array.flatMap { element -> [String] in
+      return array.flatMap { element -> [RecipeInstruction] in
         if let string = element as? String {
-          return [string.trimmingCharacters(in: .whitespacesAndNewlines)]
+          return [
+            RecipeInstruction(
+              id: UUID(), recipeId: recipeId, position: 0,
+              text: string.trimmingCharacters(in: .whitespacesAndNewlines))
+          ]
         }
         if let dictionary = element as? [String: Any] {
           if let text = dictionary["text"] as? String {
-            let retval = [
-              text.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: "\r\n").joined()
+            let cleanedText = text.trimmingCharacters(in: .whitespacesAndNewlines).split(
+              separator: "\r\n"
+            ).joined()
+            return [
+              RecipeInstruction(id: UUID(), recipeId: recipeId, position: 0, text: cleanedText)
             ]
-            return retval
           }
           if let inner = dictionary["itemListElement"] {
-            return parseInstructions(inner)
+            return parseInstructions(inner, recipeId: recipeId)
           }
         }
         return []
@@ -263,10 +264,14 @@ nonisolated struct RecipeImportManager {
     }
     if let dictionary = value as? [String: Any] {
       if let text = dictionary["text"] as? String {
-        return [text.trimmingCharacters(in: .whitespacesAndNewlines)]
+        return [
+          RecipeInstruction(
+            id: UUID(), recipeId: recipeId, position: 0,
+            text: text.trimmingCharacters(in: .whitespacesAndNewlines))
+        ]
       }
       if let inner = dictionary["itemListElement"] {
-        return parseInstructions(inner)
+        return parseInstructions(inner, recipeId: recipeId)
       }
     }
     return []
@@ -411,10 +416,18 @@ extension RecipeImportManager.ExtractedRecipeDetail {
     if let summary = copy.recipe.summary {
       copy.recipe.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    copy.ingredients = copy.ingredients.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-    copy.instructions = copy.instructions.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-    copy.ingredients.removeAll(where: \.isEmpty)
-    copy.instructions.removeAll(where: \.isEmpty)
+    copy.ingredients = copy.ingredients.map { draft in
+      var newDraft = draft
+      newDraft.text = newDraft.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      return newDraft
+    }
+    copy.instructions = copy.instructions.map { draft in
+      var newDraft = draft
+      newDraft.text = newDraft.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      return newDraft
+    }
+    copy.ingredients.removeAll { $0.text.isEmpty }
+    copy.instructions.removeAll { $0.text.isEmpty }
     return copy
   }
 }
