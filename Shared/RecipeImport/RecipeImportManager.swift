@@ -1,37 +1,43 @@
+//
+//  RecipeImportManager.swift
+//  Recipes
+//
+//  Created by Eliott on 2025-11-08.
+//
+
 import Dependencies
 import Foundation
 import SQLiteData
 
-enum RecipeImportManager {
-  nonisolated public struct ExtractedRecipeDetail {
+nonisolated struct RecipeImportManager {
+  nonisolated struct ExtractedRecipeDetail {
     var recipe: Recipe.Draft
     var instructions: [String]
     var ingredients: [String]
   }
 
   @discardableResult
-
-  public nonisolated static func importRecipe(from url: URL) async throws -> ExtractedRecipeDetail {
+  public func importRecipe(from url: URL) async throws -> ExtractedRecipeDetail {
     @Dependency(\.urlSession) var session
 
     guard url.scheme?.lowercased().hasPrefix("http") == true else {
       throw ImportError.unsupportedScheme(url.scheme)
     }
-    let html = try await Self.fetchHTML(from: url, session: session)
+    let html = try await fetchHTML(from: url, session: session)
     return try await importRecipe(fromHTML: html)
   }
 
   @discardableResult
-  public nonisolated static func importRecipe(fromHTML html: String) async throws
+  public func importRecipe(fromHTML html: String) async throws
     -> ExtractedRecipeDetail
   {
     @Dependency(\.defaultDatabase) var database
-    let recipe = try await Self.extractRecipe(from: html)
-    try Self.persist(recipe, in: database)
+    let recipe = try await extractRecipe(from: html)
+    try persist(recipe, in: database)
     return recipe
   }
 
-  public static nonisolated func persist(
+  public func persist(
     _ imported: ExtractedRecipeDetail,
     in database: any DatabaseWriter
   ) throws {
@@ -75,7 +81,7 @@ enum RecipeImportManager {
     }
   }
 
-  public static nonisolated func extractRecipe(from html: String) async throws
+  public func extractRecipe(from html: String) async throws
     -> ExtractedRecipeDetail
   {
     let json = try extractRecipeJSON(from: html)
@@ -85,11 +91,11 @@ enum RecipeImportManager {
     let title = name.trimmingCharacters(in: .whitespacesAndNewlines)
     let summary = (json["description"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
 
-    let ingredients = Self.parseIngredients(json["recipeIngredient"])
-    let instructions = Self.parseInstructions(json["recipeInstructions"])
-    let prepMinutes = Self.parseDuration(json["prepTime"])
-    let cookMinutes = Self.parseDuration(json["cookTime"])
-    let servings = Self.parseServings(json["recipeYield"])
+    let ingredients = parseIngredients(json["recipeIngredient"])
+    let instructions = parseInstructions(json["recipeInstructions"])
+    let prepMinutes = parseDuration(json["prepTime"])
+    let cookMinutes = parseDuration(json["cookTime"])
+    let servings = parseServings(json["recipeYield"])
 
     return ExtractedRecipeDetail(
       recipe: .init(
@@ -104,7 +110,7 @@ enum RecipeImportManager {
     )
   }
 
-  private static nonisolated func fetchHTML(from url: URL, session: URLSession) async throws
+  private func fetchHTML(from url: URL, session: URLSession) async throws
     -> String
   {
     var request = URLRequest(url: url)
@@ -132,7 +138,7 @@ enum RecipeImportManager {
     return html
   }
 
-  private static nonisolated func extractRecipeJSON(from html: String) throws -> [String: Any] {
+  private func extractRecipeJSON(from html: String) throws -> [String: Any] {
     let pattern = #"<script[^>]*type=["']application/ld\+json["'][^>]*>(.*?)</script>"#
     let regex = try NSRegularExpression(
       pattern: pattern, options: [.dotMatchesLineSeparators, .caseInsensitive])
@@ -159,7 +165,7 @@ enum RecipeImportManager {
 
       do {
         let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-        let candidates = Self.collectRecipeCandidates(from: jsonObject)
+        let candidates = collectRecipeCandidates(from: jsonObject)
         if let first = candidates.first {
           return first
         }
@@ -170,7 +176,7 @@ enum RecipeImportManager {
     throw ImportError.missingRecipeJSON
   }
 
-  private nonisolated static func collectRecipeCandidates(from object: Any) -> [[String: Any]] {
+  private func collectRecipeCandidates(from object: Any) -> [[String: Any]] {
     var results: [[String: Any]] = []
 
     if let dictionary = object as? [String: Any] {
@@ -190,7 +196,7 @@ enum RecipeImportManager {
     return results
   }
 
-  private nonisolated static func typeContainsRecipe(_ value: Any?) -> Bool {
+  private func typeContainsRecipe(_ value: Any?) -> Bool {
     switch value {
     case let string as String:
       let normalized = string.lowercased()
@@ -206,7 +212,7 @@ enum RecipeImportManager {
     }
   }
 
-  private static nonisolated func parseIngredients(_ value: Any?) -> [String] {
+  private func parseIngredients(_ value: Any?) -> [String] {
     if let string = value as? String {
       return [string.trimmingCharacters(in: .whitespacesAndNewlines)]
     }
@@ -227,7 +233,7 @@ enum RecipeImportManager {
     return []
   }
 
-  private static nonisolated func parseInstructions(_ value: Any?) -> [String] {
+  private func parseInstructions(_ value: Any?) -> [String] {
     if let string = value as? String {
       return [string.trimmingCharacters(in: .whitespacesAndNewlines)]
     }
@@ -264,12 +270,12 @@ enum RecipeImportManager {
     return []
   }
 
-  private static nonisolated func parseDuration(_ value: Any?) -> Int? {
+  private func parseDuration(_ value: Any?) -> Int? {
     guard let string = value as? String else { return nil }
     return DurationParser.minutes(fromISO8601Duration: string)
   }
 
-  private static nonisolated func parseServings(_ value: Any?) -> Int? {
+  private func parseServings(_ value: Any?) -> Int? {
     if let int = value as? Int {
       return int
     }
@@ -284,7 +290,7 @@ enum RecipeImportManager {
   }
 
   // MARK: - Errors
-  public enum ImportError: Error, LocalizedError, Equatable {
+  enum ImportError: Error, LocalizedError, Equatable {
     case unsupportedScheme(String?)
     case invalidResponse
     case httpError(statusCode: Int)
@@ -294,7 +300,7 @@ enum RecipeImportManager {
     case missingRequiredField(String)
     case unimplemented
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
       switch self {
       case .unsupportedScheme(let scheme):
         return "Unsupported URL scheme \(scheme ?? "nil")."
@@ -318,13 +324,13 @@ enum RecipeImportManager {
 
   // MARK: - Utilities
   private enum DurationParser {
-    private nonisolated static let calendar: Calendar = {
+    private static let calendar: Calendar = {
       var calendar = Calendar(identifier: .gregorian)
       calendar.timeZone = TimeZone(secondsFromGMT: 0)!
       return calendar
     }()
 
-    static nonisolated func minutes(fromISO8601Duration duration: String) -> Int? {
+    static func minutes(fromISO8601Duration duration: String) -> Int? {
       let trimmed = duration.trimmingCharacters(in: .whitespacesAndNewlines)
 
       let isoFormatter: ISO8601DateFormatter = {

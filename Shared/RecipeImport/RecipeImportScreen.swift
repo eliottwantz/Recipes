@@ -18,6 +18,8 @@ struct RecipeImportScreen: View {
   @Environment(\.dismiss) private var dismiss
   @State private var recipeUrl: String = ""
   @State private var phase: Phase = .initial
+  
+  private var importManager = RecipeImportManager()
 
   private var isImporting: Bool {
     phase == .importing
@@ -88,7 +90,7 @@ struct RecipeImportScreen: View {
 
     Task {
       do {
-        try await RecipeImportManager.importRecipe(from: url)
+        try await importManager.importRecipe(from: url)
         phase = .success
       } catch {
         phase = .failure(error.localizedDescription)

@@ -32,6 +32,7 @@ final class ShareImportViewModel {
   @ObservationIgnored @Dependency(\.date.now) private var now
 
   private var hasAttemptedInitialLoad = false
+  private var importManager = RecipeImportManager()
 
   func loadInitialShare(from context: NSExtensionContext) {
     guard hasAttemptedInitialLoad == false else { return }
@@ -78,7 +79,7 @@ final class ShareImportViewModel {
 
     do {
       let payload = try await resolveHTMLPayload(from: context)
-      let imported = try await RecipeImportManager.extractRecipe(from: payload.html)
+      let imported = try await importManager.extractRecipe(from: payload.html)
       draft = .init(
         recipe: imported.recipe,
         ingredients: imported.ingredients,
@@ -148,7 +149,7 @@ final class ShareImportViewModel {
       throw ShareImportFailure.missingTitle
     }
 
-    try RecipeImportManager.persist(extractedRecipeDetail, in: database)
+    try importManager.persist(extractedRecipeDetail, in: database)
   }
 
   private func shareError(for error: Error) -> ShareError {
