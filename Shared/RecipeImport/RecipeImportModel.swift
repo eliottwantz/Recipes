@@ -13,6 +13,10 @@ final class RecipeImportModel {
   var isImporting = false
   var importError: String?
 
+  var submitDisabled: Bool {
+    isImporting || recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+  }
+
   func handleImport() {
     let trimmed = recipeUrl.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return }

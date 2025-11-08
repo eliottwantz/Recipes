@@ -12,12 +12,10 @@ struct ContentView: View {
 
   var body: some View {
     @Bindable var appRouter = appRouter
-    
+
     TabView(selection: $appRouter.selectedTab) {
       Tab(value: AppRouter.Tab.recipeList) {
-        NavigationStack {
-          RecipeListView()
-        }
+        RecipeListScreen()
       } label: {
         Label("Recipes", systemImage: "book.pages")
       }
