@@ -17,7 +17,8 @@ nonisolated struct RecipeImportManager {
   }
 
   @discardableResult
-  public func importRecipe(from url: URL) async throws -> ExtractedRecipeDetail {
+  @concurrent
+  func importRecipe(from url: URL) async throws -> ExtractedRecipeDetail {
     @Dependency(\.urlSession) var session
 
     guard url.scheme?.lowercased().hasPrefix("http") == true else {
@@ -28,7 +29,8 @@ nonisolated struct RecipeImportManager {
   }
 
   @discardableResult
-  public func importRecipe(fromHTML html: String) async throws
+  @concurrent
+  func importRecipe(fromHTML html: String) async throws
     -> ExtractedRecipeDetail
   {
     @Dependency(\.defaultDatabase) var database
@@ -37,7 +39,7 @@ nonisolated struct RecipeImportManager {
     return recipe
   }
 
-  public func persist(
+  func persist(
     _ imported: ExtractedRecipeDetail,
     in database: any DatabaseWriter
   ) throws {
@@ -81,7 +83,7 @@ nonisolated struct RecipeImportManager {
     }
   }
 
-  public func extractRecipe(from html: String) async throws
+  func extractRecipe(from html: String) async throws
     -> ExtractedRecipeDetail
   {
     let json = try extractRecipeJSON(from: html)
