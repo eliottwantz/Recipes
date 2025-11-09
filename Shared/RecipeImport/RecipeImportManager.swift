@@ -10,7 +10,7 @@ import Foundation
 import SQLiteData
 
 nonisolated struct RecipeImportManager {
-  nonisolated struct ExtractedRecipeDetail {
+  nonisolated struct ExtractedRecipeDetail: Equatable {
     var recipe: Recipe
     var ingredients: [RecipeIngredient]
     var instructions: [RecipeInstruction]
@@ -33,10 +33,7 @@ nonisolated struct RecipeImportManager {
   func importRecipe(fromHTML html: String) async throws
     -> ExtractedRecipeDetail
   {
-    @Dependency(\.defaultDatabase) var database
-    let recipe = try await extractRecipe(from: html)
-    try persist(recipe, in: database)
-    return recipe
+    return try await extractRecipe(from: html)
   }
 
   func persist(

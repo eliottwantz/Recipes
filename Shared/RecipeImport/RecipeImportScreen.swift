@@ -11,6 +11,7 @@ struct RecipeImportScreen: View {
   enum Phase: Equatable {
     case initial
     case importing
+    case editing(RecipeImportManager.ExtractedRecipeDetail)
     case success
     case failure(String)
   }
@@ -18,7 +19,7 @@ struct RecipeImportScreen: View {
   @Environment(\.dismiss) private var dismiss
   @State private var recipeUrl: String = ""
   @State private var phase: Phase = .initial
-  
+
   private var importManager = RecipeImportManager()
 
   private var isImporting: Bool {
@@ -32,13 +33,16 @@ struct RecipeImportScreen: View {
   var body: some View {
     NavigationStack {
       Group {
-        if case .failure(let errorMessage) = phase {
+        switch phase {
+        case .failure(let errorMessage):
           ContentUnavailableView(
             "Import Failed",
             systemImage: "exclamationmark.triangle",
             description: Text(errorMessage)
           )
-        } else {
+        case .editing(let recipeDetails):
+          RecipeEditView(recipeDetails: binding(for: recipeDetails))
+        default:
           ImportForm(
             recipeUrl: $recipeUrl,
             onSumbit: handleImport,
@@ -52,7 +56,6 @@ struct RecipeImportScreen: View {
             recipeUrl = ""
             dismiss()
           }
-          .disabled(isImporting)
         }
 
         ToolbarItem(placement: .primaryAction) {
@@ -61,11 +64,14 @@ struct RecipeImportScreen: View {
               dismiss()
             }
             .buttonStyle(.glassProminent)
+          } else if case .editing = phase {
+            EmptyView()
           } else {
             Button {
               handleImport()
             } label: {
               Label("Import", systemImage: "checkmark")
+                .labelStyle(.titleOnly)
             }
             .buttonStyle(.glassProminent)
             .disabled(submitDisabled)
@@ -90,12 +96,28 @@ struct RecipeImportScreen: View {
 
     Task {
       do {
-        try await importManager.importRecipe(from: url)
-        phase = .success
+        let extractedRecipe = try await importManager.importRecipe(from: url)
+        phase = .editing(extractedRecipe)
       } catch {
         phase = .failure(error.localizedDescription)
       }
     }
+  }
+
+  private func binding(for recipeDetails: RecipeImportManager.ExtractedRecipeDetail) -> Binding<
+    RecipeImportManager.ExtractedRecipeDetail
+  > {
+    Binding(
+      get: {
+        if case .editing(let details) = phase {
+          return details
+        }
+        return recipeDetails
+      },
+      set: { newDetails in
+        phase = .editing(newDetails)
+      }
+    )
   }
 }
 
