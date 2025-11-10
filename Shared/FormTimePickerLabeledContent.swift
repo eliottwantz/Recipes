@@ -94,7 +94,7 @@ private struct TimePicker: View {
   }
 }
 
-private struct TimeView: View {
+struct TimeView: View {
   let totalMinutes: Int
 
   var formattedTime: String {

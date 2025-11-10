@@ -23,7 +23,7 @@ struct RecipeListScreen: View {
         .navigationDestination(
           for: Recipe.self,
           destination: { recipe in
-            RecipeDetailView(recipe: recipe)
+            RecipeDetailScreen(recipe: recipe)
           }
         )
         .toolbar {
