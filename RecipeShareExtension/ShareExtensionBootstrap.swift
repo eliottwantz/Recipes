@@ -2,7 +2,7 @@
 //  ShareExtensionBootstrap.swift
 //  RecipeShareExtension
 //
-//  Created by Codex on 2025-10-25.
+//  Created by Eliott on 2025-10-25.
 //
 
 import OSLog

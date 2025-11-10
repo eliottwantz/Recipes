@@ -36,15 +36,9 @@ private struct RecipeRow: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text(recipe.title)
+      Text(recipe.name)
         .font(.headline)
         .foregroundStyle(.primary)
-      if let summary = recipe.summary, !summary.isEmpty {
-        Text(summary)
-          .font(.subheadline)
-          .foregroundStyle(.secondary)
-          .lineLimit(3)
-      }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.vertical, 8)

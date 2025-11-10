@@ -2,26 +2,21 @@
 //  ShareViewController.swift
 //  RecipeShareExtension
 //
-//  Created by Codex on 2025-10-25.
+//  Created by Eliott on 2025-10-25.
 //
 
 import SwiftUI
 import UIKit
 
 final class ShareViewController: UIViewController {
-  private lazy var viewModel: ShareImportViewModel = {
-    ShareExtensionBootstrap.configure()
-    return ShareImportViewModel()
-  }()
-  private var hostingController: UIHostingController<ShareReviewView>?
-
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    view.backgroundColor = .systemBackground
+    ShareExtensionBootstrap.configure()
 
+    view.backgroundColor = .systemBackground
     guard let context = extensionContext else { return }
-    let rootView = ShareReviewView(viewModel: viewModel, context: context)
+    let rootView = ShareExtensionScreen(context: context)
 
     let hostingController = UIHostingController(rootView: rootView)
     hostingController.view.translatesAutoresizingMaskIntoConstraints = false
@@ -35,14 +30,8 @@ final class ShareViewController: UIViewController {
       hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
     ])
     hostingController.didMove(toParent: self)
-    self.hostingController = hostingController
-  }
 
-  override func viewDidAppear(_ animated: Bool) {
-    super.viewDidAppear(animated)
-    if let context = extensionContext {
-      viewModel.loadInitialShare(from: context)
-    }
+    self.isModalInPresentation = true
   }
 
   override func viewWillTransition(

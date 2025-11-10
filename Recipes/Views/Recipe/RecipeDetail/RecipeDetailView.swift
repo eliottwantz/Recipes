@@ -46,13 +46,13 @@ struct RecipeDetailView: View {
       }
     }
     .darkPrimaryLightSecondaryBackgroundColor()
-    .navigationTitle(viewModel.recipe.title)
+    .navigationTitle(viewModel.recipe.name)
     .navigationBarTitleDisplayMode(.inline)
   }
 
   private var header: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text(viewModel.recipe.title)
+      Text(viewModel.recipe.name)
         .font(.largeTitle.weight(.bold))
         .foregroundStyle(.primary)
         .frame(maxWidth: .infinity, alignment: .leading)

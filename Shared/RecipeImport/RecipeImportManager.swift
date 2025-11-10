@@ -57,11 +57,10 @@ nonisolated struct RecipeImportManager {
     -> ExtractedRecipeDetail
   {
     let json = try extractRecipeJSON(from: html)
-    guard let name = json["name"] as? String else {
+    guard var name = json["name"] as? String else {
       throw ImportError.missingRequiredField("name")
     }
-    let title = name.trimmingCharacters(in: .whitespacesAndNewlines)
-    let summary = (json["description"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+    name = name.trimmingCharacters(in: .whitespacesAndNewlines)
 
     let recipeId = UUID()
     let ingredients = parseIngredients(json["recipeIngredient"], recipeId: recipeId)
@@ -73,11 +72,10 @@ nonisolated struct RecipeImportManager {
     return ExtractedRecipeDetail(
       recipe: Recipe(
         id: recipeId,
-        title: title,
-        summary: summary,
-        prepTimeMinutes: prepMinutes,
-        cookTimeMinutes: cookMinutes,
-        servings: servings
+        name: name,
+        prepTimeMinutes: prepMinutes ?? 0,
+        cookTimeMinutes: cookMinutes ?? 0,
+        servings: servings ?? 0
       ),
       ingredients: ingredients,
       instructions: instructions
@@ -409,10 +407,7 @@ nonisolated struct RecipeImportManager {
 extension RecipeImportManager.ExtractedRecipeDetail {
   func normalized() -> Self {
     var copy = self
-    copy.recipe.title = copy.recipe.title.trimmingCharacters(in: .whitespacesAndNewlines)
-    if let summary = copy.recipe.summary {
-      copy.recipe.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
+    copy.recipe.name = copy.recipe.name.trimmingCharacters(in: .whitespacesAndNewlines)
     copy.ingredients = copy.ingredients.map { draft in
       var newDraft = draft
       newDraft.text = newDraft.text.trimmingCharacters(in: .whitespacesAndNewlines)

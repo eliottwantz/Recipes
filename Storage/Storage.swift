@@ -92,11 +92,10 @@ extension DependencyValues {
         """
         CREATE TABLE "recipes" (
             "id" TEXT PRIMARY KEY NOT NULL ON CONFLICT REPLACE DEFAULT (uuid()),
-            "title" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT '',
-            "summary" TEXT,
-            "prepTimeMinutes" INTEGER,
-            "cookTimeMinutes" INTEGER,
-            "servings" INTEGER,
+            "name" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT '',
+            "prepTimeMinutes" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0,
+            "cookTimeMinutes" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0,
+            "servings" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0,
             "createdAt" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
             "updatedAt" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
         ) STRICT
@@ -136,8 +135,7 @@ extension DependencyValues {
           let ids = (0...1).map { _ in uuid() }
           Recipe(
             id: ids[0],
-            title: "Heirloom Tomato Bruschetta",
-            summary: "Toasted baguette topped with juicy tomatoes, basil, and garlic.",
+            name: "Heirloom Tomato Bruschetta",
             prepTimeMinutes: 15,
             cookTimeMinutes: 5,
             servings: 6,
@@ -168,8 +166,7 @@ extension DependencyValues {
 
           Recipe(
             id: ids[1],
-            title: "Creamy Mushroom Risotto",
-            summary: "Classic risotto with sautéed cremini mushrooms and parmesan.",
+            name: "Creamy Mushroom Risotto",
             prepTimeMinutes: 10,
             cookTimeMinutes: 20,
             servings: 4,

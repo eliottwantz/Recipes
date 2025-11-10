@@ -4,11 +4,10 @@ import SQLiteData
 @Table("recipes")
 public nonisolated struct Recipe: Identifiable, Hashable, Sendable {
   public let id: UUID
-  var title = ""
-  var summary: String?
-  var prepTimeMinutes: Int?
-  var cookTimeMinutes: Int?
-  var servings: Int?
+  var name = ""
+  var prepTimeMinutes: Int
+  var cookTimeMinutes: Int
+  var servings: Int
   var createdAt: Date = .now
   var updatedAt: Date = .now
 }
