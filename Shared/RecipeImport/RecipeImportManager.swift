@@ -53,9 +53,7 @@ nonisolated struct RecipeImportManager {
     }
   }
 
-  func extractRecipe(from html: String) async throws
-    -> ExtractedRecipeDetail
-  {
+  func extractRecipe(from html: String) async throws -> ExtractedRecipeDetail {
     let json = try extractRecipeJSON(from: html)
     guard var name = json["name"] as? String else {
       throw ImportError.missingRequiredField("name")
@@ -82,9 +80,7 @@ nonisolated struct RecipeImportManager {
     )
   }
 
-  private func fetchHTML(from url: URL, session: URLSession) async throws
-    -> String
-  {
+  private func fetchHTML(from url: URL, session: URLSession) async throws -> String {
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
     let (data, response) = try await session.data(for: request)
@@ -97,13 +93,18 @@ nonisolated struct RecipeImportManager {
       throw ImportError.httpError(statusCode: httpResponse.statusCode)
     }
 
-    if let contentType = httpResponse.value(forHTTPHeaderField: "Content-Type")?.lowercased(),
+    if let contentType =
+      httpResponse
+      .value(forHTTPHeaderField: "Content-Type")?
+      .lowercased(),
       contentType.contains("html") == false
     {
       throw ImportError.unsupportedContentType(contentType)
     }
 
-    guard let html = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1)
+    guard
+      let html = String(data: data, encoding: .utf8)
+        ?? String(data: data, encoding: .isoLatin1)
     else {
       throw ImportError.unreadableHTML
     }

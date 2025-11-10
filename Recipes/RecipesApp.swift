@@ -9,8 +9,8 @@ import SwiftUI
 
 @main
 struct RecipesApp: App {
- @State private var appRouter = AppRouter()
-  
+  @State private var appRouter = AppRouter()
+
   init() {
     Storage.configure()
   }

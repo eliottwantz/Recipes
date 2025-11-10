@@ -43,23 +43,23 @@ extension View {
 extension Color {
   /// Returns `.black` or `.white` to maximize contrast against the receiving color.
   func contrastingForegroundColor() -> Color {
-//    #if canImport(UIKit)
-      let uiColor = UIColor(self)
-      var red: CGFloat = 0
-      var green: CGFloat = 0
-      var blue: CGFloat = 0
-      var alpha: CGFloat = 0
+    //    #if canImport(UIKit)
+    let uiColor = UIColor(self)
+    var red: CGFloat = 0
+    var green: CGFloat = 0
+    var blue: CGFloat = 0
+    var alpha: CGFloat = 0
 
-      if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
-        let luminance = 0.299 * red + 0.587 * green + 0.114 * blue
-        return luminance > 0.55 ? .black : .white
-      }
+    if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+      let luminance = 0.299 * red + 0.587 * green + 0.114 * blue
+      return luminance > 0.55 ? .black : .white
+    }
 
-      var white: CGFloat = 0
-      if uiColor.getWhite(&white, alpha: &alpha) {
-        return white > 0.6 ? .black : .white
-      }
-//    #endif
+    var white: CGFloat = 0
+    if uiColor.getWhite(&white, alpha: &alpha) {
+      return white > 0.6 ? .black : .white
+    }
+    //    #endif
 
     return .white
   }

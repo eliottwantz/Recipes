@@ -11,7 +11,7 @@ struct FormTimePickerLabeledContent: View {
   let labelText: String
   @Binding var totalMinutes: Int
   @State private var isPresented = false
-  
+
   init(_ labelText: String, totalMinutes: Binding<Int>) {
     self.labelText = labelText
     self._totalMinutes = totalMinutes
