@@ -12,8 +12,8 @@
 	"argv": [
 		"/opt/homebrew/bin/xcode-build-server"
 	],
-	"workspace": "/Users/eliott/dev/XcodeProjects/Recipes/Recipes.xcodeproj/project.xcworkspace",
-	"build_root": "/Users/eliott/Library/Developer/Xcode/DerivedData/Recipes-genqksrodnojytaalslrguesysdu",
+	"workspace": "/Users/eliott/Dev/Recipes/Recipes.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/eliott/Library/Developer/Xcode/DerivedData/Recipes-fikfximsnifceaasjwdjguxxbjxn",
 	"scheme": "Recipes",
 	"kind": "xcode"
 }
