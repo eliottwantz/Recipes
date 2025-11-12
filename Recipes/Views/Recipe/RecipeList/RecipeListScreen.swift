@@ -24,7 +24,7 @@ struct RecipeListScreen: View {
           .navigationDestination(
             for: Recipe.self,
             destination: { recipe in
-              RecipeDetailScreen(recipe: recipe)
+              RecipeDetailScreen(recipeId: recipe.id)
             }
           )
           .safeAreaBar(edge: .bottom) {

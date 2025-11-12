@@ -73,14 +73,6 @@ extension DependencyValues {
       configuration: configuration
     )
 
-    #if DEBUG
-      if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-        print("DB PATH:\n\(database.path)")
-      } else {
-        logger.info("DB PATH:\n\(database.path)")
-      }
-    #endif
-
     var migrator = DatabaseMigrator()
 
     #if DEBUG
@@ -226,6 +218,14 @@ extension DependencyValues {
         RecipeIngredient.self,
         RecipeInstruction.self
       )
+    #endif
+
+    #if DEBUG
+      if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+        print("DB PATH:\n\(database.path)")
+      } else {
+        logger.info("DB PATH:\n\(database.path)")
+      }
     #endif
   }
 }

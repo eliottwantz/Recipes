@@ -142,10 +142,6 @@ struct RecipeDetailView: View {
       }
     }
   }
-
-  //  private func minutesString(_ minutes: Int?) -> String {
-  //    minutes == 1 ? "1 min" : "\(minutes, default: "N/A") mins"
-  //  }
 }
 
 private struct CardModifier: ViewModifier {

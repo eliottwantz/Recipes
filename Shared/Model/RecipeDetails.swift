@@ -19,14 +19,22 @@ extension RecipeDetails {
     let recipeId: Recipe.ID
 
     struct Value {
+      let recipe: Recipe
       let ingredients: [RecipeIngredient]
       let instructions: [RecipeInstruction]
 
-      static var placeholder: Value { .init(ingredients: [], instructions: []) }
+      static var placeholder: Value {
+        .init(recipe: .init(id: UUID()), ingredients: [], instructions: [])
+      }
     }
 
     func fetch(_ db: Database) throws -> Value {
       try Value(
+        recipe:
+          Recipe
+          .where { $0.id.eq(recipeId) }
+          .limit(1)
+          .fetchOne(db)!,
         ingredients:
           RecipeIngredient
           .where { $0.recipeId == recipeId }

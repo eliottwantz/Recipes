@@ -10,65 +10,54 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeDetailScreen: View {
-  let recipe: Recipe
-
-  enum Phase: Equatable {
-    case loading
-    case loaded(RecipeDetails)
-    case failed(String)
-  }
-  @State private var phase: Phase = .loading
-
+  @Fetch var recipeDetails: RecipeDetails.FetchKeyRequest.Value
   @Dependency(\.defaultDatabase) private var defaultDatabase
+  @State private var showEditSheet = false
+
+  init(recipeId: Recipe.ID) {
+    self._recipeDetails = Fetch(
+      wrappedValue: RecipeDetails.FetchKeyRequest.Value.placeholder,
+      RecipeDetails.FetchKeyRequest(recipeId: recipeId)
+    )
+  }
 
   var body: some View {
     VStack {
-      switch phase {
-      case .loading:
-        VStack {
-          ProgressView("Loading recipe details...")
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-          loadDetails()
-        }
-      case .loaded(let recipeDetails):
-        RecipeDetailView(recipeDetails: recipeDetails)
-      case .failed(let string):
-        ContentUnavailableView(
-          "Failed to Load Recipe",
-          systemImage: "exclamationmark.triangle",
-          description: Text(string)
+      RecipeDetailView(
+        recipeDetails: .init(
+          recipe: recipeDetails.recipe,
+          ingredients: recipeDetails
+            .ingredients,
+          instructions: recipeDetails.instructions
         )
-        .toolbar {
-          ToolbarItem(placement: .primaryAction) {
-            Button("Retry", action: loadDetails)
+      )
+      .toolbar {
+        ToolbarItem(placement: .primaryAction) {
+          Menu("More", systemImage: "ellipsis") {
+            Button {
+              showEditSheet = true
+            } label: {
+              Label("Edit recipe", systemImage: "pencil")
+            }
           }
         }
       }
+      .sheet(isPresented: $showEditSheet) {
+        RecipeEditScreen(
+          recipeDetails: .init(
+            recipe: recipeDetails.recipe,
+            ingredients: recipeDetails
+              .ingredients,
+            instructions: recipeDetails.instructions
+          )
+        )
+        .interactiveDismissDisabled()
+      }
     }
-    .navigationTitle(recipe.name)
+    .navigationTitle(recipeDetails.recipe.name)
     .navigationBarTitleDisplayMode(.inline)
   }
 
-  private func loadDetails() {
-    Task {
-      do {
-        let results = try await defaultDatabase.read { db in
-          try RecipeDetails.FetchKeyRequest(recipeId: recipe.id).fetch(db)
-        }
-        phase = .loaded(
-          .init(
-            recipe: recipe,
-            ingredients: results.ingredients,
-            instructions: results.instructions
-          )
-        )
-      } catch {
-        phase = .failed(error.localizedDescription)
-      }
-    }
-  }
 }
 
 #Preview {
@@ -78,7 +67,7 @@ struct RecipeDetailScreen: View {
     }
   }
   if let recipe {
-    RecipeDetailScreen(recipe: recipe)
+    RecipeDetailScreen(recipeId: recipe.id)
   } else {
     Text("No recipe")
   }

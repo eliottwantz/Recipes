@@ -1,5 +1,5 @@
 //
-//  RecipeImportFormView.swift
+//  RecipeEditFormView.swift
 //  Recipes
 //
 //  Created by Eliott on 2025-11-11.
@@ -8,7 +8,7 @@
 import SQLiteData
 import SwiftUI
 
-struct RecipeImportFormView: View {
+struct RecipeEditFormView: View {
   @Environment(\.dismiss) private var dismiss
   @Binding var recipeDetails: RecipeDetails
 
@@ -122,7 +122,7 @@ struct RecipeImportFormView: View {
     ingredients: [],
     instructions: []
   )
-  RecipeImportFormView(recipeDetails: $recipeDetails)
+    RecipeEditFormView(recipeDetails: $recipeDetails)
 }
 
 #Preview("Existing") {
@@ -137,5 +137,5 @@ struct RecipeImportFormView: View {
     }
   }
 
-  RecipeImportFormView(recipeDetails: $recipeDetails)
+    RecipeEditFormView(recipeDetails: $recipeDetails)
 }

@@ -40,7 +40,7 @@ struct RecipeImportScreen: View {
 
   var body: some View {
     NavigationStack {
-      RecipeImportFormView(recipeDetails: $recipeDetails)
+        RecipeEditFormView(recipeDetails: $recipeDetails)
         .navigationTitle("Add a recipe")
         .navigationBarTitleDisplayMode(.inline)
         .interactiveDismissDisabled()
