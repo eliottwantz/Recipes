@@ -13,7 +13,7 @@ struct ShareExtensionScreen: View {
 
   enum Phase: Equatable {
     case importing
-    case imported(RecipeImportManager.ExtractedRecipeDetail)
+    case imported(RecipeDetails)
     case error(String)
   }
   @State private var phase: Phase = .importing
@@ -36,7 +36,7 @@ struct ShareExtensionScreen: View {
         loadInitialShare(from: context)
       }
     case .imported(let extractedRecipeDetail):
-      ImportedView(recipeDetails: extractedRecipeDetail) {
+      RecipeImportScreen(recipeDetails: extractedRecipeDetail) {
         context.completeRequest(returningItems: nil)
       }
     case .error(let message):
@@ -54,21 +54,6 @@ struct ShareExtensionScreen: View {
           }
         }
       }
-    }
-  }
-
-  private struct ImportedView: View {
-    @State var recipeDetails: RecipeImportManager.ExtractedRecipeDetail
-    var onDismiss: () -> Void
-
-    init(recipeDetails: RecipeImportManager.ExtractedRecipeDetail, onDismiss: @escaping () -> Void)
-    {
-      self.recipeDetails = recipeDetails
-      self.onDismiss = onDismiss
-    }
-
-    var body: some View {
-      RecipeImportScreen(recipeDetails: $recipeDetails, onDismiss: onDismiss)
     }
   }
 

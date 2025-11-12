@@ -40,4 +40,22 @@ extension RecipeDetails {
       )
     }
   }
+
+  func normalized() -> Self {
+    var copy = self
+    copy.recipe.name = copy.recipe.name.trimmingCharacters(in: .whitespacesAndNewlines)
+    copy.ingredients = copy.ingredients.map { draft in
+      var newDraft = draft
+      newDraft.text = newDraft.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      return newDraft
+    }
+    copy.instructions = copy.instructions.map { draft in
+      var newDraft = draft
+      newDraft.text = newDraft.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      return newDraft
+    }
+    copy.ingredients.removeAll { $0.text.isEmpty }
+    copy.instructions.removeAll { $0.text.isEmpty }
+    return copy
+  }
 }

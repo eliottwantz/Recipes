@@ -172,7 +172,7 @@ extension View {
 }
 
 #Preview {
-  let sample = Storage.configure { database in
+  let recipeDetails = Storage.configure { database in
     return try database.read { db in
       print("FETCHING RECIPE FOR PREVIEW")
       let recipe = try Recipe.all.fetchOne(db)
@@ -184,6 +184,6 @@ extension View {
   }
 
   NavigationStack {
-    RecipeDetailView(recipeDetails: sample)
+    RecipeDetailView(recipeDetails: recipeDetails)
   }
 }

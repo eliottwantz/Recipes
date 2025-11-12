@@ -10,15 +10,9 @@ import Foundation
 import SQLiteData
 
 nonisolated struct RecipeImportManager {
-  nonisolated struct ExtractedRecipeDetail: Equatable {
-    var recipe: Recipe
-    var ingredients: [RecipeIngredient]
-    var instructions: [RecipeInstruction]
-  }
-
   @discardableResult
   @concurrent
-  func importRecipe(from url: URL) async throws -> ExtractedRecipeDetail {
+  func importRecipe(from url: URL) async throws -> RecipeDetails {
     @Dependency(\.urlSession) var session
 
     guard url.scheme?.lowercased().hasPrefix("http") == true else {
@@ -31,13 +25,13 @@ nonisolated struct RecipeImportManager {
   @discardableResult
   @concurrent
   func importRecipe(fromHTML html: String) async throws
-    -> ExtractedRecipeDetail
+    -> RecipeDetails
   {
     return try await extractRecipe(from: html)
   }
 
   func persist(
-    _ details: ExtractedRecipeDetail,
+    _ details: RecipeDetails,
     in database: any DatabaseWriter
   ) throws {
     try database.write { db in
@@ -53,7 +47,7 @@ nonisolated struct RecipeImportManager {
     }
   }
 
-  func extractRecipe(from html: String) async throws -> ExtractedRecipeDetail {
+  func extractRecipe(from html: String) async throws -> RecipeDetails {
     let json = try extractRecipeJSON(from: html)
     guard var name = json["name"] as? String else {
       throw ImportError.missingRequiredField("name")
@@ -67,7 +61,7 @@ nonisolated struct RecipeImportManager {
     let cookMinutes = parseDuration(json["cookTime"])
     let servings = parseServings(json["recipeYield"])
 
-    return ExtractedRecipeDetail(
+    return RecipeDetails(
       recipe: Recipe(
         id: recipeId,
         name: name,
@@ -405,22 +399,6 @@ nonisolated struct RecipeImportManager {
 
 }
 
-extension RecipeImportManager.ExtractedRecipeDetail {
-  func normalized() -> Self {
-    var copy = self
-    copy.recipe.name = copy.recipe.name.trimmingCharacters(in: .whitespacesAndNewlines)
-    copy.ingredients = copy.ingredients.map { draft in
-      var newDraft = draft
-      newDraft.text = newDraft.text.trimmingCharacters(in: .whitespacesAndNewlines)
-      return newDraft
-    }
-    copy.instructions = copy.instructions.map { draft in
-      var newDraft = draft
-      newDraft.text = newDraft.text.trimmingCharacters(in: .whitespacesAndNewlines)
-      return newDraft
-    }
-    copy.ingredients.removeAll { $0.text.isEmpty }
-    copy.instructions.removeAll { $0.text.isEmpty }
-    return copy
-  }
+extension RecipeDetails {
+ 
 }

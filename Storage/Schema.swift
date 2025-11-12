@@ -2,17 +2,15 @@ import Foundation
 import SQLiteData
 
 @Table("recipes")
-public nonisolated struct Recipe: Identifiable, Hashable, Sendable {
-  public let id: UUID
+nonisolated struct Recipe: Identifiable, Hashable, Sendable {
+  let id: UUID
   var name = ""
-  var prepTimeMinutes: Int
-  var cookTimeMinutes: Int
-  var servings: Int
+  var prepTimeMinutes: Int = 0
+  var cookTimeMinutes: Int = 0
+  var servings: Int = 0
   var createdAt: Date = .now
   var updatedAt: Date = .now
 }
-
-extension Recipe.Draft: Identifiable {}
 
 @Table("recipe_ingredients")
 nonisolated struct RecipeIngredient: Identifiable, Hashable, Sendable {
