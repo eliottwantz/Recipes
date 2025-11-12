@@ -10,49 +10,32 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeDetailScreen: View {
-  @Fetch var recipeDetails: RecipeDetails.FetchKeyRequest.Value
+  @Fetch var recipeDetails: RecipeDetails
   @Dependency(\.defaultDatabase) private var defaultDatabase
   @State private var showEditSheet = false
 
   init(recipeId: Recipe.ID) {
-    self._recipeDetails = Fetch(
-      wrappedValue: RecipeDetails.FetchKeyRequest.Value.placeholder,
-      RecipeDetails.FetchKeyRequest(recipeId: recipeId)
-    )
+    self._recipeDetails = RecipeDetails.Fetch(recipeId: recipeId)
   }
 
   var body: some View {
     VStack {
-      RecipeDetailView(
-        recipeDetails: .init(
-          recipe: recipeDetails.recipe,
-          ingredients: recipeDetails
-            .ingredients,
-          instructions: recipeDetails.instructions
-        )
-      )
-      .toolbar {
-        ToolbarItem(placement: .primaryAction) {
-          Menu("More", systemImage: "ellipsis") {
-            Button {
-              showEditSheet = true
-            } label: {
-              Label("Edit recipe", systemImage: "pencil")
+      RecipeDetailView(recipeDetails: recipeDetails)
+        .toolbar {
+          ToolbarItem(placement: .primaryAction) {
+            Menu("More", systemImage: "ellipsis") {
+              Button {
+                showEditSheet = true
+              } label: {
+                Label("Edit recipe", systemImage: "pencil")
+              }
             }
           }
         }
-      }
-      .sheet(isPresented: $showEditSheet) {
-        RecipeEditScreen(
-          recipeDetails: .init(
-            recipe: recipeDetails.recipe,
-            ingredients: recipeDetails
-              .ingredients,
-            instructions: recipeDetails.instructions
-          )
-        )
-        .interactiveDismissDisabled()
-      }
+        .sheet(isPresented: $showEditSheet) {
+          RecipeEditScreen(recipeDetails: recipeDetails)
+            .interactiveDismissDisabled()
+        }
     }
     .navigationTitle(recipeDetails.recipe.name)
     .navigationBarTitleDisplayMode(.inline)

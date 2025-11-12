@@ -8,27 +8,22 @@
 import Foundation
 import SQLiteData
 
-nonisolated struct RecipeDetails: Equatable {
+nonisolated struct RecipeDetails {
   var recipe: Recipe
   var ingredients: [RecipeIngredient]
   var instructions: [RecipeInstruction]
-}
 
-extension RecipeDetails {
-  struct FetchKeyRequest: SQLiteData.FetchKeyRequest {
+  static func Fetch(recipeId: Recipe.ID) -> Fetch<RecipeDetails> {
+    return SQLiteData.Fetch(
+      wrappedValue: .init(recipe: .init(id: UUID()), ingredients: [], instructions: []),
+      RecipeDetails.FetchKeyRequest(recipeId: recipeId)
+    )
+  }
+
+  nonisolated struct FetchKeyRequest: SQLiteData.FetchKeyRequest {
     let recipeId: Recipe.ID
 
-    struct Value {
-      let recipe: Recipe
-      let ingredients: [RecipeIngredient]
-      let instructions: [RecipeInstruction]
-
-      static var placeholder: Value {
-        .init(recipe: .init(id: UUID()), ingredients: [], instructions: [])
-      }
-    }
-
-    func fetch(_ db: Database) throws -> Value {
+    func fetch(_ db: Database) throws -> RecipeDetails {
       try Value(
         recipe:
           Recipe
@@ -48,7 +43,9 @@ extension RecipeDetails {
       )
     }
   }
+}
 
+extension RecipeDetails: Equatable {
   func normalized() -> Self {
     var copy = self
     copy.recipe.name = copy.recipe.name.trimmingCharacters(in: .whitespacesAndNewlines)
