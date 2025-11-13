@@ -39,7 +39,7 @@ struct RecipeImportScreen: View {
     if let recipeDetails {
       self.recipeDetails = recipeDetails
     } else {
-      self.recipeDetails = .init(recipe: .init(id: UUID()), ingredients: [], instructions: [])
+      self.recipeDetails = .init(recipe: .init(id: UUID()), ingredients: [], instructions: [], photos: [])
     }
     self.onDismiss = onDismiss
   }
@@ -94,7 +94,8 @@ struct RecipeImportScreen: View {
       return RecipeDetails(
         recipe: recipe,
         ingredients: results.ingredients,
-        instructions: results.instructions
+        instructions: results.instructions,
+        photos: results.photos
       )
     }
   }

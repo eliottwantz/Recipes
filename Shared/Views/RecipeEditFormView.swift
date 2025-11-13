@@ -5,6 +5,7 @@
 //  Created by Eliott on 2025-11-11.
 //
 
+import PhotosUI
 import SQLiteData
 import SwiftUI
 
@@ -13,6 +14,7 @@ struct RecipeEditFormView: View {
   @Binding var recipeDetails: RecipeDetails
 
   @State private var isSaving = false
+  @State private var selectedPhotoItems: [PhotosPickerItem] = []
 
   init(recipeDetails: Binding<RecipeDetails>) {
     self._recipeDetails = recipeDetails
@@ -42,6 +44,37 @@ struct RecipeEditFormView: View {
         )
       }
 
+      Section("Optional Details") {
+        LabeledContent("Website") {
+          TextField("Website URL", text: Binding($recipeDetails.recipe.website))
+            .multilineTextAlignment(.trailing)
+            .foregroundStyle(.tint)
+            .keyboardType(.URL)
+            .textContentType(.URL)
+            .autocapitalization(.none)
+        }
+
+        LabeledContent("Nutrition") {
+          TextField(
+            "Nutrition info",
+            text: Binding($recipeDetails.recipe.nutrition),
+            axis: .vertical
+          )
+          .multilineTextAlignment(.trailing)
+          .foregroundStyle(.tint)
+        }
+
+        LabeledContent("Notes") {
+          TextField(
+            "Personal notes",
+            text: Binding($recipeDetails.recipe.notes),
+            axis: .vertical
+          )
+          .multilineTextAlignment(.trailing)
+          .foregroundStyle(.tint)
+        }
+      }
+
       Section("Ingredients") {
         ForEach($recipeDetails.ingredients) { $ingredient in
           TextField("Ingredient", text: $ingredient.text, axis: .vertical)
@@ -61,8 +94,58 @@ struct RecipeEditFormView: View {
 
         Button("Add Instruction", action: addInstruction)
       }
+
+      Section("Photos") {
+        ForEach(recipeDetails.photos) { photo in
+          HStack {
+            if let uiImage = UIImage(data: photo.photoData) {
+              Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 60, height: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            Text("Photo \(photo.position + 1)")
+              .font(.body)
+          }
+        }
+        .onDelete(perform: deletePhoto)
+        .onMove(perform: movePhoto)
+
+        PhotosPicker(
+          selection: $selectedPhotoItems,
+          maxSelectionCount: 10,
+          matching: .images
+        ) {
+          Label("Add Photos", systemImage: "photo.on.rectangle.angled")
+        }
+        .onChange(of: selectedPhotoItems) { _, newItems in
+          Task {
+            await loadPhotos(from: newItems)
+          }
+        }
+      }
     }
     .environment(\.editMode, .constant(EditMode.active))
+  }
+
+  nonisolated private func loadPhotos(from items: [PhotosPickerItem]) async {
+    for item in items {
+      if let data = try? await item.loadTransferable(type: Data.self) {
+        let newPhoto = await RecipePhoto(
+          id: UUID(),
+          recipeId: recipeDetails.recipe.id,
+          position: recipeDetails.photos.count,
+          photoData: data
+        )
+        await MainActor.run {
+          recipeDetails.photos.append(newPhoto)
+        }
+      }
+    }
+    await MainActor.run {
+      selectedPhotoItems = []
+    }
   }
 
   private func deleteIngredient(at offsets: IndexSet) {
@@ -114,15 +197,32 @@ struct RecipeEditFormView: View {
       recipeDetails.instructions[index].position = index
     }
   }
+
+  private func deletePhoto(at offsets: IndexSet) {
+    recipeDetails.photos.remove(atOffsets: offsets)
+    reindexPhotos()
+  }
+
+  private func movePhoto(from source: IndexSet, to destination: Int) {
+    recipeDetails.photos.move(fromOffsets: source, toOffset: destination)
+    reindexPhotos()
+  }
+
+  private func reindexPhotos() {
+    for (index, _) in recipeDetails.photos.enumerated() {
+      recipeDetails.photos[index].position = index
+    }
+  }
 }
 
 #Preview("Scratch") {
   @Previewable @State var recipeDetails = RecipeDetails(
     recipe: .init(id: UUID()),
     ingredients: [],
-    instructions: []
+    instructions: [],
+    photos: []
   )
-    RecipeEditFormView(recipeDetails: $recipeDetails)
+  RecipeEditFormView(recipeDetails: $recipeDetails)
 }
 
 #Preview("Existing") {
@@ -133,9 +233,13 @@ struct RecipeEditFormView: View {
       guard let recipe else { fatalError("No recipe found. Seed the database first.") }
       let results = try RecipeDetails.FetchKeyRequest(recipeId: recipe.id).fetch(db)
       return RecipeDetails(
-        recipe: recipe, ingredients: results.ingredients, instructions: results.instructions)
+        recipe: recipe,
+        ingredients: results.ingredients,
+        instructions: results.instructions,
+        photos: results.photos
+      )
     }
   }
 
-    RecipeEditFormView(recipeDetails: $recipeDetails)
+  RecipeEditFormView(recipeDetails: $recipeDetails)
 }

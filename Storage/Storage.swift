@@ -118,6 +118,37 @@ extension DependencyValues {
 
     }
 
+    migrator.registerMigration("Add optional recipe fields") { db in
+      try #sql(
+        """
+        ALTER TABLE "recipes" ADD COLUMN "notes" TEXT
+        """
+      ).execute(db)
+
+      try #sql(
+        """
+        ALTER TABLE "recipes" ADD COLUMN "nutrition" TEXT
+        """
+      ).execute(db)
+
+      try #sql(
+        """
+        ALTER TABLE "recipes" ADD COLUMN "website" TEXT
+        """
+      ).execute(db)
+
+      try #sql(
+        """
+        CREATE TABLE "recipe_photos" (
+            "id" TEXT PRIMARY KEY NOT NULL ON CONFLICT REPLACE DEFAULT (uuid()),
+            "recipeId" TEXT NOT NULL REFERENCES "recipes"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+            "position" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0,
+            "photoData" BLOB NOT NULL ON CONFLICT REPLACE DEFAULT (x'')
+        ) STRICT
+        """
+      ).execute(db)
+    }
+
     #if DEBUG
       migrator.registerMigration("Seed recipes") { db in
         @Dependency(\.date.now) var now
@@ -216,7 +247,8 @@ extension DependencyValues {
         for: defaultDatabase,
         tables: Recipe.self,
         RecipeIngredient.self,
-        RecipeInstruction.self
+        RecipeInstruction.self,
+        RecipePhoto.self
       )
     #endif
 

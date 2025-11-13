@@ -8,6 +8,9 @@ nonisolated struct Recipe: Identifiable, Hashable, Sendable {
   var prepTimeMinutes: Int = 0
   var cookTimeMinutes: Int = 0
   var servings: Int = 0
+  var notes: String?
+  var nutrition: String?
+  var website: String?
   var createdAt: Date = .now
   var updatedAt: Date = .now
 }
@@ -26,4 +29,12 @@ nonisolated struct RecipeInstruction: Identifiable, Hashable, Sendable {
   var recipeId: Recipe.ID
   var position: Int = 0
   var text = ""
+}
+
+@Table("recipe_photos")
+nonisolated struct RecipePhoto: Identifiable, Hashable, Sendable {
+  let id: UUID
+  var recipeId: Recipe.ID
+  var position: Int = 0
+  var photoData: Data = Data()
 }

@@ -19,15 +19,15 @@ nonisolated struct RecipeImportManager {
       throw ImportError.unsupportedScheme(url.scheme)
     }
     let html = try await fetchHTML(from: url, session: session)
-    return try await importRecipe(fromHTML: html)
+    return try await importRecipe(fromHTML: html, sourceURL: url)
   }
 
   @discardableResult
   @concurrent
-  func importRecipe(fromHTML html: String) async throws
+  func importRecipe(fromHTML html: String, sourceURL: URL? = nil) async throws
     -> RecipeDetails
   {
-    return try await extractRecipe(from: html)
+    return try await extractRecipe(from: html, sourceURL: sourceURL)
   }
 
   func persist(
@@ -44,10 +44,14 @@ nonisolated struct RecipeImportManager {
       for instruction in details.instructions {
         try RecipeInstruction.insert { instruction }.execute(db)
       }
+
+      for photo in details.photos {
+        try RecipePhoto.insert { photo }.execute(db)
+      }
     }
   }
 
-  func extractRecipe(from html: String) async throws -> RecipeDetails {
+  func extractRecipe(from html: String, sourceURL: URL? = nil) async throws -> RecipeDetails {
     let json = try extractRecipeJSON(from: html)
     guard var name = json["name"] as? String else {
       throw ImportError.missingRequiredField("name")
@@ -60,6 +64,8 @@ nonisolated struct RecipeImportManager {
     let prepMinutes = parseDuration(json["prepTime"])
     let cookMinutes = parseDuration(json["cookTime"])
     let servings = parseServings(json["recipeYield"])
+    let website = sourceURL?.absoluteString
+    let nutrition = parseNutrition(json["nutrition"])
 
     return RecipeDetails(
       recipe: Recipe(
@@ -67,10 +73,14 @@ nonisolated struct RecipeImportManager {
         name: name,
         prepTimeMinutes: prepMinutes ?? 0,
         cookTimeMinutes: cookMinutes ?? 0,
-        servings: servings ?? 0
+        servings: servings ?? 0,
+        notes: nil,
+        nutrition: nutrition,
+        website: website
       ),
       ingredients: ingredients,
-      instructions: instructions
+      instructions: instructions,
+      photos: []
     )
   }
 
@@ -284,6 +294,27 @@ nonisolated struct RecipeImportManager {
       return scanner.scanInt()
     }
     return nil
+  }
+
+  private func parseNutrition(_ value: Any?) -> String? {
+    guard let dict = value as? [String: Any] else { return nil }
+    
+    var nutritionParts: [String] = []
+    
+    if let calories = dict["calories"] as? String {
+      nutritionParts.append("Calories: \(calories)")
+    }
+    if let protein = dict["proteinContent"] as? String {
+      nutritionParts.append("Protein: \(protein)")
+    }
+    if let carbs = dict["carbohydrateContent"] as? String {
+      nutritionParts.append("Carbs: \(carbs)")
+    }
+    if let fat = dict["fatContent"] as? String {
+      nutritionParts.append("Fat: \(fat)")
+    }
+    
+    return nutritionParts.isEmpty ? nil : nutritionParts.joined(separator: ", ")
   }
 
   // MARK: - Errors

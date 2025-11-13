@@ -17,6 +17,22 @@ struct RecipeDetailView: View {
       VStack(alignment: .leading, spacing: 24) {
         header
 
+        if let website = recipeDetails.recipe.website, !website.isEmpty {
+          websiteSection
+        }
+
+        if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
+          nutritionSection
+        }
+
+        if let notes = recipeDetails.recipe.notes, !notes.isEmpty {
+          notesSection
+        }
+
+        if !recipeDetails.photos.isEmpty {
+          photosSection
+        }
+
         if !recipeDetails.ingredients.isEmpty {
           ingredientsSection
         }
@@ -142,6 +158,83 @@ struct RecipeDetailView: View {
       }
     }
   }
+
+  private var websiteSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("Source")
+        .font(.title3.weight(.semibold))
+        .foregroundStyle(.primary)
+
+      if let website = recipeDetails.recipe.website, let url = URL(string: website) {
+        Link(destination: url) {
+          HStack {
+            Image(systemName: "safari")
+              .foregroundStyle(.tint)
+            Text(website)
+              .font(.body)
+              .foregroundStyle(.tint)
+              .lineLimit(2)
+            Spacer()
+            Image(systemName: "arrow.up.right")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+          .padding()
+          .card()
+        }
+      }
+    }
+  }
+
+  private var nutritionSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("Nutrition")
+        .font(.title3.weight(.semibold))
+        .foregroundStyle(.primary)
+
+      Text(recipeDetails.recipe.nutrition ?? "")
+        .font(.body)
+        .foregroundStyle(.primary)
+        .padding()
+        .card()
+    }
+  }
+
+  private var notesSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("Notes")
+        .font(.title3.weight(.semibold))
+        .foregroundStyle(.primary)
+
+      Text(recipeDetails.recipe.notes ?? "")
+        .font(.body)
+        .foregroundStyle(.primary)
+        .padding()
+        .card()
+    }
+  }
+
+  private var photosSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("Photos")
+        .font(.title3.weight(.semibold))
+        .foregroundStyle(.primary)
+
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 12) {
+          ForEach(recipeDetails.photos) { photo in
+            if let uiImage = UIImage(data: photo.photoData) {
+              Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 200, height: 200)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 private struct CardModifier: ViewModifier {
@@ -175,7 +268,7 @@ extension View {
       guard let recipe else { fatalError("No recipe found. Seed the database first.") }
       let results = try RecipeDetails.FetchKeyRequest(recipeId: recipe.id).fetch(db)
       return RecipeDetails(
-        recipe: recipe, ingredients: results.ingredients, instructions: results.instructions)
+        recipe: recipe, ingredients: results.ingredients, instructions: results.instructions, photos: results.photos)
     }
   }
 

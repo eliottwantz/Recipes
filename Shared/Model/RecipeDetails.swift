@@ -12,10 +12,11 @@ nonisolated struct RecipeDetails {
   var recipe: Recipe
   var ingredients: [RecipeIngredient]
   var instructions: [RecipeInstruction]
+  var photos: [RecipePhoto] = []
 
   static func Fetch(recipeId: Recipe.ID) -> Fetch<RecipeDetails> {
     return SQLiteData.Fetch(
-      wrappedValue: .init(recipe: .init(id: UUID()), ingredients: [], instructions: []),
+      wrappedValue: .init(recipe: .init(id: UUID()), ingredients: [], instructions: [], photos: []),
       RecipeDetails.FetchKeyRequest(recipeId: recipeId)
     )
   }
@@ -37,6 +38,11 @@ nonisolated struct RecipeDetails {
           .fetchAll(db),
         instructions:
           RecipeInstruction
+          .where { $0.recipeId == recipeId }
+          .order(by: \.position)
+          .fetchAll(db),
+        photos:
+          RecipePhoto
           .where { $0.recipeId == recipeId }
           .order(by: \.position)
           .fetchAll(db)
