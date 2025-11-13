@@ -26,6 +26,12 @@ struct RecipeImportScreen: View {
   }
   @State private var phase: Phase = .initial
 
+  private var saveDisabled: Bool {
+    isSaving
+      || recipeDetails.recipe.name
+        .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+  }
+
   init(
     recipeDetails: RecipeDetails? = nil,
     onDismiss: (() -> Void)? = nil
@@ -40,7 +46,7 @@ struct RecipeImportScreen: View {
 
   var body: some View {
     NavigationStack {
-        RecipeEditFormView(recipeDetails: $recipeDetails)
+      RecipeEditFormView(recipeDetails: $recipeDetails)
         .navigationTitle("Add a recipe")
         .navigationBarTitleDisplayMode(.inline)
         .interactiveDismissDisabled()
@@ -53,7 +59,7 @@ struct RecipeImportScreen: View {
           }
           ToolbarItem(placement: .primaryAction) {
             Button("Add", action: saveRecipe)
-            .disabled(isSaving)
+              .disabled(saveDisabled)
           }
         }
     }

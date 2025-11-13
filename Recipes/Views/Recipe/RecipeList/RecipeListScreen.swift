@@ -20,7 +20,7 @@ struct RecipeListScreen: View {
     NavigationStack {
       ZStack {
         RecipeListView(recipes: recipes)
-          .navigationTitle("Recipes")
+          .navigationTitle("All recipes")
           .navigationDestination(
             for: Recipe.self,
             destination: { recipe in
