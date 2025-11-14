@@ -65,7 +65,10 @@ struct ShareExtensionScreen: View {
   private func loadSharedContent(from context: NSExtensionContext) async {
     do {
       let payload = try await resolveHTMLPayload(from: context)
-      let imported = try await importManager.extractRecipe(from: payload.html)
+      let imported = try await importManager.extractRecipe(
+        from: payload.html,
+        sourceURL: payload.sourceURL
+      )
       phase = .imported(imported)
     } catch {
       phase = .error(error.localizedDescription)
