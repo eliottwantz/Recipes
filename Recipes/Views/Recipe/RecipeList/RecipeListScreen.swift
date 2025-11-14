@@ -35,10 +35,10 @@ struct RecipeListScreen: View {
               } label: {
                 Image(systemName: "plus")
                   .accessibilityLabel("Add a recipe")
-                  .font(.title2)
+                  .font(.largeTitle.weight(.light))
                   .foregroundStyle(.foreground)
               }
-              .frame(width: 44, height: 44)
+              .frame(width: 54, height: 54)
               .glassEffect(.regular.interactive())
               .padding(.trailing)
             }

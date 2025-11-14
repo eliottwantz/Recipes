@@ -11,6 +11,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
+  @State private var selectedImage: UIImage?
 
   var body: some View {
     ScrollView {
@@ -43,6 +44,25 @@ struct RecipeDetailView: View {
       .padding(.bottom, 10)
     }
     .darkPrimaryLightSecondaryBackgroundColor()
+    .fullScreenCover(item: $selectedImage) { image in
+      NavigationStack {
+        FullScreenImageViewer(
+          image: Image(uiImage: image),
+          close: {
+            selectedImage = nil
+          }
+        )
+        .toolbar {
+          ToolbarItem(placement: .topBarLeading) {
+            Button {
+              selectedImage = nil
+            } label: {
+              Label("Close", systemImage: "xmark")
+            }
+          }
+        }
+      }
+    }
   }
 
   private var header: some View {
@@ -146,6 +166,9 @@ struct RecipeDetailView: View {
               }
               .padding(16)
             }
+          }
+          .onTapGesture {
+            selectedImage = uiImage
           }
       } else {
         Text(recipeDetails.recipe.name)
@@ -277,6 +300,9 @@ struct RecipeDetailView: View {
                 .scaledToFill()
                 .frame(width: 200, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
+                .onTapGesture {
+                  selectedImage = uiImage
+                }
             }
           }
         }
