@@ -39,7 +39,7 @@ struct RecipeDetailView: View {
 
       }
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.horizontal, 22)
+      .padding(.horizontal, 10)
       .padding(.bottom, 10)
     }
     .darkPrimaryLightSecondaryBackgroundColor()
@@ -241,9 +241,9 @@ struct RecipeDetailView: View {
       Text(recipeDetails.recipe.nutrition ?? "")
         .font(.body)
         .foregroundStyle(.primary)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .card()
-        .frame(maxWidth: .infinity)
     }
   }
 
@@ -256,9 +256,9 @@ struct RecipeDetailView: View {
       Text(recipeDetails.recipe.notes ?? "")
         .font(.body)
         .foregroundStyle(.primary)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .card()
-        .frame(maxWidth: .infinity)
     }
   }
 

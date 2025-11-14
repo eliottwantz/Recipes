@@ -37,8 +37,6 @@ struct RecipeDetailScreen: View {
             .interactiveDismissDisabled()
         }
     }
-    .navigationTitle(recipeDetails.recipe.name)
-    .navigationBarTitleDisplayMode(.inline)
   }
 
 }
