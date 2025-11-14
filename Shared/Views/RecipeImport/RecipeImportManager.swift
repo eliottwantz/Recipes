@@ -308,20 +308,42 @@ nonisolated struct RecipeImportManager {
 
     var nutritionParts: [String] = []
 
+    // Parse servings (e.g., "1 serving")
+    if let servingSize = dict["servingSize"] as? String {
+      nutritionParts.append("Servings: \(servingSize)")
+    }
+
+    // Parse calories (e.g., "518 kcal")
     if let calories = dict["calories"] as? String {
       nutritionParts.append("Calories: \(calories)")
     }
-    if let protein = dict["proteinContent"] as? String {
-      nutritionParts.append("Protein: \(protein)")
-    }
+
+    // Parse carbohydrate content (e.g., "9 g")
     if let carbs = dict["carbohydrateContent"] as? String {
       nutritionParts.append("Carbs: \(carbs)")
     }
+
+    // Parse protein content (e.g., "34 g")
+    if let protein = dict["proteinContent"] as? String {
+      nutritionParts.append("Protein: \(protein)")
+    }
+
+    // Parse fat content (e.g., "38 g")
     if let fat = dict["fatContent"] as? String {
       nutritionParts.append("Fat: \(fat)")
     }
 
-    return nutritionParts.isEmpty ? nil : nutritionParts.joined(separator: ", ")
+    // Parse fiber content (e.g., "0.4 g")
+    if let fiber = dict["fiberContent"] as? String {
+      nutritionParts.append("Fiber: \(fiber)")
+    }
+
+    // Parse sodium content (e.g., "741 mg")
+    if let sodium = dict["sodiumContent"] as? String {
+      nutritionParts.append("Sodium: \(sodium)")
+    }
+
+    return nutritionParts.isEmpty ? nil : nutritionParts.joined(separator: ",\n")
   }
 
   private func downloadRecipePhotos(from value: Any?, recipeId: UUID) async -> [RecipePhoto] {

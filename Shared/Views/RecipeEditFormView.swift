@@ -79,9 +79,7 @@ struct RecipeEditFormView: View {
           text: Binding($recipeDetails.recipe.nutrition),
           axis: .vertical
         )
-        .multilineTextAlignment(.trailing)
-        .foregroundStyle(.tint)
-
+        .multilineTextAlignment(.leading)
       }
 
       Section("Photos") {
