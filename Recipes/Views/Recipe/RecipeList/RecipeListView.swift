@@ -12,6 +12,7 @@ import SwiftUI
 struct RecipeListView: View {
   let recipes: [Recipe]
   @State private var showRecipeImportScreen: Bool = false
+  @Dependency(\.defaultDatabase) private var database
 
   init(recipes: [Recipe]) {
     self.recipes = recipes
@@ -27,12 +28,24 @@ struct RecipeListView: View {
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
       } else {
-        List(recipes) { recipe in
-          NavigationLink(value: recipe) {
-            RecipeRow(recipe: recipe)
+        List {
+          ForEach(recipes) { recipe in
+            NavigationLink(value: recipe) {
+              RecipeRow(recipe: recipe)
+            }
           }
+          .onDelete(perform: deleteRecipes)
         }
         .listStyle(.plain)
+      }
+    }
+  }
+
+  private func deleteRecipes(_ offset: IndexSet) {
+    withErrorReporting {
+      try database.write { db in
+        let ids = offset.map { recipes[$0].id }
+        try Recipe.where { ids.contains($0.id) }.delete().execute(db)
       }
     }
   }
