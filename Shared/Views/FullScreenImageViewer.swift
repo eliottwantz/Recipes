@@ -7,8 +7,48 @@
 
 import SwiftUI
 
+// Full-screen viewer overlay with close button and drag-to-dismiss
+struct FullScreenImageViewer: View {
+  let image: Image
+  let close: () -> Void
+
+  // Drag-to-dismiss state
+  @GestureState private var dragOffset: CGSize = .zero
+  @State private var backgroundOpacity: Double = 1.0
+
+  var body: some View {
+    ZStack {
+      ZoomableImageView(image: image)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .contentShape(.rect)
+    .gesture(
+      DragGesture()
+        .updating($dragOffset) { value, state, _ in
+          state = value.translation
+          let distance = hypot(value.translation.width, value.translation.height)
+          backgroundOpacity = max(0.4, 1.0 - Double(distance / 600))
+          print("Update dragOffset: \(value.translation)")
+        }
+        .onEnded { value in
+          let distance = hypot(value.translation.width, value.translation.height)
+          if distance > 140 {
+            withAnimation(.spring()) {
+              close()
+            }
+          } else {
+            withAnimation(.spring()) {
+              backgroundOpacity = 1.0
+            }
+          }
+        }
+    )
+    .transition(.opacity.combined(with: .scale))
+  }
+}
+
 // A zoomable, pannable image container that clamps panning so you can't drag the image completely off screen.
-struct ZoomableImageView: View {
+private struct ZoomableImageView: View {
   @GestureState private var isInteracting: Bool = false
   @State private var scale: CGFloat = 1.0
   @State private var lastScale: CGFloat = 1.0
@@ -114,45 +154,5 @@ struct ZoomableImageView: View {
       width: max(-maxX, min(maxX, offset.width)),
       height: max(-maxY, min(maxY, offset.height))
     )
-  }
-}
-
-// Full-screen viewer overlay with close button and drag-to-dismiss
-struct FullScreenImageViewer: View {
-  let image: Image
-  let close: () -> Void
-
-  // Drag-to-dismiss state
-  @GestureState private var dragOffset: CGSize = .zero
-  @State private var backgroundOpacity: Double = 1.0
-
-  var body: some View {
-    ZStack {
-      ZoomableImageView(image: image)
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .contentShape(.rect)
-    .gesture(
-      DragGesture()
-        .updating($dragOffset) { value, state, _ in
-          state = value.translation
-          let distance = hypot(value.translation.width, value.translation.height)
-          backgroundOpacity = max(0.4, 1.0 - Double(distance / 600))
-          print("Update dragOffset: \(value.translation)")
-        }
-        .onEnded { value in
-          let distance = hypot(value.translation.width, value.translation.height)
-          if distance > 140 {
-            withAnimation(.spring()) {
-              close()
-            }
-          } else {
-            withAnimation(.spring()) {
-              backgroundOpacity = 1.0
-            }
-          }
-        }
-    )
-    .transition(.opacity.combined(with: .scale))
   }
 }
