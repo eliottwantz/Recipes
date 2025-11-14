@@ -17,20 +17,8 @@ struct RecipeDetailView: View {
       VStack(alignment: .leading, spacing: 24) {
         header
 
-        if let website = recipeDetails.recipe.website, !website.isEmpty {
-          websiteSection
-        }
-
-        if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
-          nutritionSection
-        }
-
         if let notes = recipeDetails.recipe.notes, !notes.isEmpty {
           notesSection
-        }
-
-        if !recipeDetails.photos.isEmpty {
-          photosSection
         }
 
         if !recipeDetails.ingredients.isEmpty {
@@ -40,6 +28,15 @@ struct RecipeDetailView: View {
         if !recipeDetails.instructions.isEmpty {
           instructionsSection
         }
+
+        if !recipeDetails.photos.isEmpty {
+          photosSection
+        }
+
+        if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
+          nutritionSection
+        }
+
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 22)
@@ -50,10 +47,7 @@ struct RecipeDetailView: View {
 
   private var header: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text(recipeDetails.recipe.name)
-        .font(.largeTitle.weight(.bold))
-        .foregroundStyle(.primary)
-        .frame(maxWidth: .infinity, alignment: .leading)
+      titleCover
 
       HStack(alignment: .center) {
         HStack(spacing: 8) {
@@ -106,6 +100,58 @@ struct RecipeDetailView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 11)
         .card(cornerRadius: 40)
+      }
+    }
+  }
+
+  private var titleCover: some View {
+    Group {
+      if let firstPhoto = recipeDetails.photos.first,
+        let uiImage = UIImage(data: firstPhoto.photoData)
+      {
+        Image(uiImage: uiImage)
+          .resizable()
+          .scaledToFill()
+          .frame(height: 220)
+          .frame(maxWidth: .infinity)
+          .clipped()
+          .clipShape(RoundedRectangle(cornerRadius: 20))
+          .overlay {
+            RoundedRectangle(cornerRadius: 20)
+              .fill(Color.black.opacity(0.25))
+          }
+          .overlay(alignment: .topLeading) {
+            Text(recipeDetails.recipe.name)
+              .font(.title.weight(.bold))
+              .foregroundStyle(.white)
+              .shadow(radius: 2)
+              .padding(16)
+          }
+          .overlay(alignment: .bottomLeading) {
+            if let website = recipeDetails.recipe.website,
+              let url = URL(string: website),
+              let host = url.host
+            {
+              Link(destination: url) {
+                HStack(spacing: 8) {
+                  Image(systemName: "safari")
+                    .foregroundStyle(.white)
+                  Text(host)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.white)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial, in: Capsule())
+              }
+              .padding(16)
+            }
+          }
+      } else {
+        Text(recipeDetails.recipe.name)
+          .font(.largeTitle.weight(.bold))
+          .foregroundStyle(.primary)
+          .frame(maxWidth: .infinity, alignment: .leading)
       }
     }
   }
@@ -197,8 +243,8 @@ struct RecipeDetailView: View {
         .foregroundStyle(.primary)
         .padding()
         .card()
+        .frame(maxWidth: .infinity)
     }
-    .frame(maxWidth: .infinity)
   }
 
   private var notesSection: some View {
@@ -212,8 +258,8 @@ struct RecipeDetailView: View {
         .foregroundStyle(.primary)
         .padding()
         .card()
+        .frame(maxWidth: .infinity)
     }
-    .frame(maxWidth: .infinity)
   }
 
   private var photosSection: some View {
