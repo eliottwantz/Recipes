@@ -285,6 +285,11 @@ nonisolated struct RecipeImportManager {
   }
 
   private func parseServings(_ value: Any?) -> Int? {
+    // Handle array - take first value
+    if let array = value as? [Any], let first = array.first {
+      return parseServings(first)
+    }
+
     if let int = value as? Int {
       return int
     }
