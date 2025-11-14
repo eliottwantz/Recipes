@@ -30,13 +30,16 @@ The import service MUST normalize the JSON-LD fields into the app's `Recipe` mod
 - **THEN** it MUST create a new `Recipe` with a generated UUID, title from `name`, summary from `description`, ordered ingredient lines from `recipeIngredient`, and ordered instruction steps from `recipeInstructions`
 - **AND** each ingredient line and instruction step MUST be trimmed, prepared as `RecipeIngredient` or `RecipeInstruction` with zero-based sequential `position` values linked to the recipe id
 - **AND** it MUST convert ISO8601 duration strings (`prepTime`, `cookTime`) into minute counts when present
+- **AND** it MUST capture the source URL as the `website` field for attribution
+- **AND** it MUST extract nutrition information from the JSON-LD `nutrition` field when present and store as free-form text
+- **AND** it MUST initialize `notes` as nil (empty) for new imports
 - **AND** it MUST return the `ExtractedRecipeDetail` containing the recipe and its structured collections without persisting, allowing the caller to present the data for review
 
 #### Scenario: Persist confirmed recipe after user edits
 - **GIVEN** the user has reviewed and optionally edited an `ExtractedRecipeDetail`
 - **WHEN** the user confirms the save action
 - **THEN** the import screen MUST call the `RecipeImportManager.persist` method with the edited details
-- **AND** the manager MUST store the recipe via the shared SQLiteData writer, inserting the `Recipe` and its associated `RecipeIngredient` and `RecipeInstruction` records in a single transaction
+- **AND** the manager MUST store the recipe via the shared SQLiteData writer, inserting the `Recipe` and its associated `RecipeIngredient`, `RecipeInstruction`, and any `RecipePhoto` records in a single transaction
 
 ### Requirement: Review and Edit Extracted Recipe
 The import screen MUST allow users to review and edit extracted recipe details before persisting them to storage.
@@ -45,48 +48,23 @@ The import screen MUST allow users to review and edit extracted recipe details b
 - **GIVEN** the `RecipeImportManager` has successfully extracted a recipe from a URL
 - **WHEN** extraction completes
 - **THEN** the import screen MUST transition to an edit phase showing the extracted recipe details
-- **AND** it MUST display editable fields for title, summary, prep time (minutes), cook time (minutes), and servings
+- **AND** it MUST display editable fields for title, summary, prep time (minutes), cook time (minutes), servings, notes, nutrition, and website
 - **AND** it MUST display the list of ingredients with their text and position
 - **AND** it MUST display the list of instructions with their text and position
+- **AND** it MUST display the photo gallery when photos are present
 
 #### Scenario: Edit recipe metadata
 - **GIVEN** the user is viewing the recipe edit screen
-- **WHEN** the user modifies the title, summary, prep time, cook time, or servings fields
+- **WHEN** the user modifies the title, summary, prep time, cook time, servings, notes, nutrition, or website fields
 - **THEN** the screen MUST update the corresponding field in the `ExtractedRecipeDetail`
 - **AND** changes MUST be reflected immediately in the edit view
 
-#### Scenario: Edit ingredient list
-- **GIVEN** the user is viewing the ingredient list in the edit screen
-- **WHEN** the user edits an ingredient's text
-- **THEN** the screen MUST update that `RecipeIngredient` entry
-- **AND WHEN** the user adds a new ingredient
-- **THEN** the screen MUST append a new `RecipeIngredient` with the next sequential position
-- **AND WHEN** the user deletes an ingredient
-- **THEN** the screen MUST remove it and reindex remaining ingredients' positions sequentially
-- **AND WHEN** the user reorders ingredients via drag-and-drop
-- **THEN** the screen MUST update each ingredient's `position` to reflect the new order
-
-#### Scenario: Edit instruction list
-- **GIVEN** the user is viewing the instruction list in the edit screen
-- **WHEN** the user edits an instruction's text
-- **THEN** the screen MUST update that `RecipeInstruction` entry
-- **AND WHEN** the user adds a new instruction
-- **THEN** the screen MUST append a new `RecipeInstruction` with the next sequential position
-- **AND WHEN** the user deletes an instruction
-- **THEN** the screen MUST remove it and reindex remaining instructions' positions sequentially
-- **AND WHEN** the user reorders instructions via drag-and-drop
-- **THEN** the screen MUST update each instruction's `position` to reflect the new order
-
-#### Scenario: Save edited recipe
-- **GIVEN** the user has reviewed and optionally edited the extracted recipe
-- **WHEN** the user taps the Save button
-- **THEN** the screen MUST persist the edited `ExtractedRecipeDetail` via `RecipeImportManager.persist`
-- **AND** it MUST dismiss the import screen on successful save
-- **AND** it MUST transition to a failure state if persistence fails, displaying the error message
-
-#### Scenario: Cancel recipe import
+#### Scenario: Edit photo collection
 - **GIVEN** the user is viewing the recipe edit screen
-- **WHEN** the user taps the Cancel button
-- **THEN** the screen MUST discard the extracted recipe without persisting
-- **AND** it MUST return to the initial import form or dismiss the import screen
+- **WHEN** the user adds a photo via the photo picker
+- **THEN** the screen MUST append a new `RecipePhoto` with the next sequential position
+- **AND WHEN** the user removes a photo
+- **THEN** the screen MUST remove it and reindex remaining photos' positions sequentially
+- **AND WHEN** the user reorders photos via drag-and-drop
+- **THEN** the screen MUST update each photo's `position` to reflect the new order
 

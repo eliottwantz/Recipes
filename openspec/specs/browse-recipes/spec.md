@@ -21,4 +21,9 @@ The app MUST present a dedicated view for an individual recipe that surfaces its
 - **AND** the view MUST show servings, prep time, and cook time in a concise metadata section
 - **AND** the view MUST render the ingredient list as readable bullet points or similar structured layout
 - **AND** the view MUST present the instructions in order, ensuring multi-step text remains legible
+- **AND** the view MUST display the website as a tappable link when present
+- **AND** the view MUST display the nutrition information section when present
+- **AND** the view MUST display the notes section when present
+- **AND** the view MUST display a photo gallery when photos are present
+- **AND** optional fields MUST be hidden when empty to avoid clutter
 
