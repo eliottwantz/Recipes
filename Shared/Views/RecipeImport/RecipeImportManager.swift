@@ -8,6 +8,7 @@
 import Dependencies
 import Foundation
 import SQLiteData
+import UIKit
 
 nonisolated struct RecipeImportManager {
   @discardableResult
@@ -66,6 +67,7 @@ nonisolated struct RecipeImportManager {
     let servings = parseServings(json["recipeYield"])
     let website = sourceURL?.absoluteString
     let nutrition = parseNutrition(json["nutrition"])
+    let photos = await downloadRecipePhotos(from: json["image"], recipeId: recipeId)
 
     return RecipeDetails(
       recipe: Recipe(
@@ -80,7 +82,7 @@ nonisolated struct RecipeImportManager {
       ),
       ingredients: ingredients,
       instructions: instructions,
-      photos: []
+      photos: photos
     )
   }
 
@@ -298,9 +300,9 @@ nonisolated struct RecipeImportManager {
 
   private func parseNutrition(_ value: Any?) -> String? {
     guard let dict = value as? [String: Any] else { return nil }
-    
+
     var nutritionParts: [String] = []
-    
+
     if let calories = dict["calories"] as? String {
       nutritionParts.append("Calories: \(calories)")
     }
@@ -313,8 +315,57 @@ nonisolated struct RecipeImportManager {
     if let fat = dict["fatContent"] as? String {
       nutritionParts.append("Fat: \(fat)")
     }
-    
+
     return nutritionParts.isEmpty ? nil : nutritionParts.joined(separator: ", ")
+  }
+
+  private func downloadRecipePhotos(from value: Any?, recipeId: UUID) async -> [RecipePhoto] {
+    guard let imageURL = parseImageURL(from: value) else { return [] }
+
+    @Dependency(\.urlSession) var session
+
+    do {
+      let (data, _) = try await session.data(from: imageURL)
+
+      // Verify it's a valid image
+      guard UIImage(data: data) != nil else { return [] }
+
+      return [
+        RecipePhoto(
+          id: UUID(),
+          recipeId: recipeId,
+          photoData: data
+        )
+      ]
+    } catch {
+      // Silently fail if image download fails
+      return []
+    }
+  }
+
+  private func parseImageURL(from value: Any?) -> URL? {
+    // Handle array of URLs
+    if let array = value as? [Any], let first = array.first {
+      if let urlString = first as? String {
+        return URL(string: urlString)
+      }
+      // Handle dictionary with @type and url
+      if let dict = first as? [String: Any], let urlString = dict["url"] as? String {
+        return URL(string: urlString)
+      }
+    }
+
+    // Handle single URL string
+    if let urlString = value as? String {
+      return URL(string: urlString)
+    }
+
+    // Handle dictionary with @type and url
+    if let dict = value as? [String: Any], let urlString = dict["url"] as? String {
+      return URL(string: urlString)
+    }
+
+    return nil
   }
 
   // MARK: - Errors
@@ -431,5 +482,5 @@ nonisolated struct RecipeImportManager {
 }
 
 extension RecipeDetails {
- 
+
 }
