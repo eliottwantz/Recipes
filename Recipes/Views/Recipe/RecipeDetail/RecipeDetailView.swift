@@ -268,7 +268,8 @@ extension View {
       guard let recipe else { fatalError("No recipe found. Seed the database first.") }
       let results = try RecipeDetails.FetchKeyRequest(recipeId: recipe.id).fetch(db)
       return RecipeDetails(
-        recipe: recipe, ingredients: results.ingredients, instructions: results.instructions, photos: results.photos)
+        recipe: recipe, ingredients: results.ingredients, instructions: results.instructions,
+        photos: results.photos)
     }
   }
 
