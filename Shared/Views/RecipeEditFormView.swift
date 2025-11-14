@@ -113,13 +113,15 @@ struct RecipeEditFormView: View {
         }
       }
 
-      LabeledContent("Website") {
+      HStack {
+        Text("Website")
         TextField("Website URL", text: Binding($recipeDetails.recipe.website))
-          .multilineTextAlignment(.trailing)
           .foregroundStyle(.tint)
           .keyboardType(.URL)
           .textContentType(.URL)
           .autocapitalization(.none)
+          .disableAutocorrection(true)
+          .multilineTextAlignment(.trailing)
       }
     }
     .environment(\.editMode, .constant(EditMode.active))
