@@ -198,6 +198,7 @@ struct RecipeDetailView: View {
         .padding()
         .card()
     }
+    .frame(maxWidth: .infinity)
   }
 
   private var notesSection: some View {
@@ -212,6 +213,7 @@ struct RecipeDetailView: View {
         .padding()
         .card()
     }
+    .frame(maxWidth: .infinity)
   }
 
   private var photosSection: some View {

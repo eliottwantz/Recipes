@@ -15,6 +15,7 @@ struct RecipeEditFormView: View {
 
   @State private var isSaving = false
   @State private var selectedPhotoItems: [PhotosPickerItem] = []
+  @State private var deletePhotoTarget: RecipePhoto?
 
   init(recipeDetails: Binding<RecipeDetails>) {
     self._recipeDetails = recipeDetails
@@ -83,21 +84,43 @@ struct RecipeEditFormView: View {
       }
 
       Section("Photos") {
-        ForEach(recipeDetails.photos) { photo in
-          HStack {
-            if let uiImage = UIImage(data: photo.photoData) {
-              Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(spacing: 12) {
+            ForEach(recipeDetails.photos) { photo in
+              if let uiImage = UIImage(data: photo.photoData) {
+                Image(uiImage: uiImage)
+                  .resizable()
+                  .scaledToFill()
+                  .frame(width: 150, height: 150)
+                  .clipShape(RoundedRectangle(cornerRadius: 12))
+                  .contentShape(Rectangle())
+                  .onTapGesture {
+                    deletePhotoTarget = photo
+                  }
+                  .popover(
+                    isPresented: Binding(
+                      get: { deletePhotoTarget?.id == photo.id },
+                      set: { showing in if !showing { deletePhotoTarget = nil } }
+                    ),
+                    attachmentAnchor: .point(.top)
+                  ) {
+                    VStack(spacing: 0) {
+                      Button("Delete", role: .destructive) {
+                        if let target = deletePhotoTarget { removePhoto(target) }
+                        deletePhotoTarget = nil
+                      }
+                      .padding(.horizontal, 40)
+                      .padding(.vertical, 12)
+                      .glassEffect(.regular.interactive())
+                    }
+                    .padding(.all, 8)
+                    .presentationCompactAdaptation(.none)
+                  }
+              }
             }
-            Text("Photo \(photo.position + 1)")
-              .font(.body)
           }
+          .frame(maxHeight: 150)
         }
-        .onDelete(perform: deletePhoto)
-        .onMove(perform: movePhoto)
 
         PhotosPicker(
           selection: $selectedPhotoItems,
@@ -209,6 +232,13 @@ struct RecipeEditFormView: View {
   private func reindexPhotos() {
     for (index, _) in recipeDetails.photos.enumerated() {
       recipeDetails.photos[index].position = index
+    }
+  }
+
+  private func removePhoto(_ photo: RecipePhoto) {
+    if let index = recipeDetails.photos.firstIndex(where: { $0.id == photo.id }) {
+      recipeDetails.photos.remove(at: index)
+      reindexPhotos()
     }
   }
 }
