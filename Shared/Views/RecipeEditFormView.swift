@@ -44,37 +44,6 @@ struct RecipeEditFormView: View {
         )
       }
 
-      Section("Optional Details") {
-        LabeledContent("Website") {
-          TextField("Website URL", text: Binding($recipeDetails.recipe.website))
-            .multilineTextAlignment(.trailing)
-            .foregroundStyle(.tint)
-            .keyboardType(.URL)
-            .textContentType(.URL)
-            .autocapitalization(.none)
-        }
-
-        LabeledContent("Nutrition") {
-          TextField(
-            "Nutrition info",
-            text: Binding($recipeDetails.recipe.nutrition),
-            axis: .vertical
-          )
-          .multilineTextAlignment(.trailing)
-          .foregroundStyle(.tint)
-        }
-
-        LabeledContent("Notes") {
-          TextField(
-            "Personal notes",
-            text: Binding($recipeDetails.recipe.notes),
-            axis: .vertical
-          )
-          .multilineTextAlignment(.trailing)
-          .foregroundStyle(.tint)
-        }
-      }
-
       Section("Ingredients") {
         ForEach($recipeDetails.ingredients) { $ingredient in
           TextField("Ingredient", text: $ingredient.text, axis: .vertical)
@@ -93,6 +62,26 @@ struct RecipeEditFormView: View {
         .onMove(perform: moveInstruction)
 
         Button("Add Instruction", action: addInstruction)
+      }
+
+      Section("Notes") {
+        TextField(
+          "Add a note",
+          text: Binding($recipeDetails.recipe.notes),
+          axis: .vertical
+        )
+        .multilineTextAlignment(.leading)
+      }
+
+      Section("Nutrition") {
+        TextField(
+          "Add nutritional facts",
+          text: Binding($recipeDetails.recipe.nutrition),
+          axis: .vertical
+        )
+        .multilineTextAlignment(.trailing)
+        .foregroundStyle(.tint)
+
       }
 
       Section("Photos") {
@@ -124,6 +113,15 @@ struct RecipeEditFormView: View {
             await loadPhotos(from: newItems)
           }
         }
+      }
+
+      LabeledContent("Website") {
+        TextField("Website URL", text: Binding($recipeDetails.recipe.website))
+          .multilineTextAlignment(.trailing)
+          .foregroundStyle(.tint)
+          .keyboardType(.URL)
+          .textContentType(.URL)
+          .autocapitalization(.none)
       }
     }
     .environment(\.editMode, .constant(EditMode.active))
