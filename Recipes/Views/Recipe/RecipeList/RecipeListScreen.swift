@@ -30,18 +30,16 @@ struct RecipeListScreen: View {
           .safeAreaBar(edge: .bottom) {
             HStack {
               Spacer()
+
               Button {
                 showRecipeImportScreen = true
               } label: {
-                Image(systemName: "plus")
-                  .accessibilityLabel("Add a recipe")
-                  .font(.largeTitle.weight(.light))
-                  .foregroundStyle(.foreground)
+                Label("Add a recipe", systemImage: "plus")
               }
-              .frame(width: 54, height: 54)
-              .glassEffect(.regular.interactive())
-              .padding(.trailing)
+              .buttonStyle(.toolbar)
             }
+            .padding(.trailing)
+            .padding(.bottom, 8)
           }
       }
       .sheet(isPresented: $showRecipeImportScreen) {

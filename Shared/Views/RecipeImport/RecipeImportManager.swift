@@ -14,12 +14,10 @@ nonisolated struct RecipeImportManager {
   @discardableResult
   @concurrent
   func importRecipe(from url: URL) async throws -> RecipeDetails {
-    @Dependency(\.urlSession) var session
-
     guard url.scheme?.lowercased().hasPrefix("http") == true else {
       throw ImportError.unsupportedScheme(url.scheme)
     }
-    let html = try await fetchHTML(from: url, session: session)
+    let html = try await fetchHTML(from: url)
     return try await importRecipe(fromHTML: html, sourceURL: url)
   }
 
@@ -86,7 +84,9 @@ nonisolated struct RecipeImportManager {
     )
   }
 
-  private func fetchHTML(from url: URL, session: URLSession) async throws -> String {
+  func fetchHTML(from url: URL) async throws -> String {
+    @Dependency(\.urlSession) var session
+
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
     let (data, response) = try await session.data(for: request)

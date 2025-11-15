@@ -10,128 +10,192 @@ import SwiftUI
 // Full-screen viewer overlay with close button and drag-to-dismiss
 struct FullScreenImageViewer: View {
   let image: Image
+  let minScale: CGFloat
+  let maxScale: CGFloat
   let close: () -> Void
+
+  @GestureState private var isInteracting: Bool = false
+  @State private var scale: CGFloat
+  @State private var lastScale: CGFloat = 1.0
+  @State private var offset: CGSize = .zero
+  @State private var lastOffset: CGSize = .zero
+  @State private var mainWindowOffsetY: Double = 0.0
 
   // Drag-to-dismiss state
   @GestureState private var dragOffset: CGSize = .zero
   @State private var backgroundOpacity: Double = 1.0
-
-  var body: some View {
-    ZStack {
-      ZoomableImageView(image: image)
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .contentShape(.rect)
-    .gesture(
-      DragGesture()
-        .updating($dragOffset) { value, state, _ in
-          state = value.translation
-          let distance = hypot(value.translation.width, value.translation.height)
-          backgroundOpacity = max(0.4, 1.0 - Double(distance / 600))
-          print("Update dragOffset: \(value.translation)")
-        }
-        .onEnded { value in
-          let distance = hypot(value.translation.width, value.translation.height)
-          if distance > 140 {
-            withAnimation(.spring()) {
-              close()
-            }
-          } else {
-            withAnimation(.spring()) {
-              backgroundOpacity = 1.0
-            }
-          }
-        }
-    )
-    .transition(.opacity.combined(with: .scale))
+  private var isZoomed: Bool {
+    scale != minScale
   }
-}
-
-// A zoomable, pannable image container that clamps panning so you can't drag the image completely off screen.
-private struct ZoomableImageView: View {
-  @GestureState private var isInteracting: Bool = false
-  @State private var scale: CGFloat = 1.0
-  @State private var lastScale: CGFloat = 1.0
-  @State private var offset: CGSize = .zero
-  @State private var lastOffset: CGSize = .zero
-
-  let image: Image
-  let minScale: CGFloat
-  let maxScale: CGFloat
 
   init(
     image: Image,
     minScale: CGFloat = 1.0,
-    maxScale: CGFloat = 4.0
+    maxScale: CGFloat = 8.0,
+    close: @escaping () -> Void
   ) {
     self.image = image
     self.minScale = minScale
     self.maxScale = maxScale
+    self.close = close
+    self.scale = minScale
   }
 
   var body: some View {
-    GeometryReader { geo in
-      let viewSize = geo.size
+    NavigationStack {
+      ZStack {
+        GeometryReader { geo in
+          let viewSize = geo.size
 
-      // Double-tap to zoom
-      let doubleTap = TapGesture(count: 2)
-        .onEnded {
-          withAnimation(.spring()) {
-            if scale <= minScale + 0.01 {
-              scale = min(maxScale, 2.0)  // Zoom in to a nice level
-            } else {
-              scale = minScale
-              offset = .zero
-              lastOffset = .zero
+          // Double-tap to zoom
+          let doubleTap = TapGesture(count: 2)
+            .onEnded {
+              withAnimation(.spring()) {
+                if scale <= minScale + 0.01 {
+                  scale = min(maxScale, 2.0)  // Zoom in to a nice level
+                } else {
+                  scale = minScale
+                  offset = .zero
+                  lastOffset = .zero
+                }
+                lastScale = scale
+
+                print("scale: \(scale), offset: \(offset), isZoomed: \(isZoomed)")
+              }
             }
-            lastScale = scale
+
+          // Pinch to zoom
+          let magnification = MagnificationGesture()
+            .updating($isInteracting) { _, state, _ in
+              state = true
+            }
+            .onChanged { value in
+              let raw = lastScale * value
+              let newScale = min(max(raw, minScale), maxScale)
+              scale = newScale
+              // Clamp offset when scale changes
+              offset = clamp(offset: lastOffset, scale: newScale, containerSize: viewSize)
+              print("scale: \(scale), offset: \(offset), isZoomed: \(isZoomed)")
+            }
+            .onEnded { value in
+              lastScale = scale
+              offset = clamp(offset: offset, scale: scale, containerSize: viewSize)
+              lastOffset = offset
+            }
+
+          // Pan to move
+          let drag = DragGesture()
+            .updating($isInteracting) { _, state, _ in
+              state = true
+            }
+            .onChanged { gesture in
+              if isZoomed {
+                let proposed = CGSize(
+                  width: lastOffset.width + gesture.translation.width,
+                  height: lastOffset.height + gesture.translation.height)
+                offset = clamp(offset: proposed, scale: scale, containerSize: viewSize)
+              }
+            }
+            .onEnded { gesture in
+              lastOffset = offset
+            }
+
+          // Drag to dismiss
+          let dismissDrag = DragGesture()
+            .updating($dragOffset) { value, state, _ in
+              if !isZoomed {
+                state = value.translation
+                let distance = max(0, value.translation.height)
+                backgroundOpacity = max(0.4, 1.0 - Double(distance / 600))
+                print("Update dragOffset: \(value.translation)")
+                mainWindowOffsetY = distance
+              }
+            }
+            .onEnded { value in
+              if !isZoomed {
+                let distance = value.translation.height
+                if distance > 140 {
+                  withAnimation(.spring()) {
+                    close()
+                  }
+                } else {
+                  withAnimation(.spring()) {
+                    backgroundOpacity = 1.0
+                    mainWindowOffsetY = 0.0
+                  }
+                }
+              }
+            }
+
+          image
+            .resizable()
+            .scaledToFit()
+            .frame(width: viewSize.width, height: viewSize.height)
+            .scaleEffect(scale)
+            .offset(offset)
+            .gesture(
+              drag
+                .simultaneously(with: magnification)
+                .simultaneously(with: doubleTap)
+//                .simultaneously(with: dismissDrag)
+            )
+            .animation(.interactiveSpring(), value: isInteracting)
+            .animation(.spring(), value: scale)
+        }
+      }
+      .onAppear {
+        print(
+          "scale: \(scale), minScale: \(minScale), scale == minScale: \(scale == minScale), offset: \(offset), isZoomed: \(isZoomed)"
+        )
+      }
+      .onChange(
+        of: isZoomed,
+        { oldValue, newValue in
+          print("isZoomed: \(newValue)")
+        }
+      )
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .contentShape(.rect)
+      .transition(.opacity.combined(with: .scale))
+      .gesture(
+        DragGesture()
+          .updating($dragOffset) { value, state, _ in
+            if !isZoomed {
+              state = value.translation
+              let distance = max(0, value.translation.height)
+              backgroundOpacity = max(0.4, 1.0 - Double(distance / 600))
+              print("Update dragOffset: \(value.translation)")
+              mainWindowOffsetY = distance
+            }
+          }
+          .onEnded { value in
+            if !isZoomed {
+              let distance = value.translation.height
+              if distance > 140 {
+                withAnimation(.spring()) {
+                  close()
+                }
+              } else {
+                withAnimation(.spring()) {
+                  backgroundOpacity = 1.0
+                  mainWindowOffsetY = 0.0
+                }
+              }
+            }
+          }
+      )
+      .offset(y: mainWindowOffsetY)
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button {
+            close()
+          } label: {
+            Label("Close", systemImage: "xmark")
           }
         }
-
-      // Pinch to zoom
-      let magnification = MagnificationGesture()
-        .updating($isInteracting) { _, state, _ in
-          state = true
-        }
-        .onChanged { value in
-          let raw = lastScale * value
-          let newScale = min(max(raw, minScale), maxScale)
-          scale = newScale
-          // Clamp offset when scale changes
-          offset = clamp(offset: lastOffset, scale: newScale, containerSize: viewSize)
-        }
-        .onEnded { value in
-          lastScale = scale
-          offset = clamp(offset: offset, scale: scale, containerSize: viewSize)
-          lastOffset = offset
-        }
-
-      // Pan to move
-      let drag = DragGesture()
-        .updating($isInteracting) { _, state, _ in
-          state = true
-        }
-        .onChanged { gesture in
-          let proposed = CGSize(
-            width: lastOffset.width + gesture.translation.width,
-            height: lastOffset.height + gesture.translation.height)
-          offset = clamp(offset: proposed, scale: scale, containerSize: viewSize)
-        }
-        .onEnded { gesture in
-          lastOffset = offset
-        }
-
-      image
-        .resizable()
-        .scaledToFit()
-        .frame(width: viewSize.width, height: viewSize.height)
-        .scaleEffect(scale)
-        .offset(offset)
-        .gesture(drag.simultaneously(with: magnification).simultaneously(with: doubleTap))
-        .animation(.interactiveSpring(), value: isInteracting)
-        .animation(.spring(), value: scale)
+      }
     }
-    .background(Color.black.opacity(0.0001))  // enable gestures even if transparent
+    .presentationBackground(.background.opacity(backgroundOpacity))
   }
 
   // Clamp offset so that the image remains visible and doesn't drift entirely off screen

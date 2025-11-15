@@ -28,7 +28,7 @@ struct ShareExtensionScreen: View {
     switch phase {
     case .importing:
       VStack {
-        Text("Importing...")
+        Text("Extracting recipe from web page...")
         ProgressView()
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -42,7 +42,7 @@ struct ShareExtensionScreen: View {
     case .error(let message):
       NavigationStack {
         ContentUnavailableView(
-          "Import Failed",
+          "Extraction Failed",
           systemImage: "exclamationmark.circle.fill",
           description: Text(message)
         )
@@ -99,6 +99,16 @@ struct ShareExtensionScreen: View {
       }
     }
 
+    if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
+      let item = try await loadItem(forTypeIdentifier: UTType.url.identifier, from: provider)
+      guard let url = item as? URL else {
+        throw ShareImportFailure.invalidURL
+      }
+
+      let html = try await importManager.fetchHTML(from: url)
+      return HTMLPayload(html: html, sourceURL: url)
+    }
+
     return nil
   }
 
@@ -133,6 +143,7 @@ struct ShareExtensionScreen: View {
     case emptyPayload
     case itemProvider(Error)
     case missingTitle
+    case invalidURL
 
     var errorDescription: String {
       switch self {
@@ -150,6 +161,8 @@ struct ShareExtensionScreen: View {
         return "Failed to read the shared content."
       case .missingTitle:
         return "Title is required before saving this recipe."
+      case .invalidURL:
+        return "The share sheet did not provide a valid page URL."
       }
     }
   }
@@ -160,7 +173,7 @@ private struct HTMLPayload: Equatable {
   let html: String
   let sourceURL: URL?
 
-  private init(html: String, sourceURL: URL?) {
+  init(html: String, sourceURL: URL?) {
     self.html = html
     self.sourceURL = sourceURL
   }

@@ -45,23 +45,12 @@ struct RecipeDetailView: View {
     }
     .darkPrimaryLightSecondaryBackgroundColor()
     .fullScreenCover(item: $selectedImage) { image in
-      NavigationStack {
-        FullScreenImageViewer(
-          image: Image(uiImage: image),
-          close: {
-            selectedImage = nil
-          }
-        )
-        .toolbar {
-          ToolbarItem(placement: .topBarLeading) {
-            Button {
-              selectedImage = nil
-            } label: {
-              Label("Close", systemImage: "xmark")
-            }
-          }
+      FullScreenImageViewer(
+        image: Image(uiImage: image),
+        close: {
+          selectedImage = nil
         }
-      }
+      )
     }
   }
 
