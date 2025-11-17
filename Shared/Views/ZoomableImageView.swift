@@ -14,9 +14,7 @@ import SwiftUI
 #endif
 
 struct ZoomableImageView: View {
-  let carouselImage: CarouselImage
-  let imageIndex: Int
-  @Binding var isZoomed: Bool
+  let imageData: Data
 
   // Zoom state
   @State private var scale: CGFloat = 1.0
@@ -31,11 +29,39 @@ struct ZoomableImageView: View {
   // Constants
   private let minScale: CGFloat = 1.0
   private let maxScale: CGFloat = 15.0
+  
+  // Computed properties
+  private var image: Image? {
+    #if os(iOS)
+      guard let uiImage = UIImage(data: imageData) else { return nil }
+      return Image(uiImage: uiImage)
+    #elseif os(macOS)
+      guard let nsImage = NSImage(data: imageData) else { return nil }
+      return Image(nsImage: nsImage)
+    #else
+      return nil
+    #endif
+  }
+  
+  private var imageSize: CGSize {
+    #if os(iOS)
+      return UIImage(data: imageData)?.size ?? .zero
+    #elseif os(macOS)
+      return NSImage(data: imageData)?.size ?? .zero
+    #else
+      return .zero
+    #endif
+  }
+  
+  private var aspectRatio: CGFloat {
+    guard imageSize.height > 0 else { return 1.0 }
+    return imageSize.width / imageSize.height
+  }
 
   var body: some View {
     GeometryReader { geometry in
       Group {
-        if let image = carouselImage.image {
+        if let image = image {
           image
             .resizable()
             .aspectRatio(contentMode: .fit)
@@ -66,7 +92,7 @@ struct ZoomableImageView: View {
   private func createMagnificationGesture(in geometry: GeometryProxy) -> some Gesture {
     MagnificationGesture()
       .updating($magnificationGestureScale) { value, state, _ in
-        scale = value
+        state = value
       }
       .onEnded { value in
         // Calculate new scale within bounds
@@ -86,7 +112,6 @@ struct ZoomableImageView: View {
         scale = newScale
         offset = constrainedOffset
         lastOffset = constrainedOffset
-        isZoomed = newScale > minScale
 
         // Reset offset if zoomed out to minimum
         if newScale == minScale {
@@ -154,17 +179,14 @@ struct ZoomableImageView: View {
       if scale > minScale {
         // Zoom out to minimum
         scale = minScale
-        isZoomed = false
         offset = .zero
         lastOffset = .zero
       } else {
         // Calculate scale to fill screen height
         let targetScale = calculateHeightFillingScale(for: geometry)
         scale = min(targetScale, maxScale)
-        isZoomed = true
       }
     }
-
   }
 
   // MARK: - Helper Functions
@@ -189,10 +211,8 @@ struct ZoomableImageView: View {
 
   /// Calculates the scale needed to fill screen height
   private func calculateHeightFillingScale(for geometry: GeometryProxy) -> CGFloat {
-    let imageAspectRatio = carouselImage.aspectRatio
-
     // Fallback to 2x if aspect ratio is invalid
-    guard imageAspectRatio > 0 else {
+    guard aspectRatio > 0 else {
       return 2.0
     }
 
@@ -201,7 +221,7 @@ struct ZoomableImageView: View {
 
     // When using .fit aspect ratio, the image width is limited by screen width
     // Calculate the fitted image height
-    let fittedImageHeight = screenWidth / imageAspectRatio
+    let fittedImageHeight = screenWidth / aspectRatio
 
     // Calculate the scale needed to make the fitted image fill screen height
     return screenHeight / fittedImageHeight
@@ -209,10 +229,8 @@ struct ZoomableImageView: View {
 
   /// Calculates the actual size of the image when fitted to the screen
   private func calculateFittedImageSize(in geometry: GeometryProxy) -> CGSize {
-    let imageAspectRatio = carouselImage.aspectRatio
-
     // Fallback if aspect ratio is invalid
-    guard imageAspectRatio > 0 else {
+    guard aspectRatio > 0 else {
       return geometry.size
     }
 
@@ -222,15 +240,15 @@ struct ZoomableImageView: View {
 
     // When using .aspectRatio(contentMode: .fit), the image is scaled to fit within bounds
     // while maintaining its aspect ratio
-    if imageAspectRatio > screenAspectRatio {
+    if aspectRatio > screenAspectRatio {
       // Image is wider - width is constrained by screen width
       let fittedWidth = screenWidth
-      let fittedHeight = screenWidth / imageAspectRatio
+      let fittedHeight = screenWidth / aspectRatio
       return CGSize(width: fittedWidth, height: fittedHeight)
     } else {
       // Image is taller - height is constrained by screen height
       let fittedHeight = screenHeight
-      let fittedWidth = screenHeight * imageAspectRatio
+      let fittedWidth = screenHeight * aspectRatio
       return CGSize(width: fittedWidth, height: fittedHeight)
     }
   }

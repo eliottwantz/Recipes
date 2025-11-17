@@ -9,65 +9,77 @@ import Dependencies
 import SQLiteData
 import SwiftUI
 
+struct ImageDataWrapper: Identifiable {
+  let id = UUID()
+  let data: Data
+}
+
 struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
-  //  @State private var selectedImage: UIImage?
-  //  @State private var showCarousel = false
-  @State private var selectedImageIndex: Int?
+  @State private var selectedImageData: Data?
 
   var body: some View {
-    ZStack {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 24) {
-          header
+    ScrollView {
+      VStack(alignment: .leading, spacing: 24) {
+        header
 
-          if let notes = recipeDetails.recipe.notes, !notes.isEmpty {
-            notesSection
-          }
-
-          if !recipeDetails.ingredients.isEmpty {
-            ingredientsSection
-          }
-
-          if !recipeDetails.instructions.isEmpty {
-            instructionsSection
-          }
-
-          if !recipeDetails.photos.isEmpty {
-            photosSection
-          }
-
-          if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
-            nutritionSection
-          }
-
+        if let notes = recipeDetails.recipe.notes, !notes.isEmpty {
+          notesSection
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 10)
-        .padding(.bottom, 10)
-      }
-      .darkPrimaryLightSecondaryBackgroundColor()
 
-      if let index = selectedImageIndex {
-        ImageCarouselViewer(
-          images: recipeDetails.photos.map {
-            CarouselImage(data: $0.photoData)
-          },
-          initialIndex: index,
-          isPresented: Binding(
-            get: { selectedImageIndex != nil },
-            set: { if !$0 { selectedImageIndex = nil } }
-          )
-        )
-        .transition(.opacity)
-        .zIndex(1)
-        .toolbar(.hidden, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
-        .toolbar(.hidden, for: .bottomBar)
-        #if os(iOS)
-          .statusBarHidden()
-        #endif
+        if !recipeDetails.ingredients.isEmpty {
+          ingredientsSection
+        }
+
+        if !recipeDetails.instructions.isEmpty {
+          instructionsSection
+        }
+
+        if !recipeDetails.photos.isEmpty {
+          photosSection
+        }
+
+        if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
+          nutritionSection
+        }
+
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 10)
+      .padding(.bottom, 10)
+    }
+    .darkPrimaryLightSecondaryBackgroundColor()
+    .fullScreenCover(
+      item: Binding(
+        get: { selectedImageData.map { ImageDataWrapper(data: $0) } },
+        set: { selectedImageData = $0?.data }
+      )
+    ) { wrapper in
+      ZStack {
+        ZoomableImageView(imageData: wrapper.data)
+        VStack {
+          Button {
+            selectedImageData = nil
+          } label: {
+            Label("Close", systemImage: "xmark")
+
+          }
+          .buttonStyle(.toolbar)
+          .padding(.leading)
+          .padding(.top)
+          .safeAreaPadding(.top)
+
+          Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+      }
+      .ignoresSafeArea()
+      .presentationBackground {
+        Color.black.ignoresSafeArea()
+      }
+      #if os(iOS)
+        .statusBarHidden()
+      #endif
     }
   }
 
@@ -307,10 +319,7 @@ struct RecipeDetailView: View {
                 .frame(width: 200, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .onTapGesture {
-                  //                  selectedImage = uiImage
-                  //                  selectedIndex = index
-                  //                  showCarousel = true
-                  selectedImageIndex = index
+                  selectedImageData = photo.photoData
                 }
             }
           }
