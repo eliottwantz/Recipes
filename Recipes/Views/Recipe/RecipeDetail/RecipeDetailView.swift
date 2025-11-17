@@ -11,46 +11,63 @@ import SwiftUI
 
 struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
-  @State private var selectedImage: UIImage?
+  //  @State private var selectedImage: UIImage?
+  //  @State private var showCarousel = false
+  @State private var selectedImageIndex: Int?
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 24) {
-        header
+    ZStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 24) {
+          header
 
-        if let notes = recipeDetails.recipe.notes, !notes.isEmpty {
-          notesSection
+          if let notes = recipeDetails.recipe.notes, !notes.isEmpty {
+            notesSection
+          }
+
+          if !recipeDetails.ingredients.isEmpty {
+            ingredientsSection
+          }
+
+          if !recipeDetails.instructions.isEmpty {
+            instructionsSection
+          }
+
+          if !recipeDetails.photos.isEmpty {
+            photosSection
+          }
+
+          if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
+            nutritionSection
+          }
+
         }
-
-        if !recipeDetails.ingredients.isEmpty {
-          ingredientsSection
-        }
-
-        if !recipeDetails.instructions.isEmpty {
-          instructionsSection
-        }
-
-        if !recipeDetails.photos.isEmpty {
-          photosSection
-        }
-
-        if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
-          nutritionSection
-        }
-
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.bottom, 10)
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.horizontal, 10)
-      .padding(.bottom, 10)
-    }
-    .darkPrimaryLightSecondaryBackgroundColor()
-    .fullScreenCover(item: $selectedImage) { image in
-      FullScreenImageViewer(
-        image: Image(uiImage: image),
-        close: {
-          selectedImage = nil
-        }
-      )
+      .darkPrimaryLightSecondaryBackgroundColor()
+
+      if let index = selectedImageIndex {
+        ImageCarouselViewer(
+          images: recipeDetails.photos.map {
+            CarouselImage(data: $0.photoData)
+          },
+          initialIndex: index,
+          isPresented: Binding(
+            get: { selectedImageIndex != nil },
+            set: { if !$0 { selectedImageIndex = nil } }
+          )
+        )
+        .transition(.opacity)
+        .zIndex(1)
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+        .toolbar(.hidden, for: .bottomBar)
+        #if os(iOS)
+          .statusBarHidden()
+        #endif
+      }
     }
   }
 
@@ -157,7 +174,7 @@ struct RecipeDetailView: View {
             }
           }
           .onTapGesture {
-            selectedImage = uiImage
+            // TODO: Open WebView with the selected URL if exists, otherwise open ImageCarousel viewer
           }
       } else {
         Text(recipeDetails.recipe.name)
@@ -282,7 +299,7 @@ struct RecipeDetailView: View {
 
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 12) {
-          ForEach(recipeDetails.photos) { photo in
+          ForEach(Array(recipeDetails.photos.enumerated()), id: \.offset) { index, photo in
             if let uiImage = UIImage(data: photo.photoData) {
               Image(uiImage: uiImage)
                 .resizable()
@@ -290,7 +307,10 @@ struct RecipeDetailView: View {
                 .frame(width: 200, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .onTapGesture {
-                  selectedImage = uiImage
+                  //                  selectedImage = uiImage
+                  //                  selectedIndex = index
+                  //                  showCarousel = true
+                  selectedImageIndex = index
                 }
             }
           }
