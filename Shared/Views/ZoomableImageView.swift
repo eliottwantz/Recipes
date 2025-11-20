@@ -2,7 +2,7 @@
 //  ZoomableImageView.swift
 //  SwiftExplorations
 //
-//  Image view with zoom capabilities via pinch and double-tap gestures
+//  Image view with zoom capabilities via native UIScrollView
 //
 
 import SwiftUI
@@ -16,245 +16,195 @@ import SwiftUI
 struct ZoomableImageView: View {
   let imageData: Data
 
-  // Zoom state
-  @State private var scale: CGFloat = 1.0
-  @State private var lastScale: CGFloat = 1.0
-  @State private var offset: CGSize = .zero
-  @State private var lastOffset: CGSize = .zero
-
-  // Gesture state
-  @GestureState private var magnificationGestureScale: CGFloat = 1.0
-  @GestureState private var panGestureOffset: CGSize = .zero
-
-  // Cached image state (performance optimization)
-  @State private var cachedImage: Image?
-  @State private var cachedImageSize: CGSize = .zero
-  @State private var cachedFittedSize: CGSize = .zero
-  @State private var lastGeometrySize: CGSize = .zero
-
-  // Constants
-  private let minScale: CGFloat = 1.0
-  private let maxScale: CGFloat = 15.0
-  
-  // Computed properties
-  private var aspectRatio: CGFloat {
-    guard cachedImageSize.height > 0 else { return 1.0 }
-    return cachedImageSize.width / cachedImageSize.height
-  }
-
   var body: some View {
-    GeometryReader { geometry in
-      Group {
-        if let image = cachedImage {
-          image
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-        } else {
-          // Fallback if image cannot be loaded
-          Color.gray.opacity(0.3)
-        }
-      }
-      .scaleEffect(scale * magnificationGestureScale)
-      .offset(
-        x: offset.width + panGestureOffset.width,
-        y: offset.height + panGestureOffset.height
-      )
-      .gesture(createMagnificationGesture(in: geometry))
-      .simultaneousGesture(
-        scale > minScale ? createDragGesture(in: geometry) : nil
-      )
-      .onTapGesture(count: 2) {
-        handleDoubleTap(in: geometry)
-      }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .onAppear {
-        initializeImageCache()
-        updateFittedSize(for: geometry)
-      }
-      .onChange(of: geometry.size) { oldSize, newSize in
-        if oldSize != newSize {
-          updateFittedSize(for: geometry)
-        }
-      }
-    }
-  }
-
-  // MARK: - Gestures
-
-  /// Creates pinch-to-zoom magnification gesture
-  private func createMagnificationGesture(in geometry: GeometryProxy) -> some Gesture {
-    MagnificationGesture()
-      .updating($magnificationGestureScale) { value, state, _ in
-        state = value
-      }
-      .onEnded { value in
-        // Calculate new scale within bounds
-        var newScale = scale * value
-        newScale = min(max(newScale, minScale), maxScale)
-
-        // Constrain offset based on new scale to prevent image going off-screen
-        let constrainedOffset = constrainOffset(
-          offset: lastOffset,
-          scale: newScale,
-          imageSize: cachedFittedSize,
-          viewSize: geometry.size
-        )
-
-        // Update without animation for smooth transition
-        scale = newScale
-        offset = constrainedOffset
-        lastOffset = constrainedOffset
-
-        // Reset offset if zoomed out to minimum
-        if newScale == minScale {
-          offset = .zero
-          lastOffset = .zero
-        }
-      }
-  }
-
-  /// Creates drag gesture for panning when zoomed
-  private func createDragGesture(in geometry: GeometryProxy) -> some Gesture {
-    DragGesture()
-      .updating($panGestureOffset) { value, state, _ in
-        // Only allow panning when zoomed in
-        if scale > minScale {
-          // Calculate the proposed new offset
-          let proposedOffset = CGSize(
-            width: lastOffset.width + value.translation.width,
-            height: lastOffset.height + value.translation.height
-          )
-
-          // Constrain offset to prevent panning beyond image bounds (using cached size)
-          let maxOffsetX = max(0, (cachedFittedSize.width * scale - geometry.size.width) / 2)
-          let maxOffsetY = max(0, (cachedFittedSize.height * scale - geometry.size.height) / 2)
-
-          // Apply bounds to the gesture offset (relative to lastOffset)
-          let constrainedOffsetX = min(max(proposedOffset.width, -maxOffsetX), maxOffsetX)
-          let constrainedOffsetY = min(max(proposedOffset.height, -maxOffsetY), maxOffsetY)
-
-          state = CGSize(
-            width: constrainedOffsetX - lastOffset.width,
-            height: constrainedOffsetY - lastOffset.height
-          )
-        }
-      }
-      .onEnded { value in
-        if scale > minScale {
-          // Calculate new offset with bounds checking
-          let newOffset = CGSize(
-            width: lastOffset.width + value.translation.width,
-            height: lastOffset.height + value.translation.height
-          )
-
-          // Constrain offset to prevent image from moving too far (using cached size)
-          let maxOffsetX = max(0, (cachedFittedSize.width * scale - geometry.size.width) / 2)
-          let maxOffsetY = max(0, (cachedFittedSize.height * scale - geometry.size.height) / 2)
-
-          // Update without animation for smooth transition
-          offset.width = min(max(newOffset.width, -maxOffsetX), maxOffsetX)
-          offset.height = min(max(newOffset.height, -maxOffsetY), maxOffsetY)
-          lastOffset = offset
-        }
-      }
-  }
-
-  /// Handles double-tap gesture to zoom in/out
-  private func handleDoubleTap(in geometry: GeometryProxy) {
-    withAnimation(.easeOut(duration: 0.25)) {
-      if scale > minScale {
-        // Zoom out to minimum
-        scale = minScale
-        offset = .zero
-        lastOffset = .zero
-      } else {
-        // Calculate scale to fill screen height
-        let targetScale = calculateHeightFillingScale(for: geometry)
-        scale = min(targetScale, maxScale)
-      }
-    }
-  }
-
-  // MARK: - Helper Functions
-
-  /// Initializes the cached image from imageData (called once on appear)
-  private func initializeImageCache() {
     #if os(iOS)
-      guard let uiImage = UIImage(data: imageData) else { return }
-      cachedImage = Image(uiImage: uiImage)
-      cachedImageSize = uiImage.size
+      if let uiImage = UIImage(data: imageData) {
+        ZoomableScrollView(image: uiImage)
+          .ignoresSafeArea()
+      } else {
+        fallbackView
+      }
     #elseif os(macOS)
-      guard let nsImage = NSImage(data: imageData) else { return }
-      cachedImage = Image(nsImage: nsImage)
-      cachedImageSize = nsImage.size
+      if let nsImage = NSImage(data: imageData) {
+        Image(nsImage: nsImage)
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+      } else {
+        fallbackView
+      }
     #endif
   }
 
-  /// Updates the cached fitted size when geometry changes
-  private func updateFittedSize(for geometry: GeometryProxy) {
-    cachedFittedSize = calculateFittedImageSize(in: geometry)
-    lastGeometrySize = geometry.size
-  }
-
-  /// Constrains offset to keep image within view bounds based on current scale
-  private func constrainOffset(
-    offset: CGSize,
-    scale: CGFloat,
-    imageSize: CGSize,
-    viewSize: CGSize
-  ) -> CGSize {
-    // Calculate maximum allowed offset based on current scale
-    let maxOffsetX = max(0, (imageSize.width * scale - viewSize.width) / 2)
-    let maxOffsetY = max(0, (imageSize.height * scale - viewSize.height) / 2)
-
-    // Constrain offset within bounds
-    let constrainedX = min(max(offset.width, -maxOffsetX), maxOffsetX)
-    let constrainedY = min(max(offset.height, -maxOffsetY), maxOffsetY)
-
-    return CGSize(width: constrainedX, height: constrainedY)
-  }
-
-  /// Calculates the scale needed to fill screen height
-  private func calculateHeightFillingScale(for geometry: GeometryProxy) -> CGFloat {
-    // Fallback to 2x if aspect ratio is invalid
-    guard aspectRatio > 0 else {
-      return 2.0
-    }
-
-    let screenHeight = geometry.size.height
-    let screenWidth = geometry.size.width
-
-    // When using .fit aspect ratio, the image width is limited by screen width
-    // Calculate the fitted image height
-    let fittedImageHeight = screenWidth / aspectRatio
-
-    // Calculate the scale needed to make the fitted image fill screen height
-    return screenHeight / fittedImageHeight
-  }
-
-  /// Calculates the actual size of the image when fitted to the screen
-  private func calculateFittedImageSize(in geometry: GeometryProxy) -> CGSize {
-    // Fallback if aspect ratio is invalid
-    guard aspectRatio > 0 else {
-      return geometry.size
-    }
-
-    let screenWidth = geometry.size.width
-    let screenHeight = geometry.size.height
-    let screenAspectRatio = screenWidth / screenHeight
-
-    // When using .aspectRatio(contentMode: .fit), the image is scaled to fit within bounds
-    // while maintaining its aspect ratio
-    if aspectRatio > screenAspectRatio {
-      // Image is wider - width is constrained by screen width
-      let fittedWidth = screenWidth
-      let fittedHeight = screenWidth / aspectRatio
-      return CGSize(width: fittedWidth, height: fittedHeight)
-    } else {
-      // Image is taller - height is constrained by screen height
-      let fittedHeight = screenHeight
-      let fittedWidth = screenHeight * aspectRatio
-      return CGSize(width: fittedWidth, height: fittedHeight)
-    }
+  private var fallbackView: some View {
+    Color.gray.opacity(0.3)
+      .overlay(
+        Image(systemName: "photo")
+          .foregroundStyle(.secondary)
+      )
   }
 }
+
+#if os(iOS)
+  struct ZoomableScrollView: UIViewRepresentable {
+    let image: UIImage
+
+    func makeUIView(context: Context) -> ImageScrollView {
+      let scrollView = ImageScrollView()
+      scrollView.display(image: image)
+      return scrollView
+    }
+
+    func updateUIView(_ uiView: ImageScrollView, context: Context) {
+      if uiView.imageZoomView?.image != image {
+        uiView.display(image: image)
+      }
+    }
+  }
+
+  class ImageScrollView: UIScrollView, UIScrollViewDelegate {
+    var imageZoomView: UIImageView?
+    var needsInitialZoom = false
+
+    override init(frame: CGRect) {
+      super.init(frame: frame)
+      delegate = self
+      showsVerticalScrollIndicator = false
+      showsHorizontalScrollIndicator = false
+      bouncesZoom = true
+      backgroundColor = .clear
+      contentInsetAdjustmentBehavior = .never
+    }
+
+    required init?(coder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+
+    func display(image: UIImage) {
+      // Clear existing image view
+      imageZoomView?.removeFromSuperview()
+      imageZoomView = nil
+
+      // Reset zoom scale
+      zoomScale = 1.0
+
+      // Create new image view
+      let imageView = UIImageView(image: image)
+      imageView.contentMode = .scaleAspectFit
+      // Explicitly set frame to image size
+      imageView.frame = CGRect(origin: .zero, size: image.size)
+      addSubview(imageView)
+      imageZoomView = imageView
+
+      configureFor(imageSize: image.size)
+      needsInitialZoom = true
+    }
+
+    func configureFor(imageSize: CGSize) {
+      contentSize = imageSize
+      setMaxMinZoomScalesForCurrentBounds()
+      zoomScale = minimumZoomScale
+
+      // Add double tap gesture if not already added
+      if gestureRecognizers?.first(where: { $0 is UITapGestureRecognizer }) == nil {
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        doubleTap.numberOfTapsRequired = 2
+        addGestureRecognizer(doubleTap)
+      }
+    }
+
+    override func layoutSubviews() {
+      super.layoutSubviews()
+      setMaxMinZoomScalesForCurrentBounds()
+
+      if needsInitialZoom && bounds.width > 0 && bounds.height > 0 {
+        zoomScale = minimumZoomScale
+        needsInitialZoom = false
+      }
+
+      centerImage()
+    }
+
+    func setMaxMinZoomScalesForCurrentBounds() {
+      guard let imageZoomView = imageZoomView else { return }
+
+      let boundsSize = bounds.size
+      let imageSize = imageZoomView.bounds.size
+
+      guard boundsSize.width > 0, boundsSize.height > 0, imageSize.width > 0, imageSize.height > 0
+      else { return }
+
+      let xScale = boundsSize.width / imageSize.width
+      let yScale = boundsSize.height / imageSize.height
+      let minScale = min(xScale, yScale)
+
+      var maxScale: CGFloat = 2.0
+      if minScale < 0.1 {
+        maxScale = 0.5
+      }
+      if minScale >= 0.1 && minScale < 0.5 {
+        maxScale = 2.0
+      }
+      if minScale >= 0.5 {
+        maxScale = max(2.0, minScale * 2)
+      }
+
+      minimumZoomScale = minScale
+      maximumZoomScale = maxScale
+
+      // If the current zoom scale is less than the new min scale (e.g. rotation), fix it
+      if zoomScale < minimumZoomScale {
+        zoomScale = minimumZoomScale
+      }
+    }
+
+    func centerImage() {
+      guard let imageZoomView = imageZoomView else { return }
+
+      let boundsSize = bounds.size
+      var frameToCenter = imageZoomView.frame
+
+      if frameToCenter.size.width < boundsSize.width {
+        frameToCenter.origin.x = (boundsSize.width - frameToCenter.size.width) / 2
+      } else {
+        frameToCenter.origin.x = 0
+      }
+
+      if frameToCenter.size.height < boundsSize.height {
+        frameToCenter.origin.y = (boundsSize.height - frameToCenter.size.height) / 2
+      } else {
+        frameToCenter.origin.y = 0
+      }
+
+      imageZoomView.frame = frameToCenter
+    }
+
+    // MARK: - UIScrollViewDelegate
+
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+      return imageZoomView
+    }
+
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+      centerImage()
+    }
+
+    @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+      if zoomScale > minimumZoomScale {
+        setZoomScale(minimumZoomScale, animated: true)
+      } else {
+        // Zoom in to tap location
+        let point = gesture.location(in: imageZoomView)
+        let scrollSize = bounds.size
+        let size = CGSize(
+          width: scrollSize.width / maximumZoomScale,
+          height: scrollSize.height / maximumZoomScale
+        )
+        let origin = CGPoint(
+          x: point.x - size.width / 2,
+          y: point.y - size.height / 2
+        )
+        zoom(to: CGRect(origin: origin, size: size), animated: true)
+      }
+    }
+  }
+#endif
