@@ -11,7 +11,9 @@ import SwiftUI
 
 struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
-  @State private var selectedRecipePhoto: RecipePhoto?
+  @State private var showImageCarousel: Bool = false
+  @State private var selectedPhotoID: RecipePhoto.ID? = nil
+  @Environment(\.openWindow) private var openWindow
 
   var body: some View {
     ScrollView {
@@ -44,24 +46,28 @@ struct RecipeDetailView: View {
       .padding(.bottom, 10)
     }
     .darkPrimaryLightSecondaryBackgroundColor()
-    .fullScreenCover(item: $selectedRecipePhoto) { photo in
-      NavigationStack {
-        ZoomableImageView(imageData: photo.photoData)
+    #if os(iOS)
+      .fullScreenCover(isPresented: $showImageCarousel) {
+        NavigationStack {
+          ImageCarouselView(
+            photos: recipeDetails.photos,
+            selectedPhotoID: $selectedPhotoID
+          )
           .toolbar {
             ToolbarItem(placement: .topBarLeading) {
               Button {
-                selectedRecipePhoto = nil
+                selectedPhotoID = nil
+                showImageCarousel = false
               } label: {
                 Label("Close", systemImage: "xmark")
               }
             }
           }
-      }
-      .presentationBackground(.black)
-      #if os(iOS)
+        }
+        .presentationBackground(.black)
         .statusBarHidden()
-      #endif
-    }
+      }
+    #endif
   }
 
   private var header: some View {
@@ -300,7 +306,18 @@ struct RecipeDetailView: View {
                 .frame(width: 200, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .onTapGesture {
-                  selectedRecipePhoto = photo
+                  #if os(iOS)
+                    selectedPhotoID = photo.id
+                    showImageCarousel = true
+                  #elseif os(macOS)
+                    openWindow(
+                      id: "recipe-photos",
+                      value: RecipePhotosWindowData(
+                        recipeId: recipeDetails.recipe.id,
+                        initialPhotoId: photo.id
+                      )
+                    )
+                  #endif
                 }
             }
           }

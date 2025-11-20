@@ -20,5 +20,13 @@ struct RecipesApp: App {
       ContentView()
     }
     .environment(\.appRouter, appRouter)
+
+    #if os(macOS)
+      WindowGroup(id: "recipe-photos", for: RecipePhotosWindowData.self) { $data in
+        if let data {
+          RecipePhotosWindow(data: data)
+        }
+      }
+    #endif
   }
 }
