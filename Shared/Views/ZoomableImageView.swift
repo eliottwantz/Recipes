@@ -26,42 +26,26 @@ struct ZoomableImageView: View {
   @GestureState private var magnificationGestureScale: CGFloat = 1.0
   @GestureState private var panGestureOffset: CGSize = .zero
 
+  // Cached image state (performance optimization)
+  @State private var cachedImage: Image?
+  @State private var cachedImageSize: CGSize = .zero
+  @State private var cachedFittedSize: CGSize = .zero
+  @State private var lastGeometrySize: CGSize = .zero
+
   // Constants
   private let minScale: CGFloat = 1.0
   private let maxScale: CGFloat = 15.0
   
   // Computed properties
-  private var image: Image? {
-    #if os(iOS)
-      guard let uiImage = UIImage(data: imageData) else { return nil }
-      return Image(uiImage: uiImage)
-    #elseif os(macOS)
-      guard let nsImage = NSImage(data: imageData) else { return nil }
-      return Image(nsImage: nsImage)
-    #else
-      return nil
-    #endif
-  }
-  
-  private var imageSize: CGSize {
-    #if os(iOS)
-      return UIImage(data: imageData)?.size ?? .zero
-    #elseif os(macOS)
-      return NSImage(data: imageData)?.size ?? .zero
-    #else
-      return .zero
-    #endif
-  }
-  
   private var aspectRatio: CGFloat {
-    guard imageSize.height > 0 else { return 1.0 }
-    return imageSize.width / imageSize.height
+    guard cachedImageSize.height > 0 else { return 1.0 }
+    return cachedImageSize.width / cachedImageSize.height
   }
 
   var body: some View {
     GeometryReader { geometry in
       Group {
-        if let image = image {
+        if let image = cachedImage {
           image
             .resizable()
             .aspectRatio(contentMode: .fit)
@@ -83,6 +67,15 @@ struct ZoomableImageView: View {
         handleDoubleTap(in: geometry)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .onAppear {
+        initializeImageCache()
+        updateFittedSize(for: geometry)
+      }
+      .onChange(of: geometry.size) { oldSize, newSize in
+        if oldSize != newSize {
+          updateFittedSize(for: geometry)
+        }
+      }
     }
   }
 
@@ -100,11 +93,10 @@ struct ZoomableImageView: View {
         newScale = min(max(newScale, minScale), maxScale)
 
         // Constrain offset based on new scale to prevent image going off-screen
-        let fittedImageSize = calculateFittedImageSize(in: geometry)
         let constrainedOffset = constrainOffset(
           offset: lastOffset,
           scale: newScale,
-          imageSize: fittedImageSize,
+          imageSize: cachedFittedSize,
           viewSize: geometry.size
         )
 
@@ -133,12 +125,9 @@ struct ZoomableImageView: View {
             height: lastOffset.height + value.translation.height
           )
 
-          // Get the actual fitted image size
-          let fittedImageSize = calculateFittedImageSize(in: geometry)
-
-          // Constrain offset to prevent panning beyond image bounds
-          let maxOffsetX = max(0, (fittedImageSize.width * scale - geometry.size.width) / 2)
-          let maxOffsetY = max(0, (fittedImageSize.height * scale - geometry.size.height) / 2)
+          // Constrain offset to prevent panning beyond image bounds (using cached size)
+          let maxOffsetX = max(0, (cachedFittedSize.width * scale - geometry.size.width) / 2)
+          let maxOffsetY = max(0, (cachedFittedSize.height * scale - geometry.size.height) / 2)
 
           // Apply bounds to the gesture offset (relative to lastOffset)
           let constrainedOffsetX = min(max(proposedOffset.width, -maxOffsetX), maxOffsetX)
@@ -158,12 +147,9 @@ struct ZoomableImageView: View {
             height: lastOffset.height + value.translation.height
           )
 
-          // Get the actual fitted image size
-          let fittedImageSize = calculateFittedImageSize(in: geometry)
-
-          // Constrain offset to prevent image from moving too far
-          let maxOffsetX = max(0, (fittedImageSize.width * scale - geometry.size.width) / 2)
-          let maxOffsetY = max(0, (fittedImageSize.height * scale - geometry.size.height) / 2)
+          // Constrain offset to prevent image from moving too far (using cached size)
+          let maxOffsetX = max(0, (cachedFittedSize.width * scale - geometry.size.width) / 2)
+          let maxOffsetY = max(0, (cachedFittedSize.height * scale - geometry.size.height) / 2)
 
           // Update without animation for smooth transition
           offset.width = min(max(newOffset.width, -maxOffsetX), maxOffsetX)
@@ -190,6 +176,25 @@ struct ZoomableImageView: View {
   }
 
   // MARK: - Helper Functions
+
+  /// Initializes the cached image from imageData (called once on appear)
+  private func initializeImageCache() {
+    #if os(iOS)
+      guard let uiImage = UIImage(data: imageData) else { return }
+      cachedImage = Image(uiImage: uiImage)
+      cachedImageSize = uiImage.size
+    #elseif os(macOS)
+      guard let nsImage = NSImage(data: imageData) else { return }
+      cachedImage = Image(nsImage: nsImage)
+      cachedImageSize = nsImage.size
+    #endif
+  }
+
+  /// Updates the cached fitted size when geometry changes
+  private func updateFittedSize(for geometry: GeometryProxy) {
+    cachedFittedSize = calculateFittedImageSize(in: geometry)
+    lastGeometrySize = geometry.size
+  }
 
   /// Constrains offset to keep image within view bounds based on current scale
   private func constrainOffset(
