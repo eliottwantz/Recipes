@@ -16,7 +16,7 @@ struct ToolbarButtonStyle: PrimitiveButtonStyle {
       .labelStyle(.iconOnly)
       .glassEffect(.regular.interactive(), in: .circle)
       .onTapGesture {
-          configuration.trigger()
+        configuration.trigger()
       }
       .contentShape(.circle)
   }
@@ -25,14 +25,14 @@ struct ToolbarButtonStyle: PrimitiveButtonStyle {
 #Preview {
   VStack {
     Button {
-        print("Tapped")
+      print("Tapped")
     } label: {
       Label("Add", systemImage: "plus")
     }
     .buttonStyle(.bordered)
 
     Button {
-        print("Tapped")
+      print("Tapped")
     } label: {
       Label("Add", systemImage: "plus")
     }

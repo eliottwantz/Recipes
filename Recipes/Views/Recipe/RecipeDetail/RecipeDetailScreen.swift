@@ -15,7 +15,7 @@ struct RecipeDetailScreen: View {
   @State private var showEditSheet = false
 
   init(recipeId: Recipe.ID) {
-    self._recipeDetails = RecipeDetails.Fetch(recipeId: recipeId)
+    self._recipeDetails = RecipeDetails.fetch(recipeId: recipeId)
   }
 
   var body: some View {

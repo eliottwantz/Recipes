@@ -14,7 +14,7 @@ nonisolated struct RecipeDetails {
   var instructions: [RecipeInstruction]
   var photos: [RecipePhoto] = []
 
-  static func Fetch(recipeId: Recipe.ID) -> Fetch<RecipeDetails> {
+  static func fetch(recipeId: Recipe.ID) -> Fetch<RecipeDetails> {
     return SQLiteData.Fetch(
       wrappedValue: .init(recipe: .init(id: UUID()), ingredients: [], instructions: [], photos: []),
       RecipeDetails.FetchKeyRequest(recipeId: recipeId)
