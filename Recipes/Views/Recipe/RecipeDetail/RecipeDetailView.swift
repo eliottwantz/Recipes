@@ -45,20 +45,18 @@ struct RecipeDetailView: View {
     }
     .darkPrimaryLightSecondaryBackgroundColor()
     .fullScreenCover(item: $selectedRecipePhoto) { photo in
-      ZStack(alignment: .topLeading) {
+      NavigationStack {
         ZoomableImageView(imageData: photo.photoData)
-
-        Button {
-          selectedRecipePhoto = nil
-        } label: {
-          Label("Close", systemImage: "xmark")
-        }
-        .buttonStyle(.toolbar)
-        .padding(.leading)
-        .padding(.top)
-        .safeAreaPadding(.top)
+          .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+              Button {
+                selectedRecipePhoto = nil
+              } label: {
+                Label("Close", systemImage: "xmark")
+              }
+            }
+          }
       }
-      .ignoresSafeArea()
       .presentationBackground(.black)
       #if os(iOS)
         .statusBarHidden()
