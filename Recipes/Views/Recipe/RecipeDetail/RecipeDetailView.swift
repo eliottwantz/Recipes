@@ -9,14 +9,9 @@ import Dependencies
 import SQLiteData
 import SwiftUI
 
-struct ImageDataWrapper: Identifiable {
-  let id = UUID()
-  let data: Data
-}
-
 struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
-  @State private var selectedImageData: Data?
+  @State private var selectedRecipePhoto: RecipePhoto?
 
   var body: some View {
     ScrollView {
@@ -49,34 +44,22 @@ struct RecipeDetailView: View {
       .padding(.bottom, 10)
     }
     .darkPrimaryLightSecondaryBackgroundColor()
-    .fullScreenCover(
-      item: Binding(
-        get: { selectedImageData.map { ImageDataWrapper(data: $0) } },
-        set: { selectedImageData = $0?.data }
-      )
-    ) { wrapper in
-      ZStack {
-        ZoomableImageView(imageData: wrapper.data)
-        VStack {
-          Button {
-            selectedImageData = nil
-          } label: {
-            Label("Close", systemImage: "xmark")
+    .fullScreenCover(item: $selectedRecipePhoto) { photo in
+      ZStack(alignment: .topLeading) {
+        ZoomableImageView(imageData: photo.photoData)
 
-          }
-          .buttonStyle(.toolbar)
-          .padding(.leading)
-          .padding(.top)
-          .safeAreaPadding(.top)
-
-          Spacer()
+        Button {
+          selectedRecipePhoto = nil
+        } label: {
+          Label("Close", systemImage: "xmark")
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .buttonStyle(.toolbar)
+        .padding(.leading)
+        .padding(.top)
+        .safeAreaPadding(.top)
       }
       .ignoresSafeArea()
-      .presentationBackground {
-        Color.black.ignoresSafeArea()
-      }
+      .presentationBackground(.black)
       #if os(iOS)
         .statusBarHidden()
       #endif
@@ -319,7 +302,7 @@ struct RecipeDetailView: View {
                 .frame(width: 200, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .onTapGesture {
-                  selectedImageData = photo.photoData
+                  selectedRecipePhoto = photo
                 }
             }
           }

@@ -18,6 +18,7 @@ struct ToolbarButtonStyle: PrimitiveButtonStyle {
       .onTapGesture {
           configuration.trigger()
       }
+      .contentShape(.circle)
   }
 }
 
