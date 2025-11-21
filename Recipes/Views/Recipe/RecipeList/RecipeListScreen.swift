@@ -18,40 +18,38 @@ struct RecipeListScreen: View {
 
   var body: some View {
     NavigationStack {
-      ZStack {
-        RecipeListView(recipes: recipes)
-          .navigationTitle("All recipes")
-          .navigationDestination(
-            for: Recipe.self,
-            destination: { recipe in
-              RecipeDetailScreen(recipeId: recipe.id)
-            }
-          )
-          .safeAreaBar(edge: .bottom) {
-            HStack {
-              Spacer()
-
-              Button {
-                showRecipeImportScreen = true
-              } label: {
-                Label("Add a recipe", systemImage: "plus")
-              }
-              .buttonStyle(.toolbar)
-            }
-            .padding(.trailing)
-            .padding(.bottom, 8)
+      RecipeListView(recipes: recipes)
+        .navigationTitle("All recipes")
+        .navigationDestination(
+          for: Recipe.self,
+          destination: { recipe in
+            RecipeDetailScreen(recipeId: recipe.id)
           }
-      }
-      .sheet(isPresented: $showRecipeImportScreen) {
-        RecipeImportScreen()
-      }
-      .onChange(of: scenePhase) { oldValue, newValue in
-        if oldValue == .inactive && newValue == .active {
-          Task {
-            try await $recipes.load()
+        )
+        .safeAreaBar(edge: .bottom) {
+          HStack {
+            Spacer()
+
+            Button {
+              showRecipeImportScreen = true
+            } label: {
+              Label("Add a recipe", systemImage: "plus")
+            }
+            .buttonStyle(.toolbar)
+          }
+          .padding(.trailing)
+          .padding(.bottom, 8)
+        }
+        .sheet(isPresented: $showRecipeImportScreen) {
+          RecipeImportScreen()
+        }
+        .onChange(of: scenePhase) { oldValue, newValue in
+          if oldValue == .inactive && newValue == .active {
+            Task {
+              try await $recipes.load()
+            }
           }
         }
-      }
     }
   }
 }
