@@ -162,10 +162,11 @@ struct RecipeEditFormView: View {
           #endif
           .disableAutocorrection(true)
       }
+
+      #if os(iOS)
+        .environment(\.editMode, .constant(EditMode.active))
+      #endif
     }
-    #if os(iOS)
-      .environment(\.editMode, .constant(EditMode.active))
-    #endif
   }
 
   nonisolated private func loadPhotos(from items: [PhotosPickerItem]) async {

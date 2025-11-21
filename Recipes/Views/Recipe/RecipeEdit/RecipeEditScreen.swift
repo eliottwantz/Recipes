@@ -7,6 +7,7 @@
 
 import SQLiteData
 import SwiftUI
+import WebKit
 
 struct RecipeEditScreen: View {
   @State var recipeDetails: RecipeDetails
@@ -16,6 +17,16 @@ struct RecipeEditScreen: View {
 
   @State private var error: Error?
 
+  #if os(iOS)
+    @State private var initialRecipeImportWebsiteURL: URL? = nil
+    @State private var selectedDetent: PresentationDetent = .fraction(0.1)
+    @State private var websitePage = WebPage()
+
+    private var isWebsiteSheetExpanded: Bool {
+      selectedDetent != .fraction(0.1)
+    }
+  #endif
+
   init(recipeDetails: RecipeDetails) {
     self.recipeDetails = recipeDetails
   }
@@ -24,7 +35,7 @@ struct RecipeEditScreen: View {
     NavigationStack {
       RecipeEditFormView(recipeDetails: $recipeDetails)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+          ToolbarItem(placement: .cancellationAction) {
             Button {
               dismiss()
             } label: {
@@ -39,8 +50,32 @@ struct RecipeEditScreen: View {
         .navigationTitle("Modify Recipe")
         #if os(iOS)
           .navigationBarTitleDisplayMode(.inline)
+          .sheet(item: $initialRecipeImportWebsiteURL) { url in
+            Group {
+              if isWebsiteSheetExpanded {
+                WebView(websitePage)
+              } else {
+                VStack {
+                  Label("Original Website", systemImage: "safari.fill")
+                }
+              }
+            }
+            .interactiveDismissDisabled()
+            .presentationBackgroundInteraction(.enabled)
+            .presentationDetents([.fraction(0.1), .medium, .large], selection: $selectedDetent)
+          }
         #endif
+
     }
+    #if os(iOS)
+      .onAppear {
+        if let website = recipeDetails.recipe.website, let url = URL(string: website) {
+          initialRecipeImportWebsiteURL = url
+          websitePage.load(url)
+        }
+      }
+    #endif
+
   }
 
   private func updateRecipe() {
