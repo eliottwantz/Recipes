@@ -70,7 +70,9 @@ private struct TimePicker: View {
           .tag(h)
         }
       }
-      .pickerStyle(.wheel)
+      #if os(iOS)
+        .pickerStyle(.wheel)
+      #endif
       .frame(maxWidth: .infinity)
       .clipped()
 
@@ -83,7 +85,9 @@ private struct TimePicker: View {
           .tag(m)
         }
       }
-      .pickerStyle(.wheel)
+      #if os(iOS)
+        .pickerStyle(.wheel)
+      #endif
       .frame(maxWidth: .infinity)
       .clipped()
     }

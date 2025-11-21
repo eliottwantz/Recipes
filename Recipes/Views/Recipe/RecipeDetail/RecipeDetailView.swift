@@ -9,6 +9,12 @@ import Dependencies
 import SQLiteData
 import SwiftUI
 
+#if canImport(UIKit)
+  import UIKit
+#elseif canImport(AppKit)
+  import AppKit
+#endif
+
 struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
   @State private var showImageCarousel: Bool = false
@@ -42,7 +48,7 @@ struct RecipeDetailView: View {
 
       }
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.horizontal, 10)
+      .padding(.horizontal, 13)
       .padding(.bottom, 10)
     }
     .darkPrimaryLightSecondaryBackgroundColor()
@@ -131,10 +137,36 @@ struct RecipeDetailView: View {
 
   private var titleCover: some View {
     Group {
-      if let firstPhoto = recipeDetails.photos.first,
-        let uiImage = UIImage(data: firstPhoto.photoData)
+      if let website = recipeDetails.recipe.website,
+        let url = URL(string: website),
+        let host = url.host
       {
-        Image(uiImage: uiImage)
+        Link(destination: url) {
+          titleImageCover
+            .overlay(alignment: .bottomLeading) {
+              HStack(spacing: 8) {
+                Image(systemName: "safari")
+                  .foregroundStyle(.white)
+                Text(host)
+                  .font(.footnote.weight(.semibold))
+                  .foregroundStyle(.white)
+              }
+              .padding(.horizontal, 12)
+              .padding(.vertical, 8)
+              .background(.ultraThinMaterial, in: .capsule)
+              .padding()
+            }
+        }
+      } else {
+        titleImageCover
+      }
+    }
+  }
+
+  private var titleImageCover: some View {
+    Group {
+      if let photo = recipeDetails.photos.first, let image = photo.image {
+        image
           .resizable()
           .scaledToFill()
           .frame(height: 220)
@@ -143,37 +175,15 @@ struct RecipeDetailView: View {
           .clipShape(RoundedRectangle(cornerRadius: 20))
           .overlay {
             RoundedRectangle(cornerRadius: 20)
-              .fill(Color.black.opacity(0.25))
+              .fill(Color.black.opacity(0.45))
           }
           .overlay(alignment: .topLeading) {
             Text(recipeDetails.recipe.name)
               .font(.title.weight(.bold))
               .foregroundStyle(.white)
+              .multilineTextAlignment(.leading)
               .shadow(radius: 2)
               .padding(16)
-          }
-          .overlay(alignment: .bottomLeading) {
-            if let website = recipeDetails.recipe.website,
-              let url = URL(string: website),
-              let host = url.host
-            {
-              Link(destination: url) {
-                HStack(spacing: 8) {
-                  Image(systemName: "safari")
-                    .foregroundStyle(.white)
-                  Text(host)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.white)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(.ultraThinMaterial, in: Capsule())
-              }
-              .padding(16)
-            }
-          }
-          .onTapGesture {
-            // TODO: Open WebView with the selected URL if exists, otherwise open ImageCarousel viewer
           }
       } else {
         Text(recipeDetails.recipe.name)
@@ -215,12 +225,9 @@ struct RecipeDetailView: View {
           HStack(alignment: .top) {
             Text("\(index + 1)")
               .font(.body.weight(.semibold))
-              .foregroundStyle(Color(uiColor: .tintColor).contrastingForegroundColor())
               .frame(width: 22, height: 22)
-              .background(
-                Circle()
-                  .fill(.tint)
-              )
+              .background { Circle().fill(.tint) }
+              .foregroundStyle(Color.accentColor.contrastingForegroundColor())
 
             Text(step.text)
               .font(.body)
@@ -298,18 +305,20 @@ struct RecipeDetailView: View {
 
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 12) {
-          ForEach(Array(recipeDetails.photos.enumerated()), id: \.offset) { index, photo in
-            if let uiImage = UIImage(data: photo.photoData) {
-              Image(uiImage: uiImage)
+          ForEach(recipeDetails.photos) { photo in
+            if let image = photo.image {
+              image
                 .resizable()
                 .scaledToFill()
                 .frame(width: 200, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                .onTapGesture {
-                  #if os(iOS)
+                #if os(iOS)
+                  .onTapGesture {
                     selectedPhotoID = photo.id
                     showImageCarousel = true
-                  #elseif os(macOS)
+                  }
+                #elseif os(macOS)
+                  .onTapGesture {
                     openWindow(
                       id: "recipe-photos",
                       value: RecipePhotosWindowData(
@@ -317,8 +326,8 @@ struct RecipeDetailView: View {
                         initialPhotoId: photo.id
                       )
                     )
-                  #endif
-                }
+                  }
+                #endif
             }
           }
         }

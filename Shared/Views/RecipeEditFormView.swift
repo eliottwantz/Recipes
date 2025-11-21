@@ -9,6 +9,12 @@ import PhotosUI
 import SQLiteData
 import SwiftUI
 
+#if canImport(UIKit)
+  import UIKit
+#elseif canImport(AppKit)
+  import AppKit
+#endif
+
 struct RecipeEditFormView: View {
   @Environment(\.dismiss) private var dismiss
   @Binding var recipeDetails: RecipeDetails
@@ -87,35 +93,43 @@ struct RecipeEditFormView: View {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack(spacing: 12) {
             ForEach(recipeDetails.photos) { photo in
-              if let uiImage = UIImage(data: photo.photoData) {
-                Image(uiImage: uiImage)
+              if let image = photo.image {
+                image
                   .resizable()
                   .scaledToFill()
                   .frame(width: 150, height: 150)
                   .clipShape(RoundedRectangle(cornerRadius: 12))
                   .contentShape(Rectangle())
-                  .onTapGesture {
-                    deletePhotoTarget = photo
-                  }
-                  .popover(
-                    isPresented: Binding(
-                      get: { deletePhotoTarget?.id == photo.id },
-                      set: { showing in if !showing { deletePhotoTarget = nil } }
-                    ),
-                    attachmentAnchor: .point(.top)
-                  ) {
-                    VStack(spacing: 0) {
-                      Button("Delete", role: .destructive) {
-                        if let target = deletePhotoTarget { removePhoto(target) }
-                        deletePhotoTarget = nil
-                      }
-                      .padding(.horizontal, 40)
-                      .padding(.vertical, 12)
-                      .glassEffect(.regular.interactive())
+                  #if os(iOS)
+                    .onTapGesture {
+                      deletePhotoTarget = photo
                     }
-                    .padding(.all, 8)
-                    .presentationCompactAdaptation(.none)
-                  }
+                    .popover(
+                      isPresented: Binding(
+                        get: { deletePhotoTarget?.id == photo.id },
+                        set: { showing in if !showing { deletePhotoTarget = nil } }
+                      ),
+                      attachmentAnchor: .point(.top)
+                    ) {
+                      VStack(spacing: 0) {
+                        Button("Delete", role: .destructive) {
+                          if let target = deletePhotoTarget { removePhoto(target) }
+                          deletePhotoTarget = nil
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 12)
+                        .glassEffect(.regular.interactive())
+                      }
+                      .padding(.all, 8)
+                      .presentationCompactAdaptation(.none)
+                    }
+                  #elseif os(macOS)
+                    .contextMenu {
+                      Button("Delete", role: .destructive) {
+                        removePhoto(photo)
+                      }
+                    }
+                  #endif
               }
             }
           }
@@ -140,14 +154,18 @@ struct RecipeEditFormView: View {
         Text("Website")
         TextField("Website URL", text: Binding($recipeDetails.recipe.website))
           .foregroundStyle(.tint)
-          .keyboardType(.URL)
-          .textContentType(.URL)
-          .autocapitalization(.none)
+          #if os(iOS)
+            .keyboardType(.URL)
+            .textContentType(.URL)
+            .autocapitalization(.none)
+            .multilineTextAlignment(.trailing)
+          #endif
           .disableAutocorrection(true)
-          .multilineTextAlignment(.trailing)
       }
     }
-    .environment(\.editMode, .constant(EditMode.active))
+    #if os(iOS)
+      .environment(\.editMode, .constant(EditMode.active))
+    #endif
   }
 
   nonisolated private func loadPhotos(from items: [PhotosPickerItem]) async {

@@ -1,5 +1,6 @@
 import Foundation
 import SQLiteData
+import SwiftUI
 
 @Table("recipes")
 nonisolated struct Recipe: Identifiable, Hashable, Sendable {
@@ -37,4 +38,22 @@ nonisolated struct RecipePhoto: Identifiable, Hashable, Sendable {
   var recipeId: Recipe.ID
   var position: Int = 0
   var photoData: Data = Data()
+}
+
+extension RecipePhoto {
+  var image: Image? {
+    #if os(iOS)
+      if let uiImage = UIImage(data: photoData) {
+        return Image(uiImage: uiImage)
+      } else {
+        return nil
+      }
+    #elseif os(macOS)
+      if let nsImage = NSImage(data: photoData) {
+        return Image(nsImage: nsImage)
+      } else {
+        return nil
+      }
+    #endif
+  }
 }

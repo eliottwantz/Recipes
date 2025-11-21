@@ -24,7 +24,7 @@ struct RecipeEditScreen: View {
     NavigationStack {
       RecipeEditFormView(recipeDetails: $recipeDetails)
         .toolbar {
-          ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .cancellationAction) {
             Button {
               dismiss()
             } label: {
@@ -37,7 +37,9 @@ struct RecipeEditScreen: View {
           }
         }
         .navigationTitle("Modify Recipe")
-        .navigationBarTitleDisplayMode(.inline)
+        #if os(iOS)
+          .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
   }
 

@@ -50,7 +50,9 @@ private struct AmountPicker: View {
           .tag(value)
       }
     }
-    .pickerStyle(.wheel)
+    #if os(iOS)
+      .pickerStyle(.wheel)
+    #endif
     .clipped()
   }
 }

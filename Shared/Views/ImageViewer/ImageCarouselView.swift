@@ -61,7 +61,7 @@ struct ImageCarouselView: View {
         let currentIndex = photos.firstIndex(where: { $0.id == currentID })
       else { return }
 
-      let newIndex = currentIndex + direction
+      let newIndex = currentIndex + (direction == .forward ? 1 : -1)
       if newIndex >= 0 && newIndex < photos.count {
         withAnimation {
           selectedPhotoID = photos[newIndex].id

@@ -7,6 +7,12 @@
 
 import SwiftUI
 
+#if canImport(UIKit)
+  import UIKit
+#elseif canImport(AppKit)
+  import AppKit
+#endif
+
 extension EnvironmentValues {
   var isDark: Bool {
     colorScheme == .dark
@@ -18,7 +24,7 @@ private struct DarkPrimaryLightSecondaryModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .background(Color(isDark ? .systemBackground : .secondarySystemBackground))
+      .background(Color(isDark ? Color.systemBackground : Color.secondarySystemBackground))
   }
 }
 
@@ -27,7 +33,7 @@ private struct DarkSecondaryLightPrimaryModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .background(Color(isDark ? .secondarySystemBackground : .systemBackground))
+      .background(Color(isDark ? Color.secondarySystemBackground : Color.systemBackground))
   }
 }
 
@@ -40,27 +46,66 @@ extension View {
   }
 }
 
+#if os(iOS)
+  extension Color {
+    static let systemBackground = Color(uiColor: .systemBackground)
+    static let secondarySystemBackground = Color(uiColor: .secondarySystemBackground)
+    static let tertiarySystemBackground = Color(uiColor: .tertiarySystemBackground)
+  }
+#endif
+
+#if os(macOS)
+  extension Color {
+    static let systemBackground = Color(nsColor: .windowBackgroundColor)
+    static let secondarySystemBackground = Color(nsColor: .controlBackgroundColor)
+    static let tertiarySystemBackground = Color(nsColor: .underPageBackgroundColor)
+  }
+#endif
+
 extension Color {
   /// Returns `.black` or `.white` to maximize contrast against the receiving color.
+  /// Returns `.black` or `.white` to maximize contrast against the receiving color.
   func contrastingForegroundColor() -> Color {
-    //    #if canImport(UIKit)
-    let uiColor = UIColor(self)
-    var red: CGFloat = 0
-    var green: CGFloat = 0
-    var blue: CGFloat = 0
-    var alpha: CGFloat = 0
+    #if os(iOS)
+      let uiColor = UIColor(self)
+    #elseif os(macOS)
+      let uiColor = NSColor(self)
+    #endif
 
-    if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
-      let luminance = 0.299 * red + 0.587 * green + 0.114 * blue
-      return luminance > 0.55 ? .black : .white
-    }
+    var r: CGFloat = 0
+    var g: CGFloat = 0
+    var b: CGFloat = 0
+    var a: CGFloat = 0
 
-    var white: CGFloat = 0
-    if uiColor.getWhite(&white, alpha: &alpha) {
-      return white > 0.6 ? .black : .white
-    }
-    //    #endif
+    #if os(iOS)
+      uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+    #elseif os(macOS)
+      // Convert to sRGB color space
+      guard let rgbColor = uiColor.usingColorSpace(.sRGB) else {
+        return .primary
+      }
+      rgbColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+    #endif
 
-    return .white
+    let R = sRGBToLinear(r)
+    let G = sRGBToLinear(g)
+    let B = sRGBToLinear(b)
+
+    let luminance = relativeLuminance(r: R, g: G, b: B)
+
+    // Return white for dark backgrounds, black for light backgrounds
+    return luminance > 0.5 ? .black : .white
+  }
+
+  private func sRGBToLinear(_ c: CGFloat) -> CGFloat {
+    return c <= 0.04045 ? (c / 12.92) : pow((c + 0.055) / 1.055, 2.4)
+  }
+
+  private func relativeLuminance(r: CGFloat, g: CGFloat, b: CGFloat) -> CGFloat {
+    // WCAG 2.1 formula: https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
+    let R = sRGBToLinear(r)
+    let G = sRGBToLinear(g)
+    let B = sRGBToLinear(b)
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B
   }
 }

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 90;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -27,14 +27,12 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		555EDC732EAC3960006DC041 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstSubfolder = PlugIns;
 			files = (
 				555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -92,21 +90,17 @@
 /* Begin PBXFrameworksBuildPhase section */
 		5517C2802E9720AB00F64C53 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				5561697B2EBC3D7F00BB649D /* SwiftNavigation in Frameworks */,
 				5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */,
 				5561697D2EBC3D7F00BB649D /* SwiftUINavigation in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		555EDC652EAC3960006DC041 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				5594D41D2EAD0BE7001852BF /* SQLiteData in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -181,8 +175,6 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			fileSystemSynchronizedGroups = (
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
 				556169912EBC4D6800BB649D /* Shared */,
@@ -227,7 +219,7 @@
 				5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */,
 				556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */,
 			);
-			preferredProjectObjectVersion = 77;
+			preferredProjectObjectVersion = 90;
 			productRefGroup = 5517C2842E9720AB00F64C53 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -241,34 +233,26 @@
 /* Begin PBXResourcesBuildPhase section */
 		5517C2812E9720AB00F64C53 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		555EDC662EAC3960006DC041 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5517C27F2E9720AB00F64C53 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		555EDC642EAC3960006DC041 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -281,7 +265,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		5517C28C2E9720AC00F64C53 /* Debug */ = {
+		5517C28C2E9720AC00F64C53 /* Debug configuration for PBXProject "Recipes" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -346,7 +330,7 @@
 			};
 			name = Debug;
 		};
-		5517C28D2E9720AC00F64C53 /* Release */ = {
+		5517C28D2E9720AC00F64C53 /* Release configuration for PBXProject "Recipes" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -403,7 +387,7 @@
 			};
 			name = Release;
 		};
-		5517C28F2E9720AC00F64C53 /* Debug */ = {
+		5517C28F2E9720AC00F64C53 /* Debug configuration for PBXNativeTarget "Recipes" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -440,7 +424,7 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -452,7 +436,7 @@
 			};
 			name = Debug;
 		};
-		5517C2902E9720AC00F64C53 /* Release */ = {
+		5517C2902E9720AC00F64C53 /* Release configuration for PBXNativeTarget "Recipes" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -489,7 +473,7 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -501,13 +485,16 @@
 			};
 			name = Release;
 		};
-		555EDC742EAC3960006DC041 /* Debug */ = {
+		555EDC742EAC3960006DC041 /* Debug configuration for PBXNativeTarget "RecipeShareExtension" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RecipeShareExtension/RecipeShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = TU3N92HFXF;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RecipeShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RecipeShareExtension;
@@ -521,6 +508,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.develiott.Recipes.RecipeShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -536,13 +524,16 @@
 			};
 			name = Debug;
 		};
-		555EDC752EAC3960006DC041 /* Release */ = {
+		555EDC752EAC3960006DC041 /* Release configuration for PBXNativeTarget "RecipeShareExtension" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = RecipeShareExtension/RecipeShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = TU3N92HFXF;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RecipeShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RecipeShareExtension;
@@ -556,6 +547,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.develiott.Recipes.RecipeShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -578,28 +570,25 @@
 		5517C27E2E9720AB00F64C53 /* Build configuration list for PBXProject "Recipes" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5517C28C2E9720AC00F64C53 /* Debug */,
-				5517C28D2E9720AC00F64C53 /* Release */,
+				5517C28C2E9720AC00F64C53 /* Debug configuration for PBXProject "Recipes" */,
+				5517C28D2E9720AC00F64C53 /* Release configuration for PBXProject "Recipes" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		5517C28E2E9720AC00F64C53 /* Build configuration list for PBXNativeTarget "Recipes" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5517C28F2E9720AC00F64C53 /* Debug */,
-				5517C2902E9720AC00F64C53 /* Release */,
+				5517C28F2E9720AC00F64C53 /* Debug configuration for PBXNativeTarget "Recipes" */,
+				5517C2902E9720AC00F64C53 /* Release configuration for PBXNativeTarget "Recipes" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		555EDC762EAC3960006DC041 /* Build configuration list for PBXNativeTarget "RecipeShareExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				555EDC742EAC3960006DC041 /* Debug */,
-				555EDC752EAC3960006DC041 /* Release */,
+				555EDC742EAC3960006DC041 /* Debug configuration for PBXNativeTarget "RecipeShareExtension" */,
+				555EDC752EAC3960006DC041 /* Release configuration for PBXNativeTarget "RecipeShareExtension" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
