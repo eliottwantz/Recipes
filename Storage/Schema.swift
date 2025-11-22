@@ -57,3 +57,11 @@ extension RecipePhoto {
     #endif
   }
 }
+
+enum SortBy: String {
+  case name, createdAt
+}
+
+enum SortDirection: String {
+  case asc, desc
+}
