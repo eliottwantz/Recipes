@@ -15,8 +15,15 @@ struct RecipeListView: View {
   @State private var recipePhotos: [Recipe.ID: RecipePhoto] = [:]
   @Dependency(\.defaultDatabase) private var database
 
-  init(recipes: [Recipe]) {
+  @Environment(\.editMode) private var editMode
+  @Binding var selection: Set<Recipe.ID>
+
+  @State private var showDeleteConfirmation: Bool = false
+  @State private var recipeToDelete: Recipe?
+
+  init(recipes: [Recipe], selection: Binding<Set<Recipe.ID>>) {
     self.recipes = recipes
+    self._selection = selection
   }
 
   var body: some View {
@@ -29,22 +36,35 @@ struct RecipeListView: View {
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
       } else {
-        ScrollView {
-          LazyVGrid(
-            columns: [
-              GridItem(.flexible(), spacing: 18),
-              GridItem(.flexible()),
-            ],
-            spacing: 20
-          ) {
-            ForEach(recipes) { recipe in
-              NavigationLink(value: recipe) {
-                RecipeCard(recipe: recipe, photo: recipePhotos[recipe.id])
+        List(selection: $selection) {
+          ForEach(recipes) { recipe in
+            RecipeCard(recipe: recipe, photo: recipePhotos[recipe.id])
+              .background {
+                NavigationLink(value: recipe) { EmptyView() }.opacity(0)
               }
-              .buttonStyle(.plain)
-            }
+              .contextMenu {
+                Button(role: .destructive) {
+                  recipeToDelete = recipe
+                  showDeleteConfirmation = true
+                } label: {
+                  Label("Delete", systemImage: "trash")
+                }
+              }
+              .listRowInsets(.init(top: 10, leading: 12, bottom: 10, trailing: 0))
           }
-          .padding(.horizontal, 8)
+        }
+        .listStyle(.plain)
+        .alert(
+          "Delete Recipe",
+          isPresented: $showDeleteConfirmation,
+          presenting: recipeToDelete
+        ) { recipe in
+          Button("Cancel", role: .cancel) {}
+          Button("Confirm", role: .destructive) {
+            deleteRecipe(recipe.id)
+          }
+        } message: { recipe in
+          Text("Delete \(recipe.name). This action cannot be undone.")
         }
       }
     }
@@ -73,14 +93,14 @@ struct RecipeListView: View {
     }
   }
 
-  private func deleteRecipes(_ offset: IndexSet) {
+  private func deleteRecipe(_ recipeId: Recipe.ID) {
     withErrorReporting {
       try database.write { db in
-        let ids = offset.map { recipes[$0].id }
-        try Recipe.where { ids.contains($0.id) }.delete().execute(db)
+        try Recipe.find(recipeId).delete().execute(db)
       }
     }
   }
+
 }
 
 private struct RecipeCard: View {
@@ -92,91 +112,72 @@ private struct RecipeCard: View {
   }
 
   var body: some View {
-    ZStack(alignment: .topLeading) {
-        Group {
-            if let photo = photo, let image = photo.image {
-                GeometryReader { geometry in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                }
-            } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-                    .overlay(
-                        Image(systemName: "photo")
-                            .font(.system(size: 40))
-                            .foregroundColor(.gray.opacity(0.5))
-                    )
-            }
+    HStack(spacing: 16) {
+      Group {
+        if let photo = photo, let image = photo.image {
+          image
+            .resizable()
+            .scaledToFill()
+        } else {
+          Rectangle()
+            .fill(Color.gray.opacity(0.2))
+            .overlay(
+              Image(systemName: "photo")
+                .font(.system(size: 40))
+                .foregroundColor(.gray.opacity(0.5))
+            )
         }
-        .overlay {
-            Color.black.opacity(0.45)
-        }
+      }
+      .aspectRatio(5 / 4, contentMode: .fill)
+      .frame(width: 120)
+      .clipShape(RoundedRectangle(cornerRadius: 12))
+      .contentShape(RoundedRectangle(cornerRadius: 12))
 
       VStack(alignment: .leading) {
         Text(recipe.name)
           .font(.headline)
-          .fontWeight(.medium)
-          .foregroundStyle(.white)
-          .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
           .lineLimit(2)
-          .padding(.leading, 10)
-          .padding(.top, 8)
+        HStack {
+          if recipe.servings > 0 || totalTimeMinutes > 0 {
+            HStack(spacing: 8) {
+              if recipe.servings > 0 {
+                HStack(spacing: 4) {
+                  Image(systemName: "person.2.fill")
+                    .font(.footnote)
+                  Text("\(recipe.servings)")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                }
+              }
 
-        Spacer()
-
-        if recipe.servings > 0 || totalTimeMinutes > 0 {
-
-          HStack(spacing: 8) {
-            if recipe.servings > 0 {
-              HStack(spacing: 4) {
-                Image(systemName: "person.2.fill")
-                  .font(.footnote)
-                Text("\(recipe.servings)")
-                  .font(.subheadline)
-                  .fontWeight(.medium)
+              if totalTimeMinutes > 0 {
+                HStack(spacing: 4) {
+                  Image(systemName: "clock.fill")
+                    .font(.footnote)
+                  TimeView(totalMinutes: totalTimeMinutes)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                }
               }
             }
-
-            if totalTimeMinutes > 0 {
-              HStack(spacing: 4) {
-                Image(systemName: "clock.fill")
-                  .font(.footnote)
-                TimeView(totalMinutes: totalTimeMinutes)
-                  .font(.subheadline)
-                  .fontWeight(.medium)
-              }
-            }
+            .foregroundStyle(.secondary)
+            .padding(4)
+            .background(Capsule().fill(Color.gray.opacity(0.3)))
           }
-          .foregroundStyle(.secondary)
-          .padding(6)
-          .background {
-            ZStack {
-              Color.black
-              Color.gray.opacity(0.3)
-            }
-            .clipShape(.rect(corners: .concentric))
-            .containerShape(.rect(cornerRadius: 60))
-          }
-          .padding(8)
         }
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
-    .aspectRatio(5 / 4, contentMode: .fill)
-    .clipped()
-    .clipShape(.rect(corners: .concentric(minimum: 26)))
-    .contentShape(.rect)
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 
 #Preview {
+  @Previewable @State var selection = Set<Recipe.ID>()
+
   let recipes = Storage.configure { database in
     return try database.read { db in
       try Recipe.all.fetchAll(db)
     }
   }
-  return RecipeListView(recipes: recipes)
+  return RecipeListView(recipes: recipes, selection: $selection)
 }

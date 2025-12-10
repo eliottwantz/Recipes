@@ -11,7 +11,9 @@ import SwiftUI
 
 struct RecipeListScreen: View {
   @Environment(\.scenePhase) private var scenePhase
-  @FetchAll(Recipe.order(by: \.name))
+  @Dependency(\.defaultDatabase) private var database
+
+  @FetchAll(Recipe.order(by: \.name), animation: .default)
   private var recipes
 
   @State private var showRecipeImportScreen: Bool = false
@@ -21,6 +23,8 @@ struct RecipeListScreen: View {
   @State private var sortDirection: SortDirection = .asc
 
   @State private var editMode: EditMode = .inactive
+  @State private var selection = Set<Recipe.ID>()
+  @State private var showDeleteConfirmation: Bool = false
 
   var searchId: String {
     "\(searchText)_\(sortBy)_\(sortDirection)"
@@ -28,7 +32,7 @@ struct RecipeListScreen: View {
 
   var body: some View {
     NavigationStack {
-      RecipeListView(recipes: recipes)
+      RecipeListView(recipes: recipes, selection: $selection)
         .navigationTitle("All recipes")
         .toolbarTitleDisplayMode(.inlineLarge)
         .searchable(text: $searchText)
@@ -37,8 +41,14 @@ struct RecipeListScreen: View {
         }
         .environment(\.editMode, $editMode)
         .toolbar {
-          ToolbarItem(placement: .primaryAction) {
+          ToolbarItemGroup(placement: .primaryAction) {
             if editMode == .active {
+              Button(role: .destructive) {
+                showDeleteConfirmation = true
+              }
+              .disabled(selection.isEmpty)
+              .tint(.red)
+
               Button {
                 editMode = .inactive
               } label: {
@@ -78,6 +88,7 @@ struct RecipeListScreen: View {
 
                 Section {
                   Button {
+                    selection.removeAll()
                     editMode = .active
                   } label: {
                     Label("Select recipes", systemImage: "checkmark.circle")
@@ -112,6 +123,17 @@ struct RecipeListScreen: View {
         .sheet(isPresented: $showRecipeImportScreen) {
           RecipeImportScreen()
         }
+        .alert(
+          "Delete \(selection.count) recipes",
+          isPresented: $showDeleteConfirmation
+        ) {
+          Button("Cancel", role: .cancel) {}
+          Button("Confirm", role: .destructive) {
+            deleteSelectedRecipes()
+          }
+        } message: {
+          Text("This action cannot be undone.")
+        }
         .onChange(of: scenePhase) { oldValue, newValue in
           if oldValue == .inactive && newValue == .active {
             Task {
@@ -123,7 +145,7 @@ struct RecipeListScreen: View {
   }
 
   private func updateSearchQuery() async {
-    do {
+    _ = await withErrorReporting {
       try await $recipes.load(
         Recipe
           .where { $0.name.lower().contains(searchText) }
@@ -140,8 +162,17 @@ struct RecipeListScreen: View {
             }
           }
       )
-    } catch {
-      print("Error in search query: \(error.localizedDescription)")
+    }
+  }
+
+  private func deleteSelectedRecipes() {
+    withErrorReporting {
+      try database.write { db in
+        try Recipe
+          .where { selection.contains($0.id) }
+          .delete()
+          .execute(db)
+      }
     }
   }
 }

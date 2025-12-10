@@ -61,11 +61,9 @@ struct RecipeDetailView: View {
           )
           .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-              Button {
+                Button(role: .cancel) {
                 selectedPhotoID = nil
                 showImageCarousel = false
-              } label: {
-                Label("Close", systemImage: "xmark")
               }
             }
           }
