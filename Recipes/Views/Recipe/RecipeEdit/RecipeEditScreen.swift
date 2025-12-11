@@ -17,15 +17,13 @@ struct RecipeEditScreen: View {
 
   @State private var error: Error?
 
-  #if os(iOS)
-    @State private var initialRecipeImportWebsiteURL: URL? = nil
-    @State private var selectedDetent: PresentationDetent = .fraction(0.1)
-    @State private var websitePage = WebPage()
+  @State private var initialRecipeImportWebsiteURL: URL? = nil
+  @State private var selectedDetent: PresentationDetent = .fraction(0.1)
+  @State private var websitePage = WebPage()
 
-    private var isWebsiteSheetExpanded: Bool {
-      selectedDetent != .fraction(0.1)
-    }
-  #endif
+  private var isWebsiteSheetExpanded: Bool {
+    selectedDetent != .fraction(0.1)
+  }
 
   init(recipeDetails: RecipeDetails) {
     self.recipeDetails = recipeDetails
@@ -47,34 +45,36 @@ struct RecipeEditScreen: View {
               .buttonStyle(.glassProminent)
           }
         }
+        .environment(\.editMode, .constant(.active))
         .navigationTitle("Modify Recipe")
-        #if os(iOS)
-          .navigationBarTitleDisplayMode(.inline)
-          .sheet(item: $initialRecipeImportWebsiteURL) { url in
-            Group {
-              if isWebsiteSheetExpanded {
-                WebView(websitePage)
-              } else {
-                VStack {
-                  Label("Original Website", systemImage: "safari.fill")
-                }
+        .navigationBarTitleDisplayMode(.inline)
+        // MARK: Space for bottom sheet to not overlap content
+        .safeAreaBar(edge: .bottom) {
+          VStack {}
+            .padding(.bottom, 70)
+        }
+        .sheet(item: $initialRecipeImportWebsiteURL) { url in
+          Group {
+            if isWebsiteSheetExpanded {
+              WebView(websitePage)
+            } else {
+              VStack {
+                Label("Original Website", systemImage: "safari.fill")
               }
             }
-            .interactiveDismissDisabled()
-            .presentationBackgroundInteraction(.enabled)
-            .presentationDetents([.fraction(0.1), .medium, .large], selection: $selectedDetent)
           }
-        #endif
+          .interactiveDismissDisabled()
+          .presentationBackgroundInteraction(.enabled)
+          .presentationDetents([.fraction(0.1), .medium, .large], selection: $selectedDetent)
+        }
 
     }
-    #if os(iOS)
-      .onAppear {
-        if let website = recipeDetails.recipe.website, let url = URL(string: website) {
-          initialRecipeImportWebsiteURL = url
-          websitePage.load(url)
-        }
+    .onAppear {
+      if let website = recipeDetails.recipe.website, let url = URL(string: website) {
+        initialRecipeImportWebsiteURL = url
+        websitePage.load(url)
       }
-    #endif
+    }
 
   }
 

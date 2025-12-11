@@ -100,36 +100,28 @@ struct RecipeEditFormView: View {
                   .frame(width: 150, height: 150)
                   .clipShape(RoundedRectangle(cornerRadius: 12))
                   .contentShape(Rectangle())
-                  #if os(iOS)
-                    .onTapGesture {
-                      deletePhotoTarget = photo
-                    }
-                    .popover(
-                      isPresented: Binding(
-                        get: { deletePhotoTarget?.id == photo.id },
-                        set: { showing in if !showing { deletePhotoTarget = nil } }
-                      ),
-                      attachmentAnchor: .point(.top)
-                    ) {
-                      VStack(spacing: 0) {
-                        Button("Delete", role: .destructive) {
-                          if let target = deletePhotoTarget { removePhoto(target) }
-                          deletePhotoTarget = nil
-                        }
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 12)
-                        .glassEffect(.regular.interactive())
-                      }
-                      .padding(.all, 8)
-                      .presentationCompactAdaptation(.none)
-                    }
-                  #elseif os(macOS)
-                    .contextMenu {
+                  .onTapGesture {
+                    deletePhotoTarget = photo
+                  }
+                  .popover(
+                    isPresented: Binding(
+                      get: { deletePhotoTarget?.id == photo.id },
+                      set: { showing in if !showing { deletePhotoTarget = nil } }
+                    ),
+                    attachmentAnchor: .point(.top)
+                  ) {
+                    VStack(spacing: 0) {
                       Button("Delete", role: .destructive) {
-                        removePhoto(photo)
+                        if let target = deletePhotoTarget { removePhoto(target) }
+                        deletePhotoTarget = nil
                       }
+                      .padding(.horizontal, 40)
+                      .padding(.vertical, 12)
+                      .glassEffect(.regular.interactive())
                     }
-                  #endif
+                    .padding(.all, 8)
+                    .presentationCompactAdaptation(.none)
+                  }
               }
             }
           }
@@ -154,18 +146,14 @@ struct RecipeEditFormView: View {
         Text("Website")
         TextField("Website URL", text: Binding($recipeDetails.recipe.website))
           .foregroundStyle(.tint)
-          #if os(iOS)
-            .keyboardType(.URL)
-            .textContentType(.URL)
-            .autocapitalization(.none)
-            .multilineTextAlignment(.trailing)
-          #endif
+          .keyboardType(.URL)
+          .textContentType(.URL)
+          .autocapitalization(.none)
+          .multilineTextAlignment(.trailing)
           .disableAutocorrection(true)
       }
 
-      #if os(iOS)
-        .environment(\.editMode, .constant(EditMode.active))
-      #endif
+      .environment(\.editMode, .constant(.active))
     }
   }
 
