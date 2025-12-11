@@ -21,6 +21,8 @@ struct RecipeListView: View {
   @State private var showDeleteConfirmation: Bool = false
   @State private var recipeToDelete: Recipe?
 
+  @State private var recipeToEditDetails: RecipeDetails? = nil
+
   init(recipes: [Recipe], selection: Binding<Set<Recipe.ID>>) {
     self.recipes = recipes
     self._selection = selection
@@ -43,6 +45,12 @@ struct RecipeListView: View {
                 NavigationLink(value: recipe) { EmptyView() }.opacity(0)
               }
               .contextMenu {
+                Button {
+                  startRecipeEdit(for: recipe)
+                } label: {
+                  Label("Edit recipe", systemImage: "pencil")
+                }
+                Divider()
                 Button(role: .destructive) {
                   recipeToDelete = recipe
                   showDeleteConfirmation = true
@@ -65,6 +73,10 @@ struct RecipeListView: View {
           }
         } message: { recipe in
           Text("Delete \(recipe.name). This action cannot be undone.")
+        }
+        .sheet(item: $recipeToEditDetails) { recipeDetails in
+          RecipeEditScreen(recipeDetails: recipeDetails)
+            .interactiveDismissDisabled()
         }
       }
     }
@@ -98,6 +110,16 @@ struct RecipeListView: View {
       try database.write { db in
         try Recipe.find(recipeId).delete().execute(db)
       }
+    }
+  }
+
+  private func startRecipeEdit(for recipe: Recipe) {
+    withErrorReporting {
+      let recipeDetails = try database.read { db in
+        try RecipeDetails.FetchKeyRequest(recipeId: recipe.id)
+          .fetch(db)
+      }
+      recipeToEditDetails = recipeDetails
     }
   }
 

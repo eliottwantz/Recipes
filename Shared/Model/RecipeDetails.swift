@@ -51,6 +51,12 @@ nonisolated struct RecipeDetails {
   }
 }
 
+extension RecipeDetails: Identifiable {
+  var id: Recipe.ID {
+    recipe.id
+  }
+}
+
 extension RecipeDetails: Equatable {
   func normalized() -> Self {
     var copy = self
