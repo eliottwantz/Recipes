@@ -49,12 +49,18 @@ struct RecipeCookingScreen: View {
       Text("Step \(instruction.position + 1)")
         .foregroundStyle(.secondary)
         .font(.subheadline)
+        .fontWeight(.semibold)
 
-      Text(instruction.text)
-        .font(.body)
-        .foregroundStyle(.primary)
-        .multilineTextAlignment(.leading)
-
+      ScrollView {
+        Text(instruction.text)
+          .font(.body)
+          .fontWeight(.semibold)
+          .foregroundStyle(.primary)
+          .multilineTextAlignment(.leading)
+      }
+      .scrollBounceBehavior(.basedOnSize, axes: .vertical)
+      .scrollIndicators(.hidden)
+      
       Spacer()
     }
     .frame(maxHeight: .infinity)
