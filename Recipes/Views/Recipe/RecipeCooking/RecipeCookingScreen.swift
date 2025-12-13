@@ -30,6 +30,10 @@ struct RecipeCookingScreen: View {
         }
       }
       .tabViewStyle(.page(indexDisplayMode: .automatic))
+      .onAppear {
+        UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
+          .currentPageIndicatorTintColor = UIColor(.accentColor)
+      }
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button {
@@ -60,7 +64,7 @@ struct RecipeCookingScreen: View {
       }
       .scrollBounceBehavior(.basedOnSize, axes: .vertical)
       .scrollIndicators(.hidden)
-      
+
       Spacer()
     }
     .frame(maxHeight: .infinity)

@@ -41,11 +41,9 @@ struct RecipeDetailScreen: View {
         .sheet(isPresented: $showEditSheet) {
           RecipeEditScreen(recipeDetails: recipeDetails)
             .interactiveDismissDisabled()
-            .tint(.yellow)
         }
         .fullScreenCover(isPresented: $showCookingScreen) {
           RecipeCookingScreen(recipeDetails: recipeDetails)
-            .tint(.yellow)
         }
     }
   }

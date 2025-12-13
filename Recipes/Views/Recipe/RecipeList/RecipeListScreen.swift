@@ -50,7 +50,9 @@ struct RecipeListScreen: View {
               .tint(.red)
 
               Button {
-                editMode = .inactive
+                withAnimation {
+                  editMode = .inactive
+                }
               } label: {
                 Label("Done", systemImage: "checkmark")
               }
@@ -88,8 +90,10 @@ struct RecipeListScreen: View {
 
                 Section {
                   Button {
-                    selection.removeAll()
-                    editMode = .active
+                    withAnimation {
+                      selection.removeAll()
+                      editMode = .active
+                    }
                   } label: {
                     Label("Select recipes", systemImage: "checkmark.circle")
                   }
