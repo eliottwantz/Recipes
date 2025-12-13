@@ -22,12 +22,5 @@ struct RecipesApp: App {
     }
     .environment(\.appRouter, appRouter)
 
-    #if os(macOS)
-      WindowGroup(id: "recipe-photos", for: RecipePhotosWindowData.self) { $data in
-        if let data {
-          RecipePhotosWindow(data: data)
-        }
-      }
-    #endif
   }
 }

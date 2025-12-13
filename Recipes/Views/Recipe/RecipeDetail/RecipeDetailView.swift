@@ -61,7 +61,7 @@ struct RecipeDetailView: View {
           )
           .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button(role: .cancel) {
+              Button(role: .cancel) {
                 selectedPhotoID = nil
                 showImageCarousel = false
               }
@@ -310,22 +310,10 @@ struct RecipeDetailView: View {
                 .scaledToFill()
                 .frame(width: 200, height: 200)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                #if os(iOS)
-                  .onTapGesture {
-                    selectedPhotoID = photo.id
-                    showImageCarousel = true
-                  }
-                #elseif os(macOS)
-                  .onTapGesture {
-                    openWindow(
-                      id: "recipe-photos",
-                      value: RecipePhotosWindowData(
-                        recipeId: recipeDetails.recipe.id,
-                        initialPhotoId: photo.id
-                      )
-                    )
-                  }
-                #endif
+                .onTapGesture {
+                  selectedPhotoID = photo.id
+                  showImageCarousel = true
+                }
             }
           }
         }

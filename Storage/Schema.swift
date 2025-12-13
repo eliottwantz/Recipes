@@ -42,19 +42,11 @@ nonisolated struct RecipePhoto: Identifiable, Hashable, Sendable {
 
 extension RecipePhoto {
   var image: Image? {
-    #if os(iOS)
-      if let uiImage = UIImage(data: photoData) {
-        return Image(uiImage: uiImage)
-      } else {
-        return nil
-      }
-    #elseif os(macOS)
-      if let nsImage = NSImage(data: photoData) {
-        return Image(nsImage: nsImage)
-      } else {
-        return nil
-      }
-    #endif
+    if let uiImage = UIImage(data: photoData) {
+      return Image(uiImage: uiImage)
+    } else {
+      return nil
+    }
   }
 }
 
