@@ -41,12 +41,18 @@ nonisolated struct RecipeImportManager {
     try database.write { db in
       try Recipe.insert { details.recipe }.execute(db)
 
-      for ingredient in details.ingredients {
+      var position = 0
+      for var ingredient in details.ingredients {
+        ingredient.position = position
         try RecipeIngredient.insert { ingredient }.execute(db)
+        position += 1
       }
 
-      for instruction in details.instructions {
+      position = 0
+      for var instruction in details.instructions {
+        instruction.position = position
         try RecipeInstruction.insert { instruction }.execute(db)
+        position += 1
       }
 
       for photo in details.photos {

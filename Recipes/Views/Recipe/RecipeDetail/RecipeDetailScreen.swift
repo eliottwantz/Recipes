@@ -13,6 +13,7 @@ struct RecipeDetailScreen: View {
   @Fetch var recipeDetails: RecipeDetails
   @Dependency(\.defaultDatabase) private var defaultDatabase
   @State private var showEditSheet = false
+  @State private var showCookingScreen = false
 
   init(recipeId: Recipe.ID) {
     self._recipeDetails = RecipeDetails.fetch(recipeId: recipeId)
@@ -22,7 +23,12 @@ struct RecipeDetailScreen: View {
     VStack {
       RecipeDetailView(recipeDetails: recipeDetails)
         .toolbar {
-          ToolbarItem(placement: .primaryAction) {
+          ToolbarItemGroup(placement: .primaryAction) {
+            Button {
+              showCookingScreen = true
+            } label: {
+              Label("Start cooking", systemImage: "play.circle")
+            }
             Menu("More", systemImage: "ellipsis") {
               Button {
                 showEditSheet = true
@@ -35,6 +41,11 @@ struct RecipeDetailScreen: View {
         .sheet(isPresented: $showEditSheet) {
           RecipeEditScreen(recipeDetails: recipeDetails)
             .interactiveDismissDisabled()
+            .tint(.yellow)
+        }
+        .fullScreenCover(isPresented: $showCookingScreen) {
+          RecipeCookingScreen(recipeDetails: recipeDetails)
+            .tint(.yellow)
         }
     }
   }
