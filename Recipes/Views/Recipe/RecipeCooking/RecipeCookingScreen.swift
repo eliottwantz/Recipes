@@ -19,21 +19,11 @@ struct RecipeCookingScreen: View {
       TabView(selection: $currentStepIndex) {
         ForEach(recipeDetails.instructions) { instruction in
           Tab(value: instruction.position) {
-            VStack {
-              CookingStepView(instruction: instruction)
-
-              Spacer()
-
-            }
-            .frame(maxHeight: .infinity)
+            CookingStepView(instruction: instruction)
           }
         }
       }
       .tabViewStyle(.page(indexDisplayMode: .automatic))
-      .onAppear {
-        UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
-          .currentPageIndicatorTintColor = UIColor(.accentColor)
-      }
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button {
@@ -43,7 +33,14 @@ struct RecipeCookingScreen: View {
           }
         }
       }
+      .onAppear {
+        UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
+          .currentPageIndicatorTintColor = UIColor(.accentColor)
+      }
+    }
+    .safeAreaBar(edge: .bottom, alignment: .trailing) {
       CookingStepButtons()
+        .padding(.bottom, 45)
     }
   }
 
@@ -69,42 +66,49 @@ struct RecipeCookingScreen: View {
     }
     .frame(maxHeight: .infinity)
     .padding(30)
+    .padding(.bottom, 50)
   }
 
   @ViewBuilder
   private func CookingStepButtons() -> some View {
     HStack {
-      Button {
-        if currentStepIndex > 0 {
+      if currentStepIndex > 0 {
+        Button {
           withAnimation {
             currentStepIndex -= 1
           }
+        } label: {
+          Image(systemName: "arrow.left")
+            .font(.title2)
+            .fontWeight(.bold)
+            .foregroundStyle(.primary)
         }
-      } label: {
-        Image(systemName: "chevron.left")
-          .font(.title2)
-          .foregroundStyle(currentStepIndex > 0 ? .primary : .secondary)
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.circle)
+        .controlSize(.large)
+        .sensoryFeedback(.decrease, trigger: currentStepIndex)
       }
-      .disabled(currentStepIndex == 0)
 
       Spacer()
 
-      Button {
-        if currentStepIndex < recipeDetails.instructions.count - 1 {
+      if currentStepIndex < recipeDetails.instructions.count - 1 {
+        Button {
           withAnimation {
             currentStepIndex += 1
           }
+        } label: {
+          Image(systemName: "arrow.right")
+            .font(.title2)
+            .fontWeight(.bold)
+            .foregroundStyle(.primary)
         }
-      } label: {
-        Image(systemName: "chevron.right")
-          .font(.title2)
-          .foregroundStyle(
-            currentStepIndex < recipeDetails.instructions.count - 1 ? .primary : .secondary)
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.circle)
+        .controlSize(.large)
+        .sensoryFeedback(.increase, trigger: currentStepIndex)
       }
-      .disabled(currentStepIndex == recipeDetails.instructions.count - 1)
     }
-    .padding()
-    .background(.regularMaterial)
+    .padding(.horizontal, 30)
   }
 
 }

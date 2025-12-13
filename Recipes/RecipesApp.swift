@@ -21,6 +21,5 @@ struct RecipesApp: App {
         .tint(.accent)
     }
     .environment(\.appRouter, appRouter)
-
   }
 }

@@ -57,6 +57,7 @@ struct RecipeListView: View {
                 } label: {
                   Label("Delete", systemImage: "trash")
                 }
+                .tint(nil)
               }
               .listRowInsets(.init(top: 10, leading: 12, bottom: 10, trailing: 0))
           }
@@ -111,6 +112,7 @@ struct RecipeListView: View {
         try Recipe.find(recipeId).delete().execute(db)
       }
     }
+    editMode?.wrappedValue = .inactive
   }
 
   private func startRecipeEdit(for recipe: Recipe) {

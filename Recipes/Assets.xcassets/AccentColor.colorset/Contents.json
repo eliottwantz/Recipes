@@ -2,10 +2,15 @@
   "colors" : [
     {
       "color" : {
-        "platform" : "ios",
-        "reference" : "systemYellowColor"
+        "color-space" : "srgb",
+        "components" : {
+          "alpha" : "1.000",
+          "blue" : "0x1D",
+          "green" : "0xC1",
+          "red" : "0xF9"
+        }
       },
-      "idiom" : "universal"
+      "idiom" : "iphone"
     }
   ],
   "info" : {
