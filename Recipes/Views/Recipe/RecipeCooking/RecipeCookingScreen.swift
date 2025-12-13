@@ -39,8 +39,10 @@ struct RecipeCookingScreen: View {
       }
     }
     .safeAreaBar(edge: .bottom, alignment: .trailing) {
-      CookingStepButtons()
-        .padding(.bottom, 45)
+      CookingStepButtons(
+        currentStepIndex: $currentStepIndex, totalSteps: recipeDetails.instructions.count
+      )
+      .padding(.bottom, 45)
     }
   }
 
@@ -69,48 +71,51 @@ struct RecipeCookingScreen: View {
     .padding(.bottom, 50)
   }
 
-  @ViewBuilder
-  private func CookingStepButtons() -> some View {
-    HStack {
-      if currentStepIndex > 0 {
-        Button {
-          withAnimation {
-            currentStepIndex -= 1
-          }
-        } label: {
-          Image(systemName: "arrow.left")
-            .font(.title2)
-            .fontWeight(.bold)
-            .foregroundStyle(.primary)
-        }
-        .buttonStyle(.glassProminent)
-        .buttonBorderShape(.circle)
-        .controlSize(.large)
-        .sensoryFeedback(.decrease, trigger: currentStepIndex)
-      }
+  private struct CookingStepButtons: View {
+    @Binding var currentStepIndex: Int
+    let totalSteps: Int
 
-      Spacer()
-
-      if currentStepIndex < recipeDetails.instructions.count - 1 {
-        Button {
-          withAnimation {
-            currentStepIndex += 1
+    var body: some View {
+      HStack {
+        if currentStepIndex > 0 {
+          Button {
+            withAnimation {
+              currentStepIndex -= 1
+            }
+          } label: {
+            Image(systemName: "arrow.left")
+              .font(.title2)
+              .fontWeight(.bold)
+              .foregroundStyle(.primary)
           }
-        } label: {
-          Image(systemName: "arrow.right")
-            .font(.title2)
-            .fontWeight(.bold)
-            .foregroundStyle(.primary)
+          .buttonStyle(.glassProminent)
+          .buttonBorderShape(.circle)
+          .controlSize(.large)
+          .sensoryFeedback(.decrease, trigger: currentStepIndex)
         }
-        .buttonStyle(.glassProminent)
-        .buttonBorderShape(.circle)
-        .controlSize(.large)
-        .sensoryFeedback(.increase, trigger: currentStepIndex)
+
+        Spacer()
+
+        if currentStepIndex < totalSteps - 1 {
+          Button {
+            withAnimation {
+              currentStepIndex += 1
+            }
+          } label: {
+            Image(systemName: "arrow.right")
+              .font(.title2)
+              .fontWeight(.bold)
+              .foregroundStyle(.primary)
+          }
+          .buttonStyle(.glassProminent)
+          .buttonBorderShape(.circle)
+          .controlSize(.large)
+          .sensoryFeedback(.increase, trigger: currentStepIndex)
+        }
       }
+      .padding(.horizontal, 30)
     }
-    .padding(.horizontal, 30)
   }
-
 }
 
 #Preview {
