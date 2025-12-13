@@ -83,7 +83,7 @@ struct RecipeCookingScreen: View {
             .fontWeight(.bold)
             .foregroundStyle(.primary)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
         .controlSize(.large)
         .sensoryFeedback(.decrease, trigger: currentStepIndex)
@@ -102,7 +102,7 @@ struct RecipeCookingScreen: View {
             .fontWeight(.bold)
             .foregroundStyle(.primary)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.glassProminent)
         .buttonBorderShape(.circle)
         .controlSize(.large)
         .sensoryFeedback(.increase, trigger: currentStepIndex)
