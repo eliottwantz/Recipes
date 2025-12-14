@@ -98,7 +98,7 @@ struct RecipeCookingScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
       ScrollView {
         Text(instruction.text)
-          .font(.headline)
+          .font(.system(size: 18))
           .fontWeight(.semibold)
           .foregroundStyle(.primary)
           .multilineTextAlignment(.leading)
