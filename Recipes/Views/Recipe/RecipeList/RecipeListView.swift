@@ -137,25 +137,25 @@ private struct RecipeCard: View {
 
   var body: some View {
     HStack(spacing: 16) {
-      Group {
-        if let photo = photo, let image = photo.image {
-          image
-            .resizable()
-            .scaledToFill()
-        } else {
-          Rectangle()
-            .fill(Color.gray.opacity(0.2))
-            .overlay(
-              Image(systemName: "photo")
-                .font(.system(size: 40))
-                .foregroundColor(.gray.opacity(0.5))
-            )
+      VStack {
+        Group {
+          if let photo = photo, let image = photo.image {
+            image
+              .resizable()
+              .scaledToFill()
+          } else {
+            Rectangle()
+              .fill(Color.gray.opacity(0.2))
+              .overlay(
+                Image(systemName: "photo")
+                  .font(.system(size: 40))
+                  .foregroundColor(.gray.opacity(0.5))
+              )
+          }
         }
       }
-      .aspectRatio(5 / 4, contentMode: .fill)
-      .frame(width: 120)
+      .frame(width: 100, height: 100)
       .clipShape(RoundedRectangle(cornerRadius: 12))
-      .contentShape(RoundedRectangle(cornerRadius: 12))
 
       VStack(alignment: .leading) {
         Text(recipe.name)

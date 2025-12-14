@@ -29,7 +29,7 @@ struct IngredientsList: View {
             } label: {
               Label(
                 ingredient.isCompleted ? "Completed" : "Not completed",
-                systemImage: ingredient.isCompleted ? "checkmark.square.fill" : "square"
+                systemImage: ingredient.isCompleted ? "checkmark.circle.fill" : "circle"
               )
               .labelStyle(.iconOnly)
               .foregroundStyle(Color.accentColor)
