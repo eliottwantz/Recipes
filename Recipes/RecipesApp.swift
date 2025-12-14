@@ -18,7 +18,6 @@ struct RecipesApp: App {
   var body: some Scene {
     WindowGroup {
       ContentView()
-        .tint(.accent)
     }
     .environment(\.appRouter, appRouter)
   }

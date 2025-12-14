@@ -11,6 +11,7 @@ import SwiftUI
 struct RecipeCookingScreen: View {
   @Environment(\.dismiss) private var dismiss
   @State private var currentStepIndex = 0
+  @State private var showIngredientsSheet = false
 
   let recipeDetails: RecipeDetails
 
@@ -32,6 +33,14 @@ struct RecipeCookingScreen: View {
             Image(systemName: "xmark")
           }
         }
+
+        ToolbarItemGroup(placement: .primaryAction) {
+          Button {
+            showIngredientsSheet.toggle()
+          } label: {
+            Label("Ingredients", systemImage: "list.bullet")
+          }
+        }
       }
       .onAppear {
         UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
@@ -43,6 +52,13 @@ struct RecipeCookingScreen: View {
         currentStepIndex: $currentStepIndex, totalSteps: recipeDetails.instructions.count
       )
       .padding(.bottom, 45)
+    }
+    .sheet(isPresented: $showIngredientsSheet) {
+      IngredientsList(recipeIngredients: recipeDetails.ingredients)
+        .presentationDetents([.fraction(0.45), .large])
+        .presentationDragIndicator(.hidden)
+        .presentationContentInteraction(.scrolls)
+        .presentationBackgroundInteraction(.enabled)
     }
   }
 
