@@ -12,53 +12,67 @@ struct RecipeCookingScreen: View {
   @Environment(\.dismiss) private var dismiss
   @State private var currentStepIndex = 0
   @State private var showIngredientsSheet = false
+  @State private var searchTerm = ""
+  @State private var currentDetent: PresentationDetent = .fraction(0.45)
 
   let recipeDetails: RecipeDetails
 
   var body: some View {
-    NavigationStack {
-      TabView(selection: $currentStepIndex) {
-        ForEach(recipeDetails.instructions) { instruction in
-          Tab(value: instruction.position) {
-            CookingStepView(instruction: instruction)
+    GeometryReader { geometry in
+      NavigationStack {
+        ZStack {
+          TabView(selection: $currentStepIndex) {
+            ForEach(recipeDetails.instructions) { instruction in
+              Tab(value: instruction.position) {
+                CookingStepView(instruction: instruction)
+              }
+            }
           }
-        }
-      }
-      .tabViewStyle(.page(indexDisplayMode: .automatic))
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button {
-            dismiss()
-          } label: {
-            Image(systemName: "xmark")
-          }
-        }
+          .tabViewStyle(.page(indexDisplayMode: .automatic))
 
-        ToolbarItemGroup(placement: .primaryAction) {
-          Button {
-            showIngredientsSheet.toggle()
-          } label: {
-            Label("Ingredients", systemImage: "list.bullet")
+          VStack(alignment: .center) {
+            Spacer()
+
+            CookingStepButtons(
+              currentStepIndex: $currentStepIndex, totalSteps: recipeDetails.instructions.count
+            )
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(
+          .bottom,
+          showIngredientsSheet ? geometry.size.height * 0.45 : 0
+        )
+        .animation(.easeOut(duration: 0.25), value: showIngredientsSheet)
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button {
+              dismiss()
+            } label: {
+              Image(systemName: "xmark")
+            }
+          }
+          ToolbarItemGroup(placement: .primaryAction) {
+            Button {
+              showIngredientsSheet.toggle()
+            } label: {
+              Label("Ingredients", systemImage: "list.bullet")
+            }
           }
         }
+        .onAppear {
+          UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
+            .currentPageIndicatorTintColor = UIColor(.accentColor)
+        }
       }
-      .onAppear {
-        UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
-          .currentPageIndicatorTintColor = UIColor(.accentColor)
+      .sheet(isPresented: $showIngredientsSheet) {
+        IngredientsList(recipeIngredients: recipeDetails.ingredients)
+          .presentationDetents([.fraction(0.45), .large], selection: $currentDetent)
+          .presentationDragIndicator(.hidden)
+          .presentationContentInteraction(.scrolls)
+          .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
       }
-    }
-    .safeAreaBar(edge: .bottom, alignment: .trailing) {
-      CookingStepButtons(
-        currentStepIndex: $currentStepIndex, totalSteps: recipeDetails.instructions.count
-      )
-      .padding(.bottom, 45)
-    }
-    .sheet(isPresented: $showIngredientsSheet) {
-      IngredientsList(recipeIngredients: recipeDetails.ingredients)
-        .presentationDetents([.fraction(0.45), .large])
-        .presentationDragIndicator(.hidden)
-        .presentationContentInteraction(.scrolls)
-        .presentationBackgroundInteraction(.enabled)
     }
   }
 
@@ -69,7 +83,7 @@ struct RecipeCookingScreen: View {
         .foregroundStyle(.secondary)
         .font(.subheadline)
         .fontWeight(.semibold)
-
+        .frame(maxWidth: .infinity, alignment: .leading)
       ScrollView {
         Text(instruction.text)
           .font(.body)
@@ -77,14 +91,17 @@ struct RecipeCookingScreen: View {
           .foregroundStyle(.primary)
           .multilineTextAlignment(.leading)
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
       .scrollBounceBehavior(.basedOnSize, axes: .vertical)
       .scrollIndicators(.hidden)
 
       Spacer()
     }
-    .frame(maxHeight: .infinity)
-    .padding(30)
-    .padding(.bottom, 50)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .padding(.horizontal, 30)
+    .padding(.bottom, 40)
+    .padding(.top, showIngredientsSheet ? 10 : 30)
+    .animation(.easeOut(duration: 0.25), value: showIngredientsSheet)
   }
 
   private struct CookingStepButtons: View {
