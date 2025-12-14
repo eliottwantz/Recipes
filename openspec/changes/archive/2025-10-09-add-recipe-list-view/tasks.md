@@ -1,4 +1,0 @@
-- [x] 1. Review the existing persistence APIs to determine how to fetch all `Recipe` records.
-- [x] 2. Implement a SwiftUI recipe list view that loads recipes from the database and renders their titles and summaries in a list.
-- [x] 3. Replace the placeholder content in `ContentView` with the new recipe list view so it's shown on launch.
-- [x] 4. Validate with `xcodebuild -scheme Recipes -destination 'platform=iOS Simulator,name=iPhone 16' build | xcbeautify` to ensure the project compiles with the new UI.
