@@ -14,8 +14,18 @@ struct RecipeCookingScreen: View {
   @State private var showIngredientsSheet = false
   @State private var searchTerm = ""
   @State private var currentDetent: PresentationDetent = .fraction(0.45)
+  @State private var cookingIngredients: [CookingIngredient]
 
   let recipeDetails: RecipeDetails
+
+  init(recipeDetails: RecipeDetails) {
+    self.recipeDetails = recipeDetails
+    self._cookingIngredients = State(
+      initialValue: recipeDetails.ingredients.map { ingredient in
+        CookingIngredient(isCompleted: false, name: ingredient.text)
+      }
+    )
+  }
 
   var body: some View {
     GeometryReader { geometry in
@@ -67,11 +77,13 @@ struct RecipeCookingScreen: View {
         }
       }
       .sheet(isPresented: $showIngredientsSheet) {
-        IngredientsList(recipeIngredients: recipeDetails.ingredients)
-          .presentationDetents([.fraction(0.45), .large], selection: $currentDetent)
-          .presentationDragIndicator(.hidden)
-          .presentationContentInteraction(.scrolls)
-          .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
+        NavigationStack {
+          IngredientsList(cookingIngredients: $cookingIngredients)
+            .presentationDetents([.fraction(0.45), .large], selection: $currentDetent)
+            .presentationDragIndicator(.hidden)
+            .presentationContentInteraction(.scrolls)
+            .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
+        }
       }
     }
   }
@@ -86,10 +98,11 @@ struct RecipeCookingScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
       ScrollView {
         Text(instruction.text)
-          .font(.body)
+          .font(.headline)
           .fontWeight(.semibold)
           .foregroundStyle(.primary)
           .multilineTextAlignment(.leading)
+          .lineSpacing(8)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
       .scrollBounceBehavior(.basedOnSize, axes: .vertical)

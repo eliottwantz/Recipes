@@ -16,21 +16,11 @@ struct CookingIngredient: Identifiable {
 }
 
 struct IngredientsList: View {
-  @State var cookingIngredients: [CookingIngredient]
-
-  init(recipeIngredients: [RecipeIngredient]) {
-    self.cookingIngredients = recipeIngredients.map { ingredient in
-      CookingIngredient(isCompleted: false, name: ingredient.text)
-    }
-  }
+  @Binding var cookingIngredients: [CookingIngredient]
+  @Environment(\.dismiss) private var dismiss
 
   var body: some View {
     VStack(alignment: .leading) {
-      Text("All ingredients")
-        .font(.title)
-        .padding(.top)
-        .padding(.leading)
-
       List {
         ForEach($cookingIngredients) { $ingredient in
           HStack {
@@ -54,20 +44,30 @@ struct IngredientsList: View {
       }
       .listStyle(.inset)
     }
+    .toolbarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .title) {
+        Text("Ingredients")
+          .font(.title2)
+          .fontWeight(.bold)
+      }
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          dismiss()
+        } label: {
+          Label("Close", systemImage: "xmark")
+        }
+      }
+    }
   }
 }
 
 #Preview {
-  let recipeDetails = Storage.configure { database in
-    return try database.read { db in
-      print("FETCHING RECIPE FOR PREVIEW")
-      let recipe = try Recipe.all.fetchOne(db)
-      guard let recipe else { fatalError("No recipe found. Seed the database first.") }
-      let results = try RecipeDetails.FetchKeyRequest(recipeId: recipe.id).fetch(db)
-      return RecipeDetails(
-        recipe: recipe, ingredients: results.ingredients, instructions: results.instructions)
-    }
-  }
+  @Previewable @State var cookingIngredients: [CookingIngredient] = [
+    CookingIngredient(isCompleted: false, name: "2 cups of flour"),
+    CookingIngredient(isCompleted: true, name: "1 cup of sugar"),
+    CookingIngredient(isCompleted: false, name: "3 eggs"),
+  ]
 
-  IngredientsList(recipeIngredients: recipeDetails.ingredients)
+  IngredientsList(cookingIngredients: $cookingIngredients)
 }
