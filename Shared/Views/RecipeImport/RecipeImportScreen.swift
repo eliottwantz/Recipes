@@ -49,13 +49,11 @@ struct RecipeImportScreen: View {
     NavigationStack {
       RecipeEditFormView(recipeDetails: $recipeDetails)
         .navigationTitle("Add a recipe")
-        #if os(iOS)
-          .navigationBarTitleDisplayMode(.inline)
-        #endif
+        .navigationBarTitleDisplayMode(.inline)
         .interactiveDismissDisabled()
         .toolbar {
           ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel", systemImage: "xmark") {
+            Button(role: .close) {
               dismiss()
               onDismiss?()
             }

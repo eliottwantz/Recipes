@@ -52,10 +52,8 @@ struct IngredientsList: View {
           .fontWeight(.bold)
       }
       ToolbarItem(placement: .primaryAction) {
-        Button {
+        Button(role: .close) {
           dismiss()
-        } label: {
-          Label("Close", systemImage: "xmark")
         }
       }
     }

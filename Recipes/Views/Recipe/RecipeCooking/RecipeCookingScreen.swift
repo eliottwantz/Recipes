@@ -15,6 +15,10 @@ struct RecipeCookingScreen: View {
   @State private var searchTerm = ""
   @State private var currentDetent: PresentationDetent = .fraction(0.45)
   @State private var cookingIngredients: [CookingIngredient]
+  @State private var showTimerPicker = false
+  @State private var timerHours = 0
+  @State private var timerMinutes = 0
+  @State private var timerSeconds = 0
 
   let recipeDetails: RecipeDetails
 
@@ -57,13 +61,16 @@ struct RecipeCookingScreen: View {
         .animation(.easeOut(duration: 0.25), value: showIngredientsSheet)
         .toolbar {
           ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
               dismiss()
-            } label: {
-              Image(systemName: "xmark")
             }
           }
           ToolbarItemGroup(placement: .primaryAction) {
+            Button {
+              showTimerPicker = true
+            } label: {
+              Label("Start timer", systemImage: "timer")
+            }
             Button {
               showIngredientsSheet.toggle()
             } label: {
@@ -84,6 +91,20 @@ struct RecipeCookingScreen: View {
             .presentationContentInteraction(.scrolls)
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
         }
+      }
+      .sheet(isPresented: $showTimerPicker) {
+        CountdownTimerPickerView(
+          hours: $timerHours,
+          minutes: $timerMinutes,
+          seconds: $timerSeconds,
+          onStart: {
+            // For now, just print the selected time
+            // This is where AlarmKit integration will happen later
+            print("Timer started: \(timerHours)h \(timerMinutes)m \(timerSeconds)s")
+          }
+        )
+        .presentationDetents([.height(300)])
+        .presentationDragIndicator(.visible)
       }
     }
   }

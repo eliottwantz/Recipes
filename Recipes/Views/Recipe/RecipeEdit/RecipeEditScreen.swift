@@ -34,10 +34,8 @@ struct RecipeEditScreen: View {
       RecipeEditFormView(recipeDetails: $recipeDetails)
         .toolbar {
           ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
               dismiss()
-            } label: {
-              Image(systemName: "xmark")
             }
           }
           ToolbarItem(placement: .primaryAction) {
