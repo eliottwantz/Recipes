@@ -19,6 +19,7 @@ struct RecipeCookingScreen: View {
   @State private var timerHours = 0
   @State private var timerMinutes = 0
   @State private var timerSeconds = 0
+  @State private var timerManager = TimerManager()
 
   let recipeDetails: RecipeDetails
 
@@ -82,6 +83,14 @@ struct RecipeCookingScreen: View {
                     // For now, just print the selected time
                     // This is where AlarmKit integration will happen later
                     print("Timer started: \(timerHours)h \(timerMinutes)m \(timerSeconds)s")
+                    timerManager.scheduleAlarm(
+                      with: .init(
+                        label: "Start HERE",
+                        hour: timerHours,
+                        min: timerMinutes,
+                        sec: timerSeconds
+                      )
+                    )
                   },
                   close: {
                     showTimerPicker = false
