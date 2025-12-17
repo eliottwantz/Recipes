@@ -11,8 +11,8 @@ struct CountdownTimerPickerView: View {
   @Binding var hours: Int
   @Binding var minutes: Int
   @Binding var seconds: Int
-  @Environment(\.dismiss) private var dismiss
   let onStart: () -> Void
+  let close: () -> Void
 
   private let hourOptions = Array(0...23)
   private let minuteOptions = Array(0...59)
@@ -24,8 +24,28 @@ struct CountdownTimerPickerView: View {
 
   private let labelOffset = 31.0
 
+  private func addMinutes(_ minutesToAdd: Int) {
+    let totalSeconds = hours * 3600 + minutes * 60 + seconds + (minutesToAdd * 60)
+    let newHours = totalSeconds / 3600
+    let remainingSeconds = totalSeconds % 3600
+    let newMinutes = remainingSeconds / 60
+    let newSeconds = remainingSeconds % 60
+
+    hours = min(newHours, 23)
+    minutes = newMinutes
+    seconds = newSeconds
+  }
+
   var body: some View {
     VStack(spacing: 0) {
+      // Quick action buttons
+      HStack(spacing: 12) {
+        addButton(title: "+1 min", minutesToAdd: 1)
+        addButton(title: "+5 min", minutesToAdd: 5)
+        addButton(title: "+10 min", minutesToAdd: 10)
+      }
+      .padding(.horizontal, 14)
+
       HStack(spacing: 0) {
         pickerRow(title: "h", range: 0..<24, selection: $hours)
         pickerRow(title: "min", range: 0..<60, selection: $minutes)
@@ -35,7 +55,8 @@ struct CountdownTimerPickerView: View {
       // Bottom action buttons
       HStack(spacing: 12) {
         Button("Cancel") {
-          dismiss()
+          close()
+          resetPicker()
         }
         .buttonStyle(.glass)
         .tint(.secondary)
@@ -44,7 +65,8 @@ struct CountdownTimerPickerView: View {
 
         Button("Start") {
           onStart()
-          dismiss()
+          close()
+          resetPicker()
         }
         .buttonStyle(.glassProminent)
         .tint(.accentColor)
@@ -55,9 +77,10 @@ struct CountdownTimerPickerView: View {
       .padding(.horizontal)
       .padding(.top, 6)
     }
+    .padding(.vertical)
   }
 
-  func pickerRow(title: String, range: Range<Int>, selection: Binding<Int>) -> some View {
+  private func pickerRow(title: String, range: Range<Int>, selection: Binding<Int>) -> some View {
     Picker(title, selection: selection) {
       ForEach(range, id: \.self) {
         Text("\($0)")
@@ -79,6 +102,29 @@ struct CountdownTimerPickerView: View {
       new > old
     }
   }
+
+  private func addButton(title: String, minutesToAdd: Int) -> some View {
+    Button {
+      withAnimation {
+        addMinutes(minutesToAdd)
+      }
+    } label: {
+      Text(title)
+        .padding(.vertical, 4)
+    }
+    .buttonStyle(.glass)
+    .controlSize(.regular)
+    .buttonSizing(.flexible)
+  }
+
+  private func resetPicker() {
+    Task {
+      try await Task.sleep(for: .milliseconds(200))
+      hours = 0
+      minutes = 0
+      seconds = 0
+    }
+  }
 }
 
 #Preview {
@@ -92,6 +138,7 @@ struct CountdownTimerPickerView: View {
     seconds: $seconds,
     onStart: {
       print("Timer started: \(hours)h \(minutes)m \(seconds)s")
-    }
+    },
+    close: {}
   )
 }

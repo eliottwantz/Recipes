@@ -35,76 +35,85 @@ struct RecipeCookingScreen: View {
     GeometryReader { geometry in
       NavigationStack {
         ZStack {
-          TabView(selection: $currentStepIndex) {
-            ForEach(recipeDetails.instructions) { instruction in
-              Tab(value: instruction.position) {
-                CookingStepView(instruction: instruction)
+          ZStack {
+            TabView(selection: $currentStepIndex) {
+              ForEach(recipeDetails.instructions) { instruction in
+                Tab(value: instruction.position) {
+                  CookingStepView(instruction: instruction)
+                }
+              }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .automatic))
+
+            VStack(alignment: .center) {
+              Spacer()
+
+              CookingStepButtons(
+                currentStepIndex: $currentStepIndex, totalSteps: recipeDetails.instructions.count
+              )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .padding(
+            .bottom,
+            showIngredientsSheet ? geometry.size.height * 0.45 : 0
+          )
+          .animation(.easeOut(duration: 0.25), value: showIngredientsSheet)
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button(role: .close) {
+                dismiss()
+              }
+            }
+            ToolbarItemGroup(placement: .primaryAction) {
+              Button {
+                showIngredientsSheet = false
+                showTimerPicker.toggle()
+              } label: {
+                Label("Start timer", systemImage: "timer")
+              }
+              .popover(isPresented: $showTimerPicker) {
+                CountdownTimerPickerView(
+                  hours: $timerHours,
+                  minutes: $timerMinutes,
+                  seconds: $timerSeconds,
+                  onStart: {
+                    // For now, just print the selected time
+                    // This is where AlarmKit integration will happen later
+                    print("Timer started: \(timerHours)h \(timerMinutes)m \(timerSeconds)s")
+                  },
+                  close: {
+                    showTimerPicker = false
+                  }
+                )
+                .padding(.horizontal)
+                .frame(width: geometry.size.width, height: 320)
+                .presentationCompactAdaptation(.popover)
+              }
+
+              Button {
+                showTimerPicker = false
+                showIngredientsSheet.toggle()
+              } label: {
+                Label("Ingredients", systemImage: "list.bullet")
               }
             }
           }
-          .tabViewStyle(.page(indexDisplayMode: .automatic))
-
-          VStack(alignment: .center) {
-            Spacer()
-
-            CookingStepButtons(
-              currentStepIndex: $currentStepIndex, totalSteps: recipeDetails.instructions.count
-            )
-          }
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(
-          .bottom,
-          showIngredientsSheet ? geometry.size.height * 0.45 : 0
-        )
-        .animation(.easeOut(duration: 0.25), value: showIngredientsSheet)
-        .toolbar {
-          ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-              dismiss()
-            }
-          }
-          ToolbarItemGroup(placement: .primaryAction) {
-            Button {
-              showTimerPicker = true
-            } label: {
-              Label("Start timer", systemImage: "timer")
-            }
-            Button {
-              showIngredientsSheet.toggle()
-            } label: {
-              Label("Ingredients", systemImage: "list.bullet")
-            }
+          .onAppear {
+            UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
+              .currentPageIndicatorTintColor = UIColor(.accentColor)
           }
         }
-        .onAppear {
-          UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
-            .currentPageIndicatorTintColor = UIColor(.accentColor)
-        }
-      }
-      .sheet(isPresented: $showIngredientsSheet) {
-        NavigationStack {
-          IngredientsList(cookingIngredients: $cookingIngredients)
-            .presentationDetents([.fraction(0.45), .large], selection: $currentDetent)
-            .presentationDragIndicator(.hidden)
-            .presentationContentInteraction(.scrolls)
-            .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
-        }
-      }
-      .sheet(isPresented: $showTimerPicker) {
-        CountdownTimerPickerView(
-          hours: $timerHours,
-          minutes: $timerMinutes,
-          seconds: $timerSeconds,
-          onStart: {
-            // For now, just print the selected time
-            // This is where AlarmKit integration will happen later
-            print("Timer started: \(timerHours)h \(timerMinutes)m \(timerSeconds)s")
+        .sheet(isPresented: $showIngredientsSheet) {
+          NavigationStack {
+            IngredientsList(cookingIngredients: $cookingIngredients)
+              .presentationDetents([.fraction(0.45), .large], selection: $currentDetent)
+              .presentationDragIndicator(.hidden)
+              .presentationContentInteraction(.scrolls)
+              .presentationBackgroundInteraction(.enabled)
           }
-        )
-        .presentationDetents([.height(300)])
-        .presentationDragIndicator(.visible)
+        }
       }
     }
   }
