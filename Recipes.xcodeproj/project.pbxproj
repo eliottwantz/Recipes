@@ -11,8 +11,9 @@
 		55005D6C2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5517C2962E973F1500F64C53 /* SQLiteData */; };
 		555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		5561697B2EBC3D7F00BB649D /* SwiftNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = 5561697A2EBC3D7F00BB649D /* SwiftNavigation */; };
-		5561697D2EBC3D7F00BB649D /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = 5561697C2EBC3D7F00BB649D /* SwiftUINavigation */; };
+		5580A3FB2EF4C18200112748 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55BC7ABE2EF33B2400B7D42D /* WidgetKit.framework */; };
+		5580A3FC2EF4C18200112748 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55BC7AC02EF33B2400B7D42D /* SwiftUI.framework */; };
+		5580A4092EF4C18300112748 /* TimerLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5594D41D2EAD0BE7001852BF /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5594D41C2EAD0BE7001852BF /* SQLiteData */; };
 /* End PBXBuildFile section */
 
@@ -24,6 +25,13 @@
 			remoteGlobalIDString = 555EDC672EAC3960006DC041;
 			remoteInfo = RecipeShareExtension;
 		};
+		5580A4072EF4C18300112748 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5517C27B2E9720AB00F64C53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5580A3F92EF4C18200112748;
+			remoteInfo = TimerLiveActivityExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +40,7 @@
 			dstPath = "";
 			dstSubfolder = PlugIns;
 			files = (
+				5580A4092EF4C18300112748 /* TimerLiveActivityExtension.appex in Embed Foundation Extensions */,
 				555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -42,6 +51,10 @@
 		55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5517C2832E9720AB00F64C53 /* Recipes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recipes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecipeShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimerLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		55BC7ABE2EF33B2400B7D42D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		55BC7AC02EF33B2400B7D42D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		55BC7AD72EF36E4000B7D42D /* AlarmKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AlarmKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk/System/Library/Frameworks/AlarmKit.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,6 +72,20 @@
 			);
 			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
 		};
+		5580A40D2EF4C18300112748 /* Exceptions for "TimerLiveActivity" folder in "TimerLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */;
+		};
+		5580A40F2EF4C2CA00112748 /* Exceptions for "Recipes" folder in "TimerLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Views/Recipe/RecipeCooking/AlarmMetadata.swift,
+			);
+			target = 5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -66,6 +93,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				5517C2932E97365B00F64C53 /* Exceptions for "Recipes" folder in "Recipes" target */,
+				5580A40F2EF4C2CA00112748 /* Exceptions for "Recipes" folder in "TimerLiveActivityExtension" target */,
 			);
 			path = Recipes;
 			sourceTree = "<group>";
@@ -83,6 +111,14 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
+		5580A3FD2EF4C18200112748 /* TimerLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5580A40D2EF4C18300112748 /* Exceptions for "TimerLiveActivity" folder in "TimerLiveActivityExtension" target */,
+			);
+			path = TimerLiveActivity;
+			sourceTree = "<group>";
+		};
 		55FA1DF02EAD1A5500468B17 /* Storage */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Storage;
@@ -94,15 +130,20 @@
 		5517C2802E9720AB00F64C53 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				5561697B2EBC3D7F00BB649D /* SwiftNavigation in Frameworks */,
 				5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */,
-				5561697D2EBC3D7F00BB649D /* SwiftUINavigation in Frameworks */,
 			);
 		};
 		555EDC652EAC3960006DC041 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				5594D41D2EAD0BE7001852BF /* SQLiteData in Frameworks */,
+			);
+		};
+		5580A3F72EF4C18200112748 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				5580A3FC2EF4C18200112748 /* SwiftUI.framework in Frameworks */,
+				5580A3FB2EF4C18200112748 /* WidgetKit.framework in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -116,6 +157,7 @@
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
 				55FA1DF02EAD1A5500468B17 /* Storage */,
 				556169912EBC4D6800BB649D /* Shared */,
+				5580A3FD2EF4C18200112748 /* TimerLiveActivity */,
 				55FA1DD82EAC3EBD00468B17 /* Frameworks */,
 				5517C2842E9720AB00F64C53 /* Products */,
 			);
@@ -126,6 +168,7 @@
 			children = (
 				5517C2832E9720AB00F64C53 /* Recipes.app */,
 				555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */,
+				5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -133,6 +176,9 @@
 		55FA1DD82EAC3EBD00468B17 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55BC7AD72EF36E4000B7D42D /* AlarmKit.framework */,
+				55BC7ABE2EF33B2400B7D42D /* WidgetKit.framework */,
+				55BC7AC02EF33B2400B7D42D /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -153,6 +199,7 @@
 			);
 			dependencies = (
 				555EDC712EAC3960006DC041 /* PBXTargetDependency */,
+				5580A4082EF4C18300112748 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				5517C2852E9720AB00F64C53 /* Recipes */,
@@ -162,8 +209,6 @@
 			name = Recipes;
 			packageProductDependencies = (
 				5517C2962E973F1500F64C53 /* SQLiteData */,
-				5561697A2EBC3D7F00BB649D /* SwiftNavigation */,
-				5561697C2EBC3D7F00BB649D /* SwiftUINavigation */,
 			);
 			productName = Recipes;
 			productReference = 5517C2832E9720AB00F64C53 /* Recipes.app */;
@@ -192,6 +237,24 @@
 			productReference = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5580A40A2EF4C18300112748 /* Build configuration list for PBXNativeTarget "TimerLiveActivityExtension" */;
+			buildPhases = (
+				5580A3F62EF4C18200112748 /* Sources */,
+				5580A3F72EF4C18200112748 /* Frameworks */,
+				5580A3F82EF4C18200112748 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				5580A3FD2EF4C18200112748 /* TimerLiveActivity */,
+			);
+			name = TimerLiveActivityExtension;
+			productName = TimerLiveActivityExtension;
+			productReference = 5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -199,7 +262,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					5517C2822E9720AB00F64C53 = {
@@ -207,6 +270,9 @@
 					};
 					555EDC672EAC3960006DC041 = {
 						CreatedOnToolsVersion = 26.0;
+					};
+					5580A3F92EF4C18200112748 = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -221,7 +287,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */,
-				556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 5517C2842E9720AB00F64C53 /* Products */;
@@ -230,6 +295,7 @@
 			targets = (
 				5517C2822E9720AB00F64C53 /* Recipes */,
 				555EDC672EAC3960006DC041 /* RecipeShareExtension */,
+				5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -247,6 +313,11 @@
 				55005D6B2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */,
 			);
 		};
+		5580A3F82EF4C18200112748 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -260,6 +331,11 @@
 			files = (
 			);
 		};
+		5580A3F62EF4C18200112748 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -267,6 +343,11 @@
 			isa = PBXTargetDependency;
 			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
 			targetProxy = 555EDC702EAC3960006DC041 /* PBXContainerItemProxy */;
+		};
+		5580A4082EF4C18300112748 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */;
+			targetProxy = 5580A4072EF4C18300112748 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -509,7 +590,7 @@
 				INFOPLIST_FILE = RecipeShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RecipeShareExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -548,7 +629,7 @@
 				INFOPLIST_FILE = RecipeShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = RecipeShareExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -570,6 +651,71 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5580A40B2EF4C18300112748 /* Debug configuration for PBXNativeTarget "TimerLiveActivityExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TU3N92HFXF;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TimerLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TimerLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.develiott.Recipes.TimerLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5580A40C2EF4C18300112748 /* Release configuration for PBXNativeTarget "TimerLiveActivityExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TU3N92HFXF;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TimerLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TimerLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.develiott.Recipes.TimerLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -601,6 +747,14 @@
 			);
 			defaultConfigurationName = Release;
 		};
+		5580A40A2EF4C18300112748 /* Build configuration list for PBXNativeTarget "TimerLiveActivityExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5580A40B2EF4C18300112748 /* Debug configuration for PBXNativeTarget "TimerLiveActivityExtension" */,
+				5580A40C2EF4C18300112748 /* Release configuration for PBXNativeTarget "TimerLiveActivityExtension" */,
+			);
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -612,14 +766,6 @@
 				minimumVersion = 1.4.0;
 			};
 		};
-		556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-navigation";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.6.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -627,16 +773,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */;
 			productName = SQLiteData;
-		};
-		5561697A2EBC3D7F00BB649D /* SwiftNavigation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */;
-			productName = SwiftNavigation;
-		};
-		5561697C2EBC3D7F00BB649D /* SwiftUINavigation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 556169792EBC3D7F00BB649D /* XCRemoteSwiftPackageReference "swift-navigation" */;
-			productName = SwiftUINavigation;
 		};
 		5594D41C2EAD0BE7001852BF /* SQLiteData */ = {
 			isa = XCSwiftPackageProductDependency;

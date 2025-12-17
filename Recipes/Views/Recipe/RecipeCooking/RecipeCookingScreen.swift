@@ -10,6 +10,7 @@ import SwiftUI
 
 struct RecipeCookingScreen: View {
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.timerManager) private var timerManager
   @State private var currentStepIndex = 0
   @State private var showIngredientsSheet = false
   @State private var searchTerm = ""
@@ -19,7 +20,7 @@ struct RecipeCookingScreen: View {
   @State private var timerHours = 0
   @State private var timerMinutes = 0
   @State private var timerSeconds = 0
-  @State private var timerManager = TimerManager()
+  
 
   let recipeDetails: RecipeDetails
 
@@ -80,17 +81,14 @@ struct RecipeCookingScreen: View {
                   minutes: $timerMinutes,
                   seconds: $timerSeconds,
                   onStart: {
-                    // For now, just print the selected time
-                    // This is where AlarmKit integration will happen later
-                    print("Timer started: \(timerHours)h \(timerMinutes)m \(timerSeconds)s")
                     timerManager.scheduleAlarm(
                       with: .init(
-                        label: "Start HERE",
+                        recipeName: recipeDetails.recipe.name,
                         hour: timerHours,
                         min: timerMinutes,
-                        sec: timerSeconds
-                      )
-                    )
+                        sec: timerSeconds,
+                        imageData: recipeDetails.photos.first?.photoData ?? nil
+                      ))
                   },
                   close: {
                     showTimerPicker = false

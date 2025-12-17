@@ -8,10 +8,14 @@
 import AlarmKit
 
 struct AlarmForm {
-  var label = ""
+  var recipeName: String
+  
+  
   var hour = 0
-  var min = 15
+  var min = 0
   var sec = 0
+  
+  var imageData: Data?
 
   var interval: TimeInterval {
     TimeInterval(hour * 60 * 60 + min * 60 + sec)
@@ -19,9 +23,5 @@ struct AlarmForm {
 
   var countdownDuration: Alarm.CountdownDuration {
     .init(preAlert: interval, postAlert: nil)
-  }
-  
-  var localizedLabel: LocalizedStringResource {
-      label.isEmpty ? LocalizedStringResource("Alarm") : LocalizedStringResource(stringLiteral: label)
   }
 }

@@ -48,6 +48,16 @@ struct RecipeListScreen: View {
               }
               .disabled(selection.isEmpty)
               .tint(.red)
+              .confirmationDialog(
+                "Select Delete to permanently remove \(selection.count) recipes.",
+                isPresented: $showDeleteConfirmation,
+                titleVisibility: .visible
+              ) {
+                Button(role: .destructive) {
+                  deleteSelectedRecipes()
+                }
+                Button("Cancel") {}
+              }
 
               Button {
                 withAnimation {
@@ -126,17 +136,6 @@ struct RecipeListScreen: View {
         }
         .sheet(isPresented: $showRecipeImportScreen) {
           RecipeImportScreen()
-        }
-        .alert(
-          "Delete \(selection.count) recipes",
-          isPresented: $showDeleteConfirmation
-        ) {
-          Button("Cancel", role: .cancel) {}
-          Button("Confirm", role: .destructive) {
-            deleteSelectedRecipes()
-          }
-        } message: {
-          Text("This action cannot be undone.")
         }
         .onChange(of: scenePhase) { oldValue, newValue in
           if oldValue == .inactive && newValue == .active {

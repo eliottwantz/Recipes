@@ -12,55 +12,69 @@ import SwiftUI
 @Observable
 final class TimerManager {
   typealias AlarmConfiguration = AlarmManager.AlarmConfiguration<CookingAlarmMetadata>
-  typealias AlarmsMap = [UUID: (Alarm, LocalizedStringResource)]
+  typealias AlarmsMap = [UUID: Alarm]
 
   var alarmsMap = AlarmsMap()
 
   @ObservationIgnored nonisolated private let alarmManager = AlarmManager.shared
 
   init() {
-
+    observeAlarms()
   }
 
   func scheduleAlarm(with userInput: AlarmForm) {
-    let attributes = AlarmAttributes(
-      presentation: alarmPresentation(with: userInput), metadata: CookingAlarmMetadata(),
-      tintColor: .accent)
-
-    let id = UUID()
-    let alarmConfiguration = AlarmConfiguration(
-      countdownDuration: userInput.countdownDuration,
-      attributes: attributes
-    )
-
-    scheduleAlarm(
-      id: id,
-      label: "The alarm title",
-      alarmConfiguration: alarmConfiguration
-    )
-  }
-
-  func scheduleAlarm(
-    id: UUID, label: LocalizedStringResource, alarmConfiguration: AlarmConfiguration
-  ) {
     Task {
-      do {
-        guard await requestAuthorization() else {
-          print("Not authorized to schedule alarms.")
-          return
-        }
+      guard await requestAuthorization() else {
+        print("Not authorized to schedule alarms.")
+        return
+      }
 
+      let id = UUID()
+
+      let alertContent = AlarmPresentation.Alert(
+        title: "Timer ended",
+        secondaryButton: AlarmButton(
+          text: "Open App", textColor: .black, systemImageName: "arrowshape.up.circle.fill"),
+        secondaryButtonBehavior: .custom
+      )
+
+      let countdownContent = AlarmPresentation.Countdown(
+        title: "Cooking Timer",
+      )
+
+      let attributes = AlarmAttributes<CookingAlarmMetadata>(
+        presentation: AlarmPresentation(
+          alert: alertContent,
+          countdown: countdownContent,
+        ),
+        metadata: CookingAlarmMetadata(
+          recipeName: userInput.recipeName,
+          alarmID: id
+        ),
+        tintColor: .accent
+      )
+
+      let alarmConfiguration = AlarmConfiguration.timer(
+        duration: userInput.interval,
+        attributes: attributes,
+        secondaryIntent: OpenAppIntent(alarmID: id.uuidString)
+      )
+
+      do {
         let alarm = try await alarmManager.schedule(id: id, configuration: alarmConfiguration)
-        alarmsMap[id] = (alarm, label)
+        print("✅ Alarm scheduled successfully: \(alarm)")
+        print("✅ Alarm ID: \(id)")
+        print("✅ Alarm state: \(alarm.state)")
+        alarmsMap[id] = alarm
       } catch {
-        print("Error encountered when scheduling alarm: \(error)")
+        print("Error encountered when scheduling alarm: \(error.localizedDescription)")
       }
     }
   }
 
   func unscheduleAlarm(with alarmID: UUID) {
     try? alarmManager.cancel(id: alarmID)
-    Task { @MainActor in
+    Task {
       alarmsMap[alarmID] = nil
     }
   }
@@ -74,11 +88,10 @@ final class TimerManager {
   }
 
   private func updateAlarmState(with remoteAlarms: [Alarm]) {
-    Task { @MainActor in
-
+    Task {
       // Update existing alarm states.
       remoteAlarms.forEach { updated in
-        alarmsMap[updated.id, default: (updated, "Alarm (Old Session)")].0 = updated
+        alarmsMap[updated.id] = updated
       }
 
       let knownAlarmIDs = Set(alarmsMap.keys)
@@ -90,32 +103,6 @@ final class TimerManager {
         alarmsMap[$0] = nil
       }
     }
-  }
-
-  private func alarmPresentation(with userInput: AlarmForm) -> AlarmPresentation {
-    let alertContent = AlarmPresentation.Alert(
-      //      title: userInput.localizedLabel,
-      title: "Timer Finished",
-      secondaryButton: nil,
-      secondaryButtonBehavior: nil
-    )
-
-    let countdownContent = AlarmPresentation.Countdown(
-      //      title: userInput.localizedLabel,
-      title: "Cooking Timer",
-      pauseButton: .pauseButton
-    )
-
-    let pausedContent = AlarmPresentation.Paused(
-      title: "Paused",
-      resumeButton: .resumeButton
-    )
-
-    return AlarmPresentation(
-      alert: alertContent,
-      countdown: countdownContent,
-      paused: pausedContent
-    )
   }
 
   private func requestAuthorization() async -> Bool {
@@ -143,4 +130,8 @@ extension AlarmButton {
   static var resumeButton: Self {
     AlarmButton(text: "Start", textColor: .black, systemImageName: "play.fill")
   }
+}
+
+extension EnvironmentValues {
+  @Entry var timerManager: TimerManager = TimerManager()
 }
