@@ -55,6 +55,13 @@ struct RecipeListScreen: View {
               ) {
                 Button(role: .destructive) {
                   deleteSelectedRecipes()
+                  selection.removeAll()
+                  Task {
+                    try await Task.sleep(for: .milliseconds(10))
+                    withAnimation {
+                      editMode = .inactive
+                    }
+                  }
                 }
                 Button("Cancel") {}
               }
