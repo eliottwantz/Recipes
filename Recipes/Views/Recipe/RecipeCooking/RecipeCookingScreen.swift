@@ -161,12 +161,19 @@ struct RecipeCookingScreen: View {
         .fontWeight(.semibold)
         .frame(maxWidth: .infinity, alignment: .leading)
       ScrollView {
-        Text(instruction.text)
-          .font(.system(size: 18))
-          .fontWeight(.semibold)
-          .foregroundStyle(.primary)
-          .multilineTextAlignment(.leading)
-          .lineSpacing(8)
+        HighlightedTimeText(
+          text: instruction.text,
+          font: Font.system(size: 18, weight: .semibold),
+          lineSpacing: 8,
+          onTimeTap: { hours, minutes, seconds in
+            timerHours = hours
+            timerMinutes = minutes
+            timerSeconds = seconds
+            showIngredientsSheet = false
+            showTimerPicker = true
+          }
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
       .scrollBounceBehavior(.basedOnSize, axes: .vertical)
