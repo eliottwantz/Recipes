@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct RecipesApp: App {
   @State private var appRouter = AppRouter()
-  @State private var timerManager = TimerManager()
+//  @State private var timerManager = TimerManager()
 
   init() {
     Storage.configure()
@@ -21,6 +21,6 @@ struct RecipesApp: App {
       ContentView()
     }
     .environment(\.appRouter, appRouter)
-    .environment(\.timerManager, timerManager)
+//    .environment(\.timerManager, timerManager)
   }
 }

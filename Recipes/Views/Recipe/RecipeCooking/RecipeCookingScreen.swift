@@ -10,7 +10,6 @@ import SwiftUI
 
 struct RecipeCookingScreen: View {
   @Environment(\.dismiss) private var dismiss
-  @Environment(\.timerManager) private var timerManager
   @State private var currentStepIndex = 0
   @State private var showIngredientsSheet = false
   @State private var searchTerm = ""
@@ -20,7 +19,7 @@ struct RecipeCookingScreen: View {
   @State private var timerHours = 0
   @State private var timerMinutes = 0
   @State private var timerSeconds = 0
-  
+  private var timerManager = TimerManager.shared
 
   let recipeDetails: RecipeDetails
 
@@ -75,27 +74,51 @@ struct RecipeCookingScreen: View {
               } label: {
                 Label("Start timer", systemImage: "timer")
               }
+              .badge(timerManager.upcomingAlarmsCount)
               .popover(isPresented: $showTimerPicker) {
-                CountdownTimerPickerView(
-                  hours: $timerHours,
-                  minutes: $timerMinutes,
-                  seconds: $timerSeconds,
-                  onStart: {
-                    timerManager.scheduleAlarm(
-                      with: .init(
-                        recipeName: recipeDetails.recipe.name,
-                        hour: timerHours,
-                        min: timerMinutes,
-                        sec: timerSeconds,
-                        imageData: recipeDetails.photos.first?.photoData ?? nil
-                      ))
-                  },
-                  close: {
-                    showTimerPicker = false
+                VStack(spacing: 0) {
+                  // Active Timers Section
+                  if timerManager.hasUpcomingAlarms {
+                    ScrollView {
+                      VStack(spacing: 12) {
+                        ForEach(Array(timerManager.alarmsMap.values)) { alarmData in
+                          ActiveTimerView(
+                            alarm: alarmData.alarm,
+                            endDate: alarmData.endDate,
+                            recipeName: alarmData.recipeName,
+                            onCancel: {
+                              timerManager.unscheduleAlarm(with: alarmData.id)
+                            }
+                          )
+                        }
+                      }
+                      .padding()
+                    }
+                    .frame(maxHeight: 300)
                   }
-                )
-                .padding(.horizontal)
-                .frame(width: geometry.size.width, height: 320)
+
+                  // Timer Picker Section
+                  CountdownTimerPickerView(
+                    hours: $timerHours,
+                    minutes: $timerMinutes,
+                    seconds: $timerSeconds,
+                    onStart: {
+                      timerManager.scheduleAlarm(
+                        with: .init(
+                          recipeName: recipeDetails.recipe.name,
+                          hour: timerHours,
+                          min: timerMinutes,
+                          sec: timerSeconds,
+                          imageData: recipeDetails.photos.first?.photoData ?? nil
+                        ))
+                    },
+                    close: {
+                      showTimerPicker = false
+                    }
+                  )
+                  .padding(.horizontal)
+                  .frame(width: geometry.size.width, height: 300)
+                }
                 .presentationCompactAdaptation(.popover)
               }
 

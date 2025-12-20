@@ -50,6 +50,14 @@ extension RecipePhoto {
   }
 }
 
+@Table("cooking_timers")
+nonisolated struct CookingTimer: Identifiable, Hashable, Sendable {
+  let id: UUID
+  var recipeName: String = ""
+  var endDate: Date = .now
+  var createdAt: Date = .now
+}
+
 enum SortBy: String {
   case name, createdAt
 }
