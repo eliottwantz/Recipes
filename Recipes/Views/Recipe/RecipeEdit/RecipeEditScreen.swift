@@ -76,6 +76,7 @@ struct RecipeEditScreen: View {
 
   }
 
+  // MARK: - Update Recipe
   private func updateRecipe() {
     let normalized = recipeDetails.normalized()
     do {
@@ -89,24 +90,20 @@ struct RecipeEditScreen: View {
         .where { $0.id.eq(normalized.recipe.id) }
         .execute(db)
 
-        for ingredient in normalized.ingredients {
-          try RecipeIngredient.update {
-            $0.position = ingredient.position
-            $0.text = ingredient.text
-          }
-          .where { $0.id.eq(ingredient.id) }
-          .where { $0.recipeId.eq(normalized.recipe.id) }
+        // MARK: Replace ingredients
+        try RecipeIngredient.delete()
+          .where { $0.recipeId == normalized.recipe.id }
           .execute(db)
+        for ingredient in normalized.ingredients {
+          try RecipeIngredient.insert { ingredient }.execute(db)
         }
 
-        for instruction in normalized.instructions {
-          try RecipeInstruction.update {
-            $0.position = instruction.position
-            $0.text = instruction.text
-          }
-          .where { $0.id.eq(instruction.id) }
-          .where { $0.recipeId.eq(normalized.recipe.id) }
+        // MARK: Replace instructions
+        try RecipeInstruction.delete()
+          .where { $0.recipeId == normalized.id }
           .execute(db)
+        for instruction in normalized.instructions {
+          try RecipeInstruction.insert { instruction }.execute(db)
         }
       }
 
