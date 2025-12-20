@@ -114,9 +114,10 @@ final class TimerManager {
         saveTimerToDatabase(
           timer: CookingTimer(
             id: id,
+            recipeId: userInput.recipeId,
             recipeName: userInput.recipeName,
             instructionStep: userInput.instructionStep,
-            endDate: endDate,
+            endDate: endDate
           ))
       } catch {
         print("Error encountered when scheduling alarm: \(error.localizedDescription)")

@@ -53,6 +53,7 @@ extension RecipePhoto {
 @Table("cooking_timers")
 nonisolated struct CookingTimer: Identifiable, Hashable, Sendable {
   let id: UUID
+  var recipeId: Recipe.ID
   var recipeName: String = ""
   var instructionStep: Int?
   var endDate: Date = .now

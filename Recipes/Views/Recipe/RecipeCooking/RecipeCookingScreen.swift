@@ -107,6 +107,7 @@ struct RecipeCookingScreen: View {
                       let currentInstruction = recipeDetails.instructions[currentStepIndex]
                       timerManager.scheduleAlarm(
                         with: .init(
+                          recipeId: recipeDetails.recipe.id,
                           recipeName: recipeDetails.recipe.name,
                           instructionStep: currentInstruction.position + 1,
                           hour: timerHours,

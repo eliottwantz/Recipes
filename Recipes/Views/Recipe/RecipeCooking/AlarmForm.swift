@@ -8,6 +8,7 @@
 import AlarmKit
 
 struct AlarmForm {
+  var recipeId: UUID
   var recipeName: String
   var instructionStep: Int?
 

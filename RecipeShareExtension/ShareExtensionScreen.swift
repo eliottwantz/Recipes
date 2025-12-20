@@ -25,36 +25,39 @@ struct ShareExtensionScreen: View {
   }
 
   var body: some View {
-    switch phase {
-    case .importing:
-      VStack {
-        Text("Extracting recipe from web page...")
-        ProgressView()
-      }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .onAppear {
-        loadInitialShare(from: context)
-      }
-    case .imported(let extractedRecipeDetail):
-      RecipeImportScreen(recipeDetails: extractedRecipeDetail) {
-        context.completeRequest(returningItems: nil)
-      }
-    case .error(let message):
-      NavigationStack {
-        ContentUnavailableView(
-          "Extraction Failed",
-          systemImage: "exclamationmark.circle.fill",
-          description: Text(message)
-        )
-        .toolbar {
-          ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel", systemImage: "xmark") {
-              cancel()
+    Group {
+      switch phase {
+      case .importing:
+        VStack {
+          Text("Extracting recipe from web page...")
+          ProgressView()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+          loadInitialShare(from: context)
+        }
+      case .imported(let extractedRecipeDetail):
+        RecipeImportScreen(recipeDetails: extractedRecipeDetail) {
+          context.completeRequest(returningItems: nil)
+        }
+      case .error(let message):
+        NavigationStack {
+          ContentUnavailableView(
+            "Extraction Failed",
+            systemImage: "exclamationmark.circle.fill",
+            description: Text(message)
+          )
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel", systemImage: "xmark") {
+                cancel()
+              }
             }
           }
         }
       }
     }
+    .tint(Color.accent)
   }
 
   private func loadInitialShare(from context: NSExtensionContext) {

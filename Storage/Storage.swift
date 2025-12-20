@@ -154,6 +154,7 @@ extension DependencyValues {
         """
         CREATE TABLE "cooking_timers" (
             "id" TEXT PRIMARY KEY NOT NULL ON CONFLICT REPLACE DEFAULT (uuid()),
+            "recipeId" TEXT NOT NULL REFERENCES "recipes"("id") ON DELETE CASCADE ON UPDATE CASCADE,
             "recipeName" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT '',
             "instructionStep" INTEGER,
             "endDate" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
