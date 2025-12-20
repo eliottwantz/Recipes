@@ -15,6 +15,7 @@ struct AlarmData: Identifiable {
   let alarm: Alarm
   let endDate: Date
   let recipeName: String
+  let instructionStep: Int?
 
   var id: UUID { alarm.id }
 }
@@ -24,7 +25,7 @@ final class TimerManager {
   typealias AlarmConfiguration = AlarmManager.AlarmConfiguration<CookingAlarmMetadata>
 
   @ObservationIgnored static let shared = TimerManager()
-  var alarmsMap: [UUID: AlarmData] = [:]
+  private var alarmsMap = [UUID: AlarmData]()
 
   var upcomingAlarmsCount: Int {
     alarmsMap.count
@@ -34,11 +35,23 @@ final class TimerManager {
     !alarmsMap.isEmpty
   }
 
+  var sortedAlarms: [AlarmData] {
+    alarmsMap.values
+      .sorted { $0.endDate < $1.endDate }
+      .sorted {
+        $0.recipeName.compare(
+          $1.recipeName,
+          options: [.caseInsensitive, .diacriticInsensitive],
+          range: nil,
+          locale: Locale.current
+        ) == .orderedAscending
+      }
+  }
+
   @ObservationIgnored nonisolated private let alarmManager = AlarmManager.shared
   @ObservationIgnored @Dependency(\.defaultDatabase) private var database
   @ObservationIgnored
-  @FetchAll(CookingTimer.order(by: \.endDate).order(by: \.recipeName))
-  private var timers
+  @FetchAll private var timers: [CookingTimer]
 
   private init() {
     observeAlarms()
@@ -72,6 +85,7 @@ final class TimerManager {
         ),
         metadata: CookingAlarmMetadata(
           recipeName: userInput.recipeName,
+          instructionStep: userInput.instructionStep,
           alarmID: id
         ),
         tintColor: .accent
@@ -93,10 +107,17 @@ final class TimerManager {
         let alarmData = AlarmData(
           alarm: alarm,
           endDate: endDate,
-          recipeName: userInput.recipeName
+          recipeName: userInput.recipeName,
+          instructionStep: userInput.instructionStep
         )
         alarmsMap[id] = alarmData
-        saveTimerToDatabase(id: id, endDate: endDate, recipeName: userInput.recipeName)
+        saveTimerToDatabase(
+          timer: CookingTimer(
+            id: id,
+            recipeName: userInput.recipeName,
+            instructionStep: userInput.instructionStep,
+            endDate: endDate,
+          ))
       } catch {
         print("Error encountered when scheduling alarm: \(error.localizedDescription)")
       }
@@ -143,7 +164,8 @@ final class TimerManager {
             let alarmData = AlarmData(
               alarm: alarm,
               endDate: timer.endDate,
-              recipeName: timer.recipeName
+              recipeName: timer.recipeName,
+              instructionStep: timer.instructionStep
             )
             alarmsMap[timer.id] = alarmData
             print("✅ Restored timer: \(timer.id) - \(timer.recipeName)")
@@ -151,6 +173,18 @@ final class TimerManager {
             // Timer in database but no matching alarm - clean up
             print("🧹 Cleaning up orphaned timer: \(timer.id)")
             deleteTimerFromDatabase(id: timer.id)
+          }
+        }
+
+        if timers.isEmpty {
+          print("No timers found in database to restore.")
+          alarmsByID.forEach {
+            do {
+              try alarmManager.cancel(id: $0.key)
+            } catch {
+              print(
+                "Error cancelling orphaned alarm with ID \($0.key): \(error.localizedDescription)")
+            }
           }
         }
       }
@@ -185,19 +219,11 @@ final class TimerManager {
 
   // MARK: - Database Operations
 
-  private func saveTimerToDatabase(id: UUID, endDate: Date, recipeName: String) {
+  private func saveTimerToDatabase(timer: CookingTimer) {
     withErrorReporting {
       try database.write { db in
-        try CookingTimer
-          .insert {
-            CookingTimer(
-              id: id,
-              recipeName: recipeName,
-              endDate: endDate,
-            )
-          }
-          .execute(db)
-        print("✅ Timer saved to database: \(id)")
+        try CookingTimer.insert { timer }.execute(db)
+        print("✅ Timer saved to database: \(timer.id)")
       }
     }
   }

@@ -12,20 +12,26 @@ struct ActiveTimerView: View {
   let alarm: Alarm
   let endDate: Date
   let recipeName: String
+  let instructionStep: Int?
   let onCancel: () -> Void
 
   var body: some View {
     HStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 4) {
         Text(recipeName)
-          .font(.subheadline)
-          .fontWeight(.semibold)
+          .font(.headline)
           .foregroundStyle(.primary)
           .lineLimit(1)
 
+        if let instructionStep {
+          Text("Step \(instructionStep)")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+
         Text(timerInterval: Date.now...endDate, countsDown: true)
-          .font(.system(.title2, design: .rounded))
-          .fontWeight(.bold)
+          .font(.system(size: 33, design: .rounded))
+          .fontWeight(.semibold)
           .foregroundStyle(.accent)
           .monospacedDigit()
       }

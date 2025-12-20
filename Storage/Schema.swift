@@ -54,6 +54,7 @@ extension RecipePhoto {
 nonisolated struct CookingTimer: Identifiable, Hashable, Sendable {
   let id: UUID
   var recipeName: String = ""
+  var instructionStep: Int?
   var endDate: Date = .now
   var createdAt: Date = .now
 }

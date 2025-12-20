@@ -9,12 +9,12 @@ import AlarmKit
 
 struct AlarmForm {
   var recipeName: String
-  
-  
+  var instructionStep: Int?
+
   var hour = 0
   var min = 0
   var sec = 0
-  
+
   var imageData: Data?
 
   var interval: TimeInterval {

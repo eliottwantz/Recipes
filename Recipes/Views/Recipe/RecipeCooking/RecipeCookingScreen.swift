@@ -81,11 +81,12 @@ struct RecipeCookingScreen: View {
                   if timerManager.hasUpcomingAlarms {
                     ScrollView {
                       VStack(spacing: 12) {
-                        ForEach(Array(timerManager.alarmsMap.values)) { alarmData in
+                        ForEach(Array(timerManager.sortedAlarms)) { alarmData in
                           ActiveTimerView(
                             alarm: alarmData.alarm,
                             endDate: alarmData.endDate,
                             recipeName: alarmData.recipeName,
+                            instructionStep: alarmData.instructionStep,
                             onCancel: {
                               timerManager.unscheduleAlarm(with: alarmData.id)
                             }
@@ -103,9 +104,11 @@ struct RecipeCookingScreen: View {
                     minutes: $timerMinutes,
                     seconds: $timerSeconds,
                     onStart: {
+                      let currentInstruction = recipeDetails.instructions[currentStepIndex]
                       timerManager.scheduleAlarm(
                         with: .init(
                           recipeName: recipeDetails.recipe.name,
+                          instructionStep: currentInstruction.position + 1,
                           hour: timerHours,
                           min: timerMinutes,
                           sec: timerSeconds,

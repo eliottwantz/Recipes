@@ -11,6 +11,7 @@ import Foundation
 
 nonisolated struct CookingAlarmMetadata: AlarmMetadata {
   var recipeName: String
+  var instructionStep: Int?
   var alarmID: UUID
 }
 

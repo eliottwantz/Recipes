@@ -18,16 +18,6 @@ struct TimerLiveActivity: Widget {
       lockScreenView(attributes: context.attributes, state: context.state)
     } dynamicIsland: { context in
       DynamicIsland {
-        //        DynamicIslandExpandedRegion(.leading) {
-        //          Text("Leading")
-        //        }
-        //        DynamicIslandExpandedRegion(.trailing) {
-        //          Text("Trailing")
-        //        }
-        //        DynamicIslandExpandedRegion(.bottom) {
-        //          Text("Bottom")
-        //        }
-
         DynamicIslandExpandedRegion(.trailing) {
           VStack(alignment: .trailing, spacing: 4) {
             Text(context.attributes.metadata?.recipeName ?? "Timer")
@@ -67,16 +57,11 @@ struct TimerLiveActivity: Widget {
           }
         }
       } compactLeading: {
-        //        recipeImageView(imageData: context.attributes.metadata?.recipeImageData, size: 24)
-        //        Text("L")
         countdown(attributes: context.attributes, state: context.state, maxWidth: 44)
       } compactTrailing: {
-        //        countdown(state: context.state, maxWidth: 44)
         AlarmProgressView(mode: context.state.mode, tintColor: context.attributes.tintColor)
-        //        Text("T")
       } minimal: {
         AlarmProgressView(mode: context.state.mode, tintColor: context.attributes.tintColor)
-        //        Text("M")
       }
       .keylineTint(context.attributes.tintColor)
     }
@@ -86,9 +71,17 @@ struct TimerLiveActivity: Widget {
     VStack(spacing: 16) {
       if let recipeName = attributes.metadata?.recipeName {
         HStack {
-          Text(recipeName)
-            .font(.headline)
-            .lineLimit(1)
+          VStack(alignment: .leading, spacing: 4) {
+            Text(recipeName)
+              .font(.headline)
+              .lineLimit(1)
+
+            if let instructionStep = attributes.metadata?.instructionStep {
+              Text("Step \(instructionStep)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+          }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
       }
@@ -97,10 +90,8 @@ struct TimerLiveActivity: Widget {
         HStack {
           countdown(attributes: attributes, state: state, maxWidth: 150)
             .font(.system(size: 40, design: .rounded))
+            .fontWeight(.semibold)
           Spacer()
-
-          //          AlarmProgressView(mode: state.mode)
-          //            .frame(width: 50, height: 50)
         }
         .frame(maxWidth: .infinity)
 
