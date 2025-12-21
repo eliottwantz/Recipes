@@ -22,12 +22,16 @@ struct RecipeCookingScreen: View {
   private var timerManager = TimerManager.shared
 
   let recipeDetails: RecipeDetails
+  let scaleFactor: Double
 
-  init(recipeDetails: RecipeDetails) {
+  init(recipeDetails: RecipeDetails, scaleFactor: Double = 1.0) {
     self.recipeDetails = recipeDetails
+    self.scaleFactor = scaleFactor
     self._cookingIngredients = State(
       initialValue: recipeDetails.ingredients.map { ingredient in
-        CookingIngredient(isCompleted: false, name: ingredient.text)
+        let parsed = ingredient.text.parseIngredient()
+        let scaledText = parsed.scaled(by: scaleFactor)
+        return CookingIngredient(isCompleted: false, name: scaledText)
       }
     )
   }

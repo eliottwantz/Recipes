@@ -36,9 +36,7 @@ struct IngredientsList: View {
               .font(.system(size: 24))
             }
 
-            Text(ingredient.name)
-              .foregroundStyle(ingredient.isCompleted ? .tertiary : .primary)
-              .font(.headline)
+            ingredientText(for: ingredient.name, isCompleted: ingredient.isCompleted)
           }
         }
       }
@@ -56,6 +54,33 @@ struct IngredientsList: View {
           dismiss()
         }
       }
+    }
+  }
+  
+  @ViewBuilder
+  private func ingredientText(for text: String, isCompleted: Bool) -> some View {
+    let parsed = text.parseIngredient()
+    
+    if let range = parsed.quantityUnitRange {
+      let beforeRange = String(text[..<range.lowerBound])
+      let quantityUnit = String(text[range])
+      let afterRange = String(text[range.upperBound...])
+    
+      Text(
+        """
+        \(Text(beforeRange))\
+        \(Text(quantityUnit)
+          .foregroundStyle(Color.accentColor)
+          .fontWeight(.semibold))\
+        \(Text(afterRange))
+        """
+      )
+        .foregroundStyle(isCompleted ? .tertiary : .primary)
+        .font(.headline)
+    } else {
+      Text(text)
+        .foregroundStyle(isCompleted ? .tertiary : .primary)
+        .font(.headline)
     }
   }
 }

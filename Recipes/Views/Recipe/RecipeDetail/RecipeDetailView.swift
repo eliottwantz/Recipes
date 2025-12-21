@@ -19,7 +19,21 @@ struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
   @State private var showImageCarousel: Bool = false
   @State private var selectedPhotoID: RecipePhoto.ID? = nil
+  @State private var showScalingControl: Bool = false
+  @Binding var scaleFactor: Double
+  @State private var scaleMode: ScalingMode = .amount
   @Environment(\.openWindow) private var openWindow
+
+  enum ScalingMode: String, CaseIterable {
+    case amount
+    case serving
+    case ingredient
+  }
+
+  init(recipeDetails: RecipeDetails, scaleFactor: Binding<Double> = .constant(1.0)) {
+    self.recipeDetails = recipeDetails
+    self._scaleFactor = scaleFactor
+  }
 
   var body: some View {
     ScrollView {
@@ -194,15 +208,48 @@ struct RecipeDetailView: View {
 
   private var ingredientsSection: some View {
     VStack(alignment: .leading, spacing: 16) {
-      Text("Ingredients")
-        .font(.title3.weight(.semibold))
-        .foregroundStyle(.primary)
+      HStack {
+        Text("Ingredients")
+          .font(.title3.weight(.semibold))
+          .foregroundStyle(.primary)
+
+        Spacer()
+
+        HStack(spacing: 12) {
+          Button {
+            withAnimation {
+              showScalingControl.toggle()
+            }
+          } label: {
+            Text(scaleFactor == 1.0 ? "Scale" : "Default")
+              .font(.subheadline.weight(.semibold))
+              .foregroundStyle(.white)
+              .padding(.horizontal, 16)
+              .padding(.vertical, 8)
+              .background(Color.accentColor, in: Capsule())
+          }
+
+          Button {
+            withAnimation {
+              showScalingControl.toggle()
+            }
+          } label: {
+            Image(systemName: "slider.horizontal.3")
+              .font(.subheadline.weight(.semibold))
+              .foregroundStyle(.white)
+              .padding(8)
+              .background(Color.accentColor, in: Circle())
+          }
+        }
+      }
+
+      if showScalingControl {
+        scalingControlView
+      }
 
       VStack(alignment: .leading, spacing: 12) {
         ForEach(Array(recipeDetails.ingredients.enumerated()), id: \.element.id) { index, line in
-          Text(line.text)
-            .font(.body)
-            .foregroundStyle(.primary)
+          ingredientTextView(for: line.text)
 
           if index != recipeDetails.ingredients.count - 1 {
             Divider()
@@ -211,6 +258,102 @@ struct RecipeDetailView: View {
       }
       .padding()
       .card()
+    }
+  }
+
+  private var scalingControlView: some View {
+    VStack(spacing: 16) {
+      Picker("Scale Mode", selection: $scaleMode) {
+        ForEach(ScalingMode.allCases, id: \.self) { mode in
+          Text(mode.rawValue.capitalized)
+            .tag(mode)
+        }
+      }
+      .pickerStyle(.segmented)
+
+      HStack(spacing: 16) {
+        Button {
+          scaleFactor = max(0.5, scaleFactor - 0.5)
+        } label: {
+          Image(systemName: "minus")
+            .font(.body.weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(width: 32, height: 32)
+            .background(Color.accentColor, in: Circle())
+        }
+
+        HStack(spacing: 4) {
+          Image(systemName: "xmark")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+          TextField("", value: $scaleFactor, format: .number)
+            .keyboardType(.decimalPad)
+            .multilineTextAlignment(.center)
+            .font(.title3.weight(.semibold))
+            .foregroundStyle(Color.accentColor)
+            .frame(width: 60)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color.secondary.opacity(0.2), in: Capsule())
+
+        Button {
+          scaleFactor = scaleFactor + 0.5
+        } label: {
+          Image(systemName: "plus")
+            .font(.body.weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(width: 32, height: 32)
+            .background(Color.accentColor, in: Circle())
+        }
+
+        Button {
+          withAnimation {
+            scaleFactor = 1.0
+            showScalingControl = false
+          }
+        } label: {
+          Text("Default")
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.secondary, in: Capsule())
+        }
+      }
+    }
+    .padding()
+    .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
+  }
+
+  @ViewBuilder
+  private func ingredientTextView(for text: String) -> some View {
+    let parsed = text.parseIngredient()
+    let scaledText = parsed.scaled(by: scaleFactor)
+
+    // Find the quantity+unit in the scaled text
+    let scaledParsed = scaledText.parseIngredient()
+    if let scaledRange = scaledParsed.quantityUnitRange {
+      let beforeRange = String(scaledText[..<scaledRange.lowerBound])
+      let quantityUnit = String(scaledText[scaledRange])
+      let afterRange = String(scaledText[scaledRange.upperBound...])
+
+      Text(
+        """
+        \(Text(beforeRange))\
+        \(Text(quantityUnit)
+            .foregroundStyle(Color.accentColor)
+            .fontWeight(.semibold))\
+        \(Text(afterRange))
+        """
+      )
+      .font(.body)
+      .foregroundStyle(.primary)
+    } else {
+      Text(scaledText)
+        .font(.body)
+        .foregroundStyle(.primary)
     }
   }
 

@@ -14,6 +14,7 @@ struct RecipeDetailScreen: View {
   @Dependency(\.defaultDatabase) private var defaultDatabase
   @State private var showEditSheet = false
   @State private var showCookingScreen = false
+  @State private var scaleFactor: Double = 1.0
 
   init(recipeId: Recipe.ID) {
     self._recipeDetails = RecipeDetails.fetch(recipeId: recipeId)
@@ -21,7 +22,7 @@ struct RecipeDetailScreen: View {
 
   var body: some View {
     VStack {
-      RecipeDetailView(recipeDetails: recipeDetails)
+      RecipeDetailView(recipeDetails: recipeDetails, scaleFactor: $scaleFactor)
         .toolbar {
           ToolbarItemGroup(placement: .primaryAction) {
             Button {
@@ -43,7 +44,13 @@ struct RecipeDetailScreen: View {
             .interactiveDismissDisabled()
         }
         .fullScreenCover(isPresented: $showCookingScreen) {
-          RecipeCookingScreen(recipeDetails: recipeDetails)
+          RecipeCookingScreen(recipeDetails: recipeDetails, scaleFactor: scaleFactor)
+        }
+        .onChange(of: showCookingScreen) { _, newValue in
+          // Reset scale factor when returning from cooking mode
+          if !newValue {
+            scaleFactor = 1.0
+          }
         }
     }
   }
