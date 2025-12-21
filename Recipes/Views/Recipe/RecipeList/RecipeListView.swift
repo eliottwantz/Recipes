@@ -11,8 +11,8 @@ import SwiftUI
 
 struct RecipeListView: View {
   let recipes: [Recipe]
+  let recipePhotos: [Recipe.ID: [RecipePhoto]]
   @State private var showRecipeImportScreen: Bool = false
-  @State private var recipePhotos: [Recipe.ID: RecipePhoto] = [:]
   @Dependency(\.defaultDatabase) private var database
 
   @Environment(\.editMode) private var editMode
@@ -23,8 +23,13 @@ struct RecipeListView: View {
 
   @State private var recipeToEditDetails: RecipeDetails? = nil
 
-  init(recipes: [Recipe], selection: Binding<Set<Recipe.ID>>) {
+  init(
+    recipes: [Recipe],
+    recipePhotos: [Recipe.ID: [RecipePhoto]],
+    selection: Binding<Set<Recipe.ID>>
+  ) {
     self.recipes = recipes
+    self.recipePhotos = recipePhotos
     self._selection = selection
   }
 
@@ -40,7 +45,7 @@ struct RecipeListView: View {
       } else {
         List(selection: $selection) {
           ForEach(recipes) { recipe in
-            RecipeCard(recipe: recipe, photo: recipePhotos[recipe.id])
+            RecipeCard(recipe: recipe, photo: recipePhotos[recipe.id]?.first)
               .background {
                 NavigationLink(value: recipe) { EmptyView() }.opacity(0)
               }
@@ -80,29 +85,6 @@ struct RecipeListView: View {
             .interactiveDismissDisabled()
         }
       }
-    }
-    .task {
-      await loadRecipePhotos()
-    }
-  }
-
-  private func loadRecipePhotos() async {
-    withErrorReporting {
-      let photos = try database.read { db in
-        try RecipePhoto
-          .where { recipes.map(\.id).contains($0.recipeId) }
-          .order(by: \.position)
-          .fetchAll(db)
-      }
-
-      var photoMap: [Recipe.ID: RecipePhoto] = [:]
-      for photo in photos {
-        if photoMap[photo.recipeId] == nil {
-          photoMap[photo.recipeId] = photo
-        }
-      }
-
-      recipePhotos = photoMap
     }
   }
 
@@ -195,13 +177,13 @@ private struct RecipeCard: View {
   }
 }
 
-#Preview {
-  @Previewable @State var selection = Set<Recipe.ID>()
-
-  let recipes = Storage.configure { database in
-    return try database.read { db in
-      try Recipe.all.fetchAll(db)
-    }
-  }
-  return RecipeListView(recipes: recipes, selection: $selection)
-}
+//#Preview {
+//  @Previewable @State var selection = Set<Recipe.ID>()
+//
+//  let recipes = Storage.configure { database in
+//    return try database.read { db in
+//      try Recipe.all.fetchAll(db)
+//    }
+//  }
+//  return RecipeListView(recipes: recipes, selection: $selection)
+//}

@@ -1,7 +1,7 @@
 import CloudKit
 import Dependencies
 import Foundation
-import OSLog
+import os
 import SQLiteData
 
 enum Storage {
@@ -61,7 +61,7 @@ extension DependencyValues {
           if context == .preview {
             print("\($0.expandedDescription)")
           } else {
-            logger.debug("\($0.expandedDescription)")
+            Logger.storage.debug("\($0.expandedDescription)")
           }
         }
       }
@@ -272,13 +272,11 @@ extension DependencyValues {
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         print("DB PATH:\n\(database.path)")
       } else {
-        logger.info("DB PATH:\n\(database.path)")
+        Logger.storage.info("DB PATH:\n\(database.path)")
       }
     #endif
   }
 }
-
-nonisolated private let logger = Logger(subsystem: "Recepies", category: "Database")
 
 enum StorageError: LocalizedError {
   case missingAppGroupContainer

@@ -8,6 +8,7 @@
 import Dependencies
 import SQLiteData
 import SwiftUI
+import os
 
 struct RecipeListScreen: View {
   @Environment(\.scenePhase) private var scenePhase
@@ -15,6 +16,9 @@ struct RecipeListScreen: View {
 
   @FetchAll(Recipe.order(by: \.name), animation: .default)
   private var recipes
+
+  @FetchAll(RecipePhoto.order(by: \.position), animation: .default)
+  private var recipePhotos: [RecipePhoto]
 
   @State private var showRecipeImportScreen: Bool = false
   @State private var searchText: String = ""
@@ -26,13 +30,22 @@ struct RecipeListScreen: View {
   @State private var selection = Set<Recipe.ID>()
   @State private var showDeleteConfirmation: Bool = false
 
-  var searchId: String {
+  private var searchId: String {
     "\(searchText)_\(sortBy)_\(sortDirection)"
+  }
+
+  private var recipePhotosPerRecipe: [Recipe.ID: [RecipePhoto]] {
+    var photoMap: [Recipe.ID: [RecipePhoto]] = [:]
+    for photo in recipePhotos {
+      photoMap[photo.recipeId, default: []].append(photo)
+    }
+
+    return photoMap
   }
 
   var body: some View {
     NavigationStack {
-      RecipeListView(recipes: recipes, selection: $selection)
+      RecipeListView(recipes: recipes, recipePhotos: recipePhotosPerRecipe, selection: $selection)
         .navigationTitle("All recipes")
         .toolbarTitleDisplayMode(.inlineLarge)
         .searchable(text: $searchText)
@@ -147,7 +160,19 @@ struct RecipeListScreen: View {
         .onChange(of: scenePhase) { oldValue, newValue in
           if oldValue == .inactive && newValue == .active {
             Task {
-              try await $recipes.load()
+              await withThrowingTaskGroup { group in
+                group.addTask {
+                  try await $recipes.load()
+                  Logger.ui.info("✅ Done loading recipes")
+                }
+                group.addTask {
+                  try await $recipePhotos.load()
+                  Logger.ui.info("✅ Done loading recipe photos")
+                }
+                Logger.ui.info("🔄 Waiting for recipe data to load...")
+              }
+              Logger.ui.info("🎉 All recipe data loaded!")
+              Logger.ui.info("Total recipes loaded: \(recipes.count)")
             }
           }
         }
