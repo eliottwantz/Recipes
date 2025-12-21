@@ -56,32 +56,35 @@ struct IngredientsList: View {
       }
     }
   }
-  
+
   @ViewBuilder
   private func ingredientText(for text: String, isCompleted: Bool) -> some View {
     let parsed = text.parseIngredient()
-    
-    if let range = parsed.quantityUnitRange {
-      let beforeRange = String(text[..<range.lowerBound])
-      let quantityUnit = String(text[range])
-      let afterRange = String(text[range.upperBound...])
-    
-      Text(
-        """
-        \(Text(beforeRange))\
-        \(Text(quantityUnit)
+
+    Group {
+      if let range = parsed.quantityUnitRange {
+        let beforeRange = String(text[..<range.lowerBound])
+        let quantityUnit = String(text[range])
+        let afterRange = String(text[range.upperBound...])
+
+        Text(
+          """
+          \(Text(beforeRange))\
+          \(Text(quantityUnit)
           .foregroundStyle(Color.accentColor)
           .fontWeight(.semibold))\
-        \(Text(afterRange))
-        """
-      )
+          \(Text(afterRange))
+          """
+        )
         .foregroundStyle(isCompleted ? .tertiary : .primary)
         .font(.headline)
-    } else {
-      Text(text)
-        .foregroundStyle(isCompleted ? .tertiary : .primary)
-        .font(.headline)
+      } else {
+        Text(text)
+          .foregroundStyle(isCompleted ? .tertiary : .primary)
+          .font(.headline)
+      }
     }
+    .strikethrough(isCompleted, pattern: .solid)
   }
 }
 
