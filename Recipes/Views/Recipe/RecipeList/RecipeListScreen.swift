@@ -35,12 +35,7 @@ struct RecipeListScreen: View {
   }
 
   private var recipePhotosPerRecipe: [Recipe.ID: [RecipePhoto]] {
-    var photoMap: [Recipe.ID: [RecipePhoto]] = [:]
-    for photo in recipePhotos {
-      photoMap[photo.recipeId, default: []].append(photo)
-    }
-
-    return photoMap
+    Dictionary(grouping: recipePhotos, by: \.recipeId)
   }
 
   var body: some View {

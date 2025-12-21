@@ -97,7 +97,7 @@ struct RecipeDetailView: View {
           Image(systemName: "person.2")
             .foregroundStyle(.tint)
           VStack(alignment: .leading, spacing: 4) {
-            Text("\(recipeDetails.recipe.servings)")
+            Text("\(Int((Double(recipeDetails.recipe.servings) * scaleFactor).rounded()))")
               .font(.body.weight(.semibold))
               .foregroundStyle(.primary)
           }
@@ -217,28 +217,28 @@ struct RecipeDetailView: View {
 
         HStack(spacing: 12) {
           Button {
-            withAnimation {
+            withAnimation(.snappy) {
               showScalingControl.toggle()
             }
           } label: {
-            Text(scaleFactor == 1.0 ? "Scale" : "Default")
+            Text(scaleButtonText)
               .font(.subheadline.weight(.semibold))
               .foregroundStyle(.white)
-              .padding(.horizontal, 16)
-              .padding(.vertical, 8)
-              .background(Color.accentColor, in: Capsule())
+              .padding(.horizontal, 20)
+              .padding(.vertical, 4)
+              .background(Color.accentColor, in: .capsule)
           }
 
           Button {
-            withAnimation {
+            withAnimation(.snappy) {
               showScalingControl.toggle()
             }
           } label: {
             Image(systemName: "slider.horizontal.3")
               .font(.subheadline.weight(.semibold))
               .foregroundStyle(.white)
-              .padding(8)
-              .background(Color.accentColor, in: Circle())
+              .padding(6)
+              .background(Color.accentColor, in: .circle)
           }
         }
       }
@@ -261,6 +261,14 @@ struct RecipeDetailView: View {
     }
   }
 
+  private var scaleButtonText: String {
+    if scaleFactor == 1.0 {
+      return showScalingControl ? "Default" : "Scale"
+    } else {
+      return String(format: "Scale: x %.1f", scaleFactor)
+    }
+  }
+
   private var scalingControlView: some View {
     VStack(spacing: 16) {
       Picker("Scale Mode", selection: $scaleMode) {
@@ -271,60 +279,113 @@ struct RecipeDetailView: View {
       }
       .pickerStyle(.segmented)
 
-      HStack(spacing: 16) {
-        Button {
-          scaleFactor = max(0.5, scaleFactor - 0.5)
-        } label: {
-          Image(systemName: "minus")
-            .font(.body.weight(.semibold))
-            .foregroundStyle(.white)
-            .frame(width: 32, height: 32)
-            .background(Color.accentColor, in: Circle())
+      HStack {
+        if scaleMode == .serving {
+          servingScaleControl
+        } else {
+          amountScaleControl
         }
-
-        HStack(spacing: 4) {
-          Image(systemName: "xmark")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-
-          TextField("", value: $scaleFactor, format: .number)
-            .keyboardType(.decimalPad)
-            .multilineTextAlignment(.center)
-            .font(.title3.weight(.semibold))
-            .foregroundStyle(Color.accentColor)
-            .frame(width: 60)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color.secondary.opacity(0.2), in: Capsule())
-
-        Button {
-          scaleFactor = scaleFactor + 0.5
-        } label: {
-          Image(systemName: "plus")
-            .font(.body.weight(.semibold))
-            .foregroundStyle(.white)
-            .frame(width: 32, height: 32)
-            .background(Color.accentColor, in: Circle())
-        }
-
-        Button {
-          withAnimation {
-            scaleFactor = 1.0
-            showScalingControl = false
+         
+        if scaleFactor != 1.0 {
+          Button {
+            withAnimation {
+              scaleFactor = 1.0
+            }
+          } label: {
+            Image(systemName: "xmark")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+              .tint(.secondary)
+              .frame(width: 12, height: 12)
+              .padding(4)
+              .background(Color.secondary.opacity(0.2), in: .circle)
           }
-        } label: {
-          Text("Default")
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color.secondary, in: Capsule())
+          .transition(.opacity)
         }
       }
     }
     .padding()
-    .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
+    .card()
+  }
+
+  private var servingScaleControl: some View {
+    HStack(spacing: 16) {
+      Slider(
+        value: Binding(
+          get: {
+            Double(recipeDetails.recipe.servings) * scaleFactor
+          },
+          set: { newServings in
+            scaleFactor = newServings / Double(recipeDetails.recipe.servings)
+          }
+        ),
+        in: 1...30,
+        step: 1
+      )
+      .tint(Color.accentColor)
+
+      HStack(spacing: 8) {
+        Image(systemName: "person.2.fill")
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+
+        TextField(
+          "Scale amount",
+          value: Binding(
+            get: {
+              Int((Double(recipeDetails.recipe.servings) * scaleFactor).rounded())
+            },
+            set: { newServings in
+              scaleFactor = Double(newServings) / Double(recipeDetails.recipe.servings)
+            }
+          ),
+          format: .number
+        )
+        .keyboardType(.numberPad)
+        .multilineTextAlignment(.leading)
+        .font(.title3)
+        .fontWeight(.semibold)
+        .foregroundStyle(Color.accentColor)
+        .frame(maxWidth: 50)
+      }
+      .frame(maxWidth: 75)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 8)
+      .background(Color.secondary.opacity(0.2), in: .rect(cornerRadius: 12))
+    }
+  }
+
+  private var amountScaleControl: some View {
+    HStack(spacing: 16) {
+      Slider(
+        value: $scaleFactor,
+        in: 0.5...10.0,
+        step: 0.5
+      )
+      .tint(Color.accentColor)
+
+      HStack(spacing: 8) {
+        Image(systemName: "xmark")
+          .font(.footnote)
+          .foregroundStyle(.secondary)
+
+        TextField(
+          "Scale amount",
+          value: $scaleFactor,
+          format: .number
+        )
+        .keyboardType(.decimalPad)
+        .multilineTextAlignment(.leading)
+        .font(.title3)
+        .fontWeight(.semibold)
+        .foregroundStyle(Color.accentColor)
+        .frame(maxWidth: 60)
+      }
+      .frame(maxWidth: 75)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 8)
+      .background(Color.secondary.opacity(0.2), in: .rect(cornerRadius: 12))
+    }
   }
 
   @ViewBuilder
