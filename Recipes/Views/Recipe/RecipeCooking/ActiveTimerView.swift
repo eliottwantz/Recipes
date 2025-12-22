@@ -16,38 +16,70 @@ struct ActiveTimerView: View {
   let onCancel: () -> Void
 
   var body: some View {
-    HStack(spacing: 12) {
-      VStack(alignment: .leading, spacing: 4) {
-        Text(recipeName)
-          .font(.headline)
-          .foregroundStyle(.primary)
-          .lineLimit(1)
-
-        if let instructionStep {
-          Text("Step \(instructionStep)")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+    VStack(spacing: 20) {
+      // MARK: - Image and Step
+      HStack(spacing: 10) {
+        if let image = ImageManager.shared.loadLiveActivityImage(for: alarm.id) {
+          image
+            .resizable()
+            .scaledToFill()
+            .frame(width: 56, height: 56, alignment: .center)
+            .clipShape(.rect(cornerRadius: 8))
+            .accessibilityLabel("The recipe image")
         }
 
-        Text(timerInterval: Date.now...endDate, countsDown: true)
-          .font(.system(size: 33, design: .rounded))
+        // MARK: - Countdown and Cancel Button
+        HStack {
+          HStack {
+            Text(timerInterval: Date.now...endDate, countsDown: true)
+              .font(.system(size: 38, design: .rounded))
+              .fontWeight(.semibold)
+              .monospacedDigit()
+              .lineLimit(1)
+              .foregroundStyle(Color.accentColor)
+              .minimumScaleFactor(0.6)
+              .frame(maxWidth: 280, alignment: .leading)
+
+            Spacer()
+          }
+          .frame(maxWidth: .infinity)
+
+          Button {
+            onCancel()
+          } label: {
+            Label("Cancel timer", systemImage: "xmark")
+              .labelStyle(.iconOnly)
+              .font(.system(size: 14))
+              .padding(8)
+          }
+          .buttonStyle(.plain)
+          .glassEffect(.regular.interactive().tint(.gray.opacity(0.30)), in: .circle)
+        }
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+
+      // MARK: - Recipe Name and Step
+      HStack {
+        Text(recipeName)
+          .font(.headline)
           .fontWeight(.semibold)
-          .foregroundStyle(.accent)
-          .monospacedDigit()
-      }
+          .multilineTextAlignment(.leading)
+          .lineLimit(1)
+          .frame(maxWidth: .infinity, alignment: .leading)
 
-      Spacer()
+        Spacer()
 
-      Button {
-        onCancel()
-      } label: {
-        Image(systemName: "xmark.circle.fill")
-          .font(.title2)
-          .foregroundStyle(.secondary)
+        if let instructionStep {
+          Text(String("Step \(instructionStep)"))
+            .font(.callout)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+        }
       }
-      .buttonStyle(.plain)
+      .frame(maxWidth: .infinity, alignment: .leading)
     }
-    .padding()
-    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    .padding(.horizontal, 12)
+    .padding(.vertical, 10)
+    .background(.ultraThinMaterial, in: .rect(cornerRadius: 12))
   }
 }

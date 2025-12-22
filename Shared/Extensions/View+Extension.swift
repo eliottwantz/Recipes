@@ -19,3 +19,26 @@ extension View {
     }
   }
 }
+
+private struct CardModifier: ViewModifier {
+  let cornerRadius: CGFloat
+
+  init(cornerRadius: CGFloat? = nil) {
+    self.cornerRadius = cornerRadius ?? 20
+  }
+
+  func body(content: Content) -> some View {
+    content
+      .darkSecondaryLightPrimaryBackgroundColor()
+      .clipShape(.rect(cornerRadius: cornerRadius))
+      .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+  }
+}
+
+extension View {
+  func card(cornerRadius: CGFloat? = nil) -> some View {
+    modifier(
+      CardModifier(cornerRadius: cornerRadius)
+    )
+  }
+}

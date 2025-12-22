@@ -526,29 +526,6 @@ struct RecipeDetailView: View {
   }
 }
 
-private struct CardModifier: ViewModifier {
-  let cornerRadius: CGFloat
-
-  init(cornerRadius: CGFloat? = nil) {
-    self.cornerRadius = cornerRadius ?? 20
-  }
-
-  func body(content: Content) -> some View {
-    content
-      .darkSecondaryLightPrimaryBackgroundColor()
-      .clipShape(.rect(cornerRadius: cornerRadius))
-      .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
-  }
-}
-
-extension View {
-  fileprivate func card(cornerRadius: CGFloat? = nil) -> some View {
-    modifier(
-      CardModifier(cornerRadius: cornerRadius)
-    )
-  }
-}
-
 #Preview {
   let recipeDetails = Storage.configure { database in
     return try database.read { db in
