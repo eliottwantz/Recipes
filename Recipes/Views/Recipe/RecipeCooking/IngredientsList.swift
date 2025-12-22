@@ -15,7 +15,7 @@ struct CookingIngredient: Identifiable {
   var id: String { name }
 }
 
-struct IngredientsList: View {
+struct CookingIngredientsListView: View {
   @Binding var cookingIngredients: [CookingIngredient]
   @Environment(\.dismiss) private var dismiss
 
@@ -95,5 +95,5 @@ struct IngredientsList: View {
     CookingIngredient(isCompleted: false, name: "3 eggs"),
   ]
 
-  IngredientsList(cookingIngredients: $cookingIngredients)
+  CookingIngredientsListView(cookingIngredients: $cookingIngredients)
 }

@@ -145,7 +145,7 @@ struct RecipeCookingScreen: View {
         }
         .sheet(isPresented: $showIngredientsSheet) {
           NavigationStack {
-            IngredientsList(cookingIngredients: $cookingIngredients)
+            CookingIngredientsListView(cookingIngredients: $cookingIngredients)
               .presentationDetents([.fraction(0.45), .large], selection: $currentDetent)
               .presentationDragIndicator(.hidden)
               .presentationContentInteraction(.scrolls)

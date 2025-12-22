@@ -58,7 +58,7 @@ final class TimerManager {
     cleanupExpiredTimers()
   }
 
-  func scheduleAlarm(with userInput: AlarmForm) {
+  func scheduleAlarm(with userInput: CookingTimerForm) {
     Task {
       guard await requestAuthorization() else {
         print("Not authorized to schedule alarms.")

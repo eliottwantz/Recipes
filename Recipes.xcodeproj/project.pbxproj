@@ -72,17 +72,27 @@
 			);
 			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
 		};
+		5569CE912EF8C7FA007CE35C /* Exceptions for "Shared" folder in "RecipeShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Intents/TimerIntents.swift,
+				Model/CookingAlarmMetadata.swift,
+			);
+			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
+		};
+		5569CE922EF8C7FA007CE35C /* Exceptions for "Shared" folder in "TimerLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Intents/TimerIntents.swift,
+				Logger.swift,
+				Model/CookingAlarmMetadata.swift,
+			);
+			target = 5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */;
+		};
 		5580A40D2EF4C18300112748 /* Exceptions for "TimerLiveActivity" folder in "TimerLiveActivityExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-			);
-			target = 5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */;
-		};
-		5580A40F2EF4C2CA00112748 /* Exceptions for "Recipes" folder in "TimerLiveActivityExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Views/Recipe/RecipeCooking/AlarmMetadata.swift,
 			);
 			target = 5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */;
 		};
@@ -93,7 +103,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				5517C2932E97365B00F64C53 /* Exceptions for "Recipes" folder in "Recipes" target */,
-				5580A40F2EF4C2CA00112748 /* Exceptions for "Recipes" folder in "TimerLiveActivityExtension" target */,
 			);
 			path = Recipes;
 			sourceTree = "<group>";
@@ -108,6 +117,10 @@
 		};
 		556169912EBC4D6800BB649D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5569CE912EF8C7FA007CE35C /* Exceptions for "Shared" folder in "RecipeShareExtension" target */,
+				5569CE922EF8C7FA007CE35C /* Exceptions for "Shared" folder in "TimerLiveActivityExtension" target */,
+			);
 			path = Shared;
 			sourceTree = "<group>";
 		};

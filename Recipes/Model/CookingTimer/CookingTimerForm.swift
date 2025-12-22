@@ -1,5 +1,5 @@
 //
-//  AlarmForm.swift
+//  CookingTimerForm.swift
 //  Recipes
 //
 //  Created by Eliott on 17-12-2025.
@@ -7,7 +7,7 @@
 
 import AlarmKit
 
-struct AlarmForm {
+struct CookingTimerForm {
   var recipeId: UUID
   var recipeName: String
   var instructionStep: Int?

@@ -1,19 +1,13 @@
 //
-//  AlarmMetadata.swift
+//  TimerIntents.swift
 //  Recipes
 //
-//  Created by Eliott on 17-12-2025.
+//  Created by Eliott on 21-12-2025.
 //
 
 import AlarmKit
 import AppIntents
 import Foundation
-
-nonisolated struct CookingAlarmMetadata: AlarmMetadata {
-  var recipeName: String
-  var instructionStep: Int?
-  var alarmID: UUID
-}
 
 struct CancelTimerIntent: LiveActivityIntent {
   func perform() throws -> some IntentResult {
