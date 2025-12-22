@@ -97,6 +97,11 @@ final class TimerManager {
         secondaryIntent: OpenAppIntent(alarmID: id.uuidString)
       )
 
+      ImageManager.shared.saveImageForLiveActivity(
+        userInput.imageData,
+        for: id
+      )
+
       do {
         let alarm = try await alarmManager.schedule(id: id, configuration: alarmConfiguration)
         print("✅ Alarm scheduled successfully: \(alarm)")
@@ -129,6 +134,7 @@ final class TimerManager {
     print("Unscheduling alarm with ID: \(alarmID)")
     alarmsMap[alarmID] = nil
     deleteTimerFromDatabase(id: alarmID)
+    ImageManager.shared.deleteImage(for: alarmID)
     do {
       try alarmManager.cancel(id: alarmID)
     } catch {
@@ -155,6 +161,7 @@ final class TimerManager {
         if updated.state == .alerting {
           alarmsMap[updated.id] = nil
           deleteTimerFromDatabase(id: updated.id)
+          ImageManager.shared.deleteImage(for: updated.id)
         }
       } else {
         // New alarm detected
@@ -174,6 +181,7 @@ final class TimerManager {
             // Timer in database but no matching alarm - clean up
             print("🧹 Cleaning up orphaned timer: \(timer.id)")
             deleteTimerFromDatabase(id: timer.id)
+            ImageManager.shared.deleteImage(for: timer.id)
           }
         }
 
