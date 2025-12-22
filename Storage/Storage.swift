@@ -257,7 +257,7 @@ extension DependencyValues {
     try migrator.migrate(database)
 
     defaultDatabase = database
-    #if !targetEnvironment(simulator)
+    #if !targetEnvironment(simulator) && !DEBUG
       defaultSyncEngine = try SyncEngine(
         for: defaultDatabase,
         tables: Recipe.self,
