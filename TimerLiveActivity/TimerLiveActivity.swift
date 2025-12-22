@@ -18,43 +18,37 @@ struct TimerLiveActivity: Widget {
       lockScreenView(attributes: context.attributes, state: context.state)
     } dynamicIsland: { context in
       DynamicIsland {
-        DynamicIslandExpandedRegion(.trailing) {
-          VStack(alignment: .trailing, spacing: 4) {
-            Text(context.attributes.metadata?.recipeName ?? "Timer")
-              .font(.headline)
-              .lineLimit(1)
-            Text("Timer")
-              .font(.caption)
+        DynamicIslandExpandedRegion(.leading) {
+          if let step = context.attributes.metadata?.instructionStep {
+            Text(String("Step \(step)"))
+              .font(.subheadline)
               .foregroundStyle(.secondary)
+              .padding(.leading, 5)
           }
         }
         DynamicIslandExpandedRegion(.bottom) {
-          HStack(spacing: 16) {
-            HStack(spacing: 12) {
-              countdown(attributes: context.attributes, state: context.state, maxWidth: 150)
-                .font(.system(size: 40, design: .rounded))
+          VStack(spacing: 8) {
+            Text(context.attributes.metadata?.recipeName ?? "")
+              .font(.headline)
+              .lineLimit(1)
+              .frame(maxWidth: .infinity, alignment: .leading)
+            
+            HStack {
+              HStack(spacing: 12) {
+                countdown(attributes: context.attributes, state: context.state, maxWidth: 150)
+                  .font(.system(size: 40, design: .rounded))
+                  .fontWeight(.semibold)
+              }
 
-              AlarmProgressView(mode: context.state.mode, tintColor: context.attributes.tintColor)
-                .frame(width: 40, height: 40)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(.gray.opacity(0.2))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+              Spacer()
 
-            Button(
-              intent: CancelTimerIntent(
-                alarmID: context.attributes.metadata?.alarmID.uuidString ?? "")
-            ) {
-              Image(systemName: "xmark")
-                .font(.title2)
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(.gray.opacity(0.5))
-                .clipShape(Circle())
+              if let alarmID = context.attributes.metadata?.alarmID.uuidString {
+                CancelButton(alarmID: alarmID)
+              }
             }
-            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
           }
+          .padding(.horizontal, 5)
         }
       } compactLeading: {
         countdown(attributes: context.attributes, state: context.state, maxWidth: 44)
@@ -96,17 +90,7 @@ struct TimerLiveActivity: Widget {
         .frame(maxWidth: .infinity)
 
         if let alarmID = attributes.metadata?.alarmID.uuidString {
-          Button(intent: CancelTimerIntent(alarmID: alarmID)) {
-            Label("Cancel", systemImage: "xmark")
-              .font(.title2)
-              .fontWeight(.regular)
-              .foregroundStyle(.primary)
-              .labelStyle(.iconOnly)
-              .padding(5)
-          }
-          .clipShape(.circle)
-          .buttonStyle(.bordered)
-          .tint(.secondary)
+          CancelButton(alarmID: alarmID)
         }
       }
     }
@@ -171,5 +155,23 @@ struct AlarmProgressView: View {
     }
     .progressViewStyle(.circular)
     .tint(tintColor)
+  }
+}
+
+private struct CancelButton: View {
+  let alarmID: String
+
+  var body: some View {
+    Button(intent: CancelTimerIntent(alarmID: alarmID)) {
+      Label("Cancel", systemImage: "xmark")
+        .font(.title2)
+        .fontWeight(.regular)
+        .foregroundStyle(.primary)
+        .labelStyle(.iconOnly)
+        .padding(5)
+    }
+    .clipShape(.circle)
+    .buttonStyle(.bordered)
+    .tint(.secondary)
   }
 }
