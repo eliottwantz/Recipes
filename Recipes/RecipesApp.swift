@@ -14,6 +14,9 @@ struct RecipesApp: App {
 
   init() {
     Storage.configure()
+    Task.detached {
+      await TimerManager.shared.cleanupExpiredTimers()
+    }
   }
 
   var body: some Scene {

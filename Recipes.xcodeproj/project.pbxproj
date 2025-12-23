@@ -83,6 +83,7 @@
 		5569CE922EF8C7FA007CE35C /* Exceptions for "Shared" folder in "TimerLiveActivityExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Constants.swift,
 				Intents/TimerIntents.swift,
 				Logger.swift,
 				Model/CookingAlarmMetadata.swift,

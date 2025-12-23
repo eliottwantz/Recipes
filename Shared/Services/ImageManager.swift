@@ -11,11 +11,10 @@ import UIKit
 import UniformTypeIdentifiers
 import os
 
-class ImageManager {
-  static let shared = ImageManager()
-  private let appGroupIdentifier = "group.com.develiott.Recipes"
+nonisolated enum ImageManager {
+  private static let appGroupIdentifier = "group.com.develiott.Recipes"
 
-  var sharedContainerURL: URL? {
+  static var sharedContainerURL: URL? {
     FileManager.default.containerURL(
       forSecurityApplicationGroupIdentifier: appGroupIdentifier
     )
@@ -23,43 +22,45 @@ class ImageManager {
 
   // Save image with automatic resizing for Live Activities
   @discardableResult
-  func saveImageForLiveActivity(
+  static func saveImageForLiveActivity(
     _ data: Data?,
     for liveActivityID: UUID,
   ) -> URL? {
     guard let data else { return nil }
 
-    guard let containerURL = sharedContainerURL else {
+    guard let containerURL = Self.sharedContainerURL else {
       return nil
     }
 
     guard let image = UIImage(data: data) else { return nil }
     // Resize image to target size (2x for retina displays)
     let targetSize = CGSize(width: 62, height: 62)
-    guard let resizedImage = resizeImage(image, targetSize: targetSize),
+    guard let resizedImage = Self.resizeImage(image, targetSize: targetSize),
       let imageData = resizedImage.jpegData(compressionQuality: 0.8)
     else {
       return nil
     }
 
-    let imageURL = containerURL.appendingPathComponent(liveActivityID.uuidString, conformingTo: .jpeg)
+    let imageURL = containerURL.appendingPathComponent(
+      liveActivityID.uuidString, conformingTo: .jpeg)
 
     do {
       try imageData.write(to: imageURL, options: .atomic)
       return imageURL
     } catch {
-      Logger.imageManager.error("Error saving image: \(error)")
+      logger.error("Error saving image: \(error)")
       return nil
     }
   }
 
   // Load image from shared container
-  func loadLiveActivityImage(for liveActivityID: UUID) -> Image? {
-    guard let containerURL = sharedContainerURL else {
+  static func loadLiveActivityImage(for liveActivityID: UUID) -> Image? {
+    guard let containerURL = Self.sharedContainerURL else {
       return nil
     }
 
-    let imageURL = containerURL.appendingPathComponent(liveActivityID.uuidString, conformingTo: .jpeg)
+    let imageURL = containerURL.appendingPathComponent(
+      liveActivityID.uuidString, conformingTo: .jpeg)
 
     guard let imageData = try? Data(contentsOf: imageURL), let uiImage = UIImage(data: imageData)
     else {
@@ -70,16 +71,17 @@ class ImageManager {
   }
 
   // Delete image when no longer needed
-  func deleteImage(for liveActivityID: UUID) {
-    guard let containerURL = sharedContainerURL else {
+  static func deleteImage(for liveActivityID: UUID) {
+    guard let containerURL = Self.sharedContainerURL else {
       return
     }
 
-    let imageURL = containerURL.appendingPathComponent(liveActivityID.uuidString, conformingTo: .jpeg)
+    let imageURL = containerURL.appendingPathComponent(
+      liveActivityID.uuidString, conformingTo: .jpeg)
     try? FileManager.default.removeItem(at: imageURL)
   }
 
-  private func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage? {
+  private static func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage? {
     let size = image.size
 
     let widthRatio = targetSize.width / size.width
@@ -114,9 +116,9 @@ class ImageManager {
 
 }
 
-extension Logger {
-  nonisolated static let imageManager = Logger(
-    subsystem: "com.develiott.Recipes",
-    category: "SharedImageManager"
-  )
-}
+//private extension Logger {
+nonisolated private let logger = Logger(
+  subsystem: "com.develiott.Recipes",
+  category: "SharedImageManager"
+)
+//}

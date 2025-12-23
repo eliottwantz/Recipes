@@ -19,7 +19,7 @@ struct ActiveTimerView: View {
     VStack(spacing: 20) {
       // MARK: - Image and Step
       HStack(spacing: 10) {
-        if let image = ImageManager.shared.loadLiveActivityImage(for: alarm.id) {
+        if let image = ImageManager.loadLiveActivityImage(for: alarm.id) {
           image
             .resizable()
             .scaledToFill()

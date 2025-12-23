@@ -1,8 +1,8 @@
 import CloudKit
 import Dependencies
 import Foundation
-import os
 import SQLiteData
+import os
 
 enum Storage {
   static let appGroupIdentifier = "group.com.develiott.Recipes"
@@ -61,7 +61,7 @@ extension DependencyValues {
           if context == .preview {
             print("\($0.expandedDescription)")
           } else {
-            Logger.storage.debug("\($0.expandedDescription)")
+            logger.debug("\($0.expandedDescription)")
           }
         }
       }
@@ -272,7 +272,7 @@ extension DependencyValues {
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         print("DB PATH:\n\(database.path)")
       } else {
-        Logger.storage.info("DB PATH:\n\(database.path)")
+        logger.info("DB PATH:\n\(database.path)")
       }
     #endif
   }
@@ -285,3 +285,5 @@ enum StorageError: LocalizedError {
     "The shared app group container could not be located."
   }
 }
+
+private nonisolated let logger = Logger(subsystem: "com.develiott.Recipes", category: "Storage")

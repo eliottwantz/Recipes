@@ -22,7 +22,7 @@ struct TimerLiveActivity: Widget {
         DynamicIslandExpandedRegion(.leading) {
           HStack(spacing: 8) {
             if let id = context.attributes.metadata?.alarmID,
-              let image = ImageManager.shared.loadLiveActivityImage(for: id)
+              let image = ImageManager.loadLiveActivityImage(for: id)
             {
               image
                 .resizable()
@@ -67,7 +67,7 @@ struct TimerLiveActivity: Widget {
       } compactLeading: {
         HStack(spacing: 4) {
           if let id = context.attributes.metadata?.alarmID,
-            let image = ImageManager.shared.loadLiveActivityImage(for: id)
+            let image = ImageManager.loadLiveActivityImage(for: id)
           {
             image
               .resizable()
@@ -105,7 +105,7 @@ struct TimerLiveActivity: Widget {
       VStack(spacing: 6) {
         // MARK: Image and Step
         HStack(spacing: 12) {
-          if let image = ImageManager.shared.loadLiveActivityImage(for: metadata.alarmID) {
+          if let image = ImageManager.loadLiveActivityImage(for: metadata.alarmID) {
             image
               .resizable()
               .scaledToFill()

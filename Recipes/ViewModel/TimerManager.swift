@@ -10,6 +10,7 @@ import AppIntents
 import Dependencies
 import SQLiteData
 import SwiftUI
+import os
 
 struct AlarmData: Identifiable {
   let alarm: Alarm
@@ -61,7 +62,7 @@ final class TimerManager {
   func scheduleAlarm(with userInput: CookingTimerForm) {
     Task {
       guard await requestAuthorization() else {
-        print("Not authorized to schedule alarms.")
+        logger.info("Not authorized to schedule alarms.")
         return
       }
 
@@ -97,16 +98,17 @@ final class TimerManager {
         secondaryIntent: OpenAppIntent(alarmID: id.uuidString)
       )
 
-      ImageManager.shared.saveImageForLiveActivity(
+      ImageManager.saveImageForLiveActivity(
         userInput.imageData,
         for: id
       )
 
       do {
         let alarm = try await alarmManager.schedule(id: id, configuration: alarmConfiguration)
-        print("✅ Alarm scheduled successfully: \(alarm)")
-        print("✅ Alarm ID: \(id)")
-        print("✅ Alarm state: \(alarm.state)")
+        logger.info("✅ Alarm scheduled successfully: \(id)")
+        #if DEBUG
+          print("✅ Alarm state: \(alarm.state)")
+        #endif
 
         let endDate = Date.now.addingTimeInterval(userInput.interval)
         let alarmData = AlarmData(
@@ -125,27 +127,32 @@ final class TimerManager {
             endDate: endDate
           ))
       } catch {
-        print("Error encountered when scheduling alarm: \(error.localizedDescription)")
+        logger.error("Error encountered when scheduling alarm: \(error.localizedDescription)")
       }
     }
   }
 
   func unscheduleAlarm(with alarmID: UUID) {
-    print("Unscheduling alarm with ID: \(alarmID)")
-    alarmsMap[alarmID] = nil
-    deleteTimerFromDatabase(id: alarmID)
-    ImageManager.shared.deleteImage(for: alarmID)
+    logger.info("Unscheduling alarm with ID: \(alarmID)")
+    cleanupAlarm(with: alarmID)
     do {
       try alarmManager.cancel(id: alarmID)
     } catch {
-      print("Error cancelling alarm with ID \(alarmID): \(error.localizedDescription)")
+      logger.error("Error cancelling alarm with ID \(alarmID): \(error.localizedDescription)")
     }
+  }
+  
+  private func cleanupAlarm(with alarmID: UUID) {
+    logger.info("🔔 Cleaning up alarm with ID: \(alarmID)")
+    alarmsMap[alarmID] = nil
+    deleteTimerFromDatabase(id: alarmID)
+    ImageManager.deleteImage(for: alarmID)
   }
 
   private func observeAlarms() {
     Task {
       for await alarms in alarmManager.alarmUpdates {
-        print("New alarm state update for \(alarms.count) alarms")
+        logger.info("New alarm state update for \(alarms.count) alarms")
         updateAlarmState(with: alarms)
       }
     }
@@ -153,20 +160,20 @@ final class TimerManager {
 
   private func updateAlarmState(with remoteAlarms: [Alarm]) {
     // Update existing alarm states.
+    let alarmsByID = Dictionary(uniqueKeysWithValues: remoteAlarms.map { ($0.id, $0) })
     remoteAlarms.forEach { updated in
       if let existingAlarmData = alarmsMap[updated.id] {
-        print(
-          "Updating alarm state \(updated.state) for ID: \(updated.id), recipe: \(existingAlarmData.recipeName)"
-        )
+        #if DEBUG
+          print(
+            "Updating alarm state \(updated.state) for ID: \(updated.id), recipe: \(existingAlarmData.recipeName)"
+          )
+        #endif
         if updated.state == .alerting {
-          alarmsMap[updated.id] = nil
-          deleteTimerFromDatabase(id: updated.id)
-          ImageManager.shared.deleteImage(for: updated.id)
+          logger.info("🔔 Removing alerting alarm with ID: \(updated.id)")
+          cleanupAlarm(with: updated.id)
         }
       } else {
         // New alarm detected
-        let alarmsByID = Dictionary(uniqueKeysWithValues: remoteAlarms.map { ($0.id, $0) })
-
         for timer in timers {
           if let alarm = alarmsByID[timer.id] {
             let alarmData = AlarmData(
@@ -176,26 +183,32 @@ final class TimerManager {
               instructionStep: timer.instructionStep
             )
             alarmsMap[timer.id] = alarmData
-            print("✅ Restored timer: \(timer.id) - \(timer.recipeName)")
+            logger.info("✅ Restored timer: \(timer.id) - \(timer.recipeName)")
           } else {
             // Timer in database but no matching alarm - clean up
-            print("🧹 Cleaning up orphaned timer: \(timer.id)")
-            deleteTimerFromDatabase(id: timer.id)
-            ImageManager.shared.deleteImage(for: timer.id)
+            logger.info("🧹 Cleaning up orphaned timer: \(timer.id)")
+            cleanupAlarm(with: timer.id)
           }
         }
 
         if timers.isEmpty {
-          print("No timers found in database to restore.")
+          logger.info("No timers found in database to restore.")
           alarmsByID.forEach {
             do {
               try alarmManager.cancel(id: $0.key)
             } catch {
-              print(
+              logger.error(
                 "Error cancelling orphaned alarm with ID \($0.key): \(error.localizedDescription)")
             }
           }
         }
+      }
+    }
+    
+    if remoteAlarms.isEmpty && !timers.isEmpty {
+      logger.info("No active alarms but timers exist in database, cleaning up all timers.")
+      for timer in timers {
+        cleanupAlarm(with: timer.id)
       }
     }
 
@@ -205,8 +218,7 @@ final class TimerManager {
     // Clean-up removed alarms.
     let removedAlarmIDs = Set(knownAlarmIDs.subtracting(incomingAlarmIDs))
     removedAlarmIDs.forEach {
-      alarmsMap[$0] = nil
-      deleteTimerFromDatabase(id: $0)
+      cleanupAlarm(with: $0)
     }
   }
 
@@ -217,7 +229,7 @@ final class TimerManager {
         let state = try await alarmManager.requestAuthorization()
         return state == .authorized
       } catch {
-        print("Error occurred while requesting authorization: \(error)")
+        logger.error("Error occurred while requesting authorization: \(error)")
         return false
       }
     case .denied: return false
@@ -232,7 +244,7 @@ final class TimerManager {
     withErrorReporting {
       try database.write { db in
         try CookingTimer.insert { timer }.execute(db)
-        print("✅ Timer saved to database: \(timer.id)")
+        logger.info("✅ Timer saved to database: \(timer.id)")
       }
     }
   }
@@ -241,16 +253,16 @@ final class TimerManager {
     withErrorReporting {
       try database.write { db in
         try CookingTimer.delete().where { $0.id == id }.execute(db)
-        print("✅ Timer deleted from database: \(id)")
+        logger.info("✅ Timer deleted from database: \(id)")
       }
     }
   }
 
-  private func cleanupExpiredTimers() {
+  func cleanupExpiredTimers() {
     for timer in timers {
       if timer.endDate < Date.now {
-        print("⏰ Timer \(timer.id) has expired, removing from database")
-        deleteTimerFromDatabase(id: timer.id)
+        logger.info("⏰ Timer \(timer.id) has expired, removing from database")
+        cleanupAlarm(with: timer.id)
       }
     }
   }
@@ -265,3 +277,6 @@ extension AlarmButton {
     AlarmButton(text: "Start", textColor: .black, systemImageName: "play.fill")
   }
 }
+
+private nonisolated let logger = Logger(
+  subsystem: "com.develiott.Recipes", category: "TimerManager")
