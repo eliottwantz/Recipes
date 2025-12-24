@@ -8,6 +8,7 @@
 import Dependencies
 import SQLiteData
 import SwiftUI
+import SwiftUINavigation
 
 struct RecipeDetailScreen: View {
   @Fetch var recipeDetails: RecipeDetails
@@ -21,19 +22,9 @@ struct RecipeDetailScreen: View {
     self._recipeDetails = RecipeDetails.fetch(recipeId: recipeId)
   }
 
-  private var cookingSessionBinding: Binding<AppRouter.CookingSession?> {
-    Binding(
-      get: {
-        guard let session = appRouter.activeCookingSession,
-          session.id == recipeDetails.id
-        else { return nil }
-        return session
-      },
-      set: { appRouter.activeCookingSession = $0 }
-    )
-  }
-
   var body: some View {
+    @Bindable var appRouter = AppRouter.shared
+
     VStack {
       RecipeDetailView(recipeDetails: recipeDetails, scaleFactor: $scaleFactor)
         .toolbar {
@@ -45,28 +36,26 @@ struct RecipeDetailScreen: View {
             }
             Menu("More", systemImage: "ellipsis") {
               Button {
-                showEditSheet = true
+                //                showEditSheet = true
+                appRouter.destination = .editRecipe(recipeDetails)
               } label: {
                 Label("Edit recipe", systemImage: "pencil")
               }
             }
           }
         }
-        .sheet(isPresented: $showEditSheet) {
+        .sheet(item: $appRouter.destination.editRecipe) { recipeDetails in
           RecipeEditScreen(recipeDetails: recipeDetails)
             .interactiveDismissDisabled()
         }
-        .fullScreenCover(item: cookingSessionBinding) { session in
+        .fullScreenCover(item: $appRouter.destination.cooking) { $session in
           RecipeCookingScreen(
             recipeDetails: recipeDetails,
             scaleFactor: scaleFactor,
-            currentStep: Binding(
-              get: { appRouter.activeCookingSession?.currentStep ?? 0 },
-              set: { appRouter.activeCookingSession?.currentStep = $0 }
-            )
+            currentStep: $session.currentStep
           )
         }
-        .onChange(of: cookingSessionBinding.wrappedValue) { oldValue, newValue in
+        .onChange(of: appRouter.destination) { oldValue, newValue in
           if oldValue != nil && newValue == nil {
             scaleFactor = 1.0
           }

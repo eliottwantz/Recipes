@@ -16,6 +16,8 @@
 		5580A4092EF4C18300112748 /* TimerLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5594D41D2EAD0BE7001852BF /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5594D41C2EAD0BE7001852BF /* SQLiteData */; };
 		55D60C4E2EFC513400C9067A /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 55D60C4D2EFC513400C9067A /* SQLiteData */; };
+		55D60C6D2EFC59A200C9067A /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = 55D60C6C2EFC59A200C9067A /* SwiftUINavigation */; };
+		55D60C702EFC5BB800C9067A /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = 55D60C6F2EFC5BB800C9067A /* SwiftUINavigation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +83,7 @@
 				Logger.swift,
 				Model/CookingAlarmMetadata.swift,
 				Model/CookingTimerForm.swift,
+				Model/RecipeDetails.swift,
 				Services/ImageManager.swift,
 				Storage/Schema.swift,
 				ViewModel/AppRouter.swift,
@@ -94,6 +97,18 @@
 				Info.plist,
 			);
 			target = 5580A3F92EF4C18200112748 /* TimerLiveActivityExtension */;
+		};
+		55D60C6E2EFC5AF600C9067A /* Exceptions for "Shared" folder in "RecipeShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Intents/TimerIntents.swift,
+				Model/CookingAlarmMetadata.swift,
+				Model/CookingTimerForm.swift,
+				Services/ImageManager.swift,
+				ViewModel/AppRouter.swift,
+				ViewModel/TimerManager.swift,
+			);
+			target = 555EDC672EAC3960006DC041 /* RecipeShareExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -117,6 +132,7 @@
 		556169912EBC4D6800BB649D /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				55D60C6E2EFC5AF600C9067A /* Exceptions for "Shared" folder in "RecipeShareExtension" target */,
 				5569CE922EF8C7FA007CE35C /* Exceptions for "Shared" folder in "TimerLiveActivityExtension" target */,
 			);
 			path = Shared;
@@ -137,6 +153,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */,
+				55D60C702EFC5BB800C9067A /* SwiftUINavigation in Frameworks */,
 			);
 		};
 		555EDC652EAC3960006DC041 /* Frameworks */ = {
@@ -150,6 +167,7 @@
 			files = (
 				55D60C4E2EFC513400C9067A /* SQLiteData in Frameworks */,
 				5580A3FC2EF4C18200112748 /* SwiftUI.framework in Frameworks */,
+				55D60C6D2EFC59A200C9067A /* SwiftUINavigation in Frameworks */,
 				5580A3FB2EF4C18200112748 /* WidgetKit.framework in Frameworks */,
 			);
 		};
@@ -214,6 +232,7 @@
 			name = Recipes;
 			packageProductDependencies = (
 				5517C2962E973F1500F64C53 /* SQLiteData */,
+				55D60C6F2EFC5BB800C9067A /* SwiftUINavigation */,
 			);
 			productName = Recipes;
 			productReference = 5517C2832E9720AB00F64C53 /* Recipes.app */;
@@ -257,6 +276,7 @@
 			name = TimerLiveActivityExtension;
 			packageProductDependencies = (
 				55D60C4D2EFC513400C9067A /* SQLiteData */,
+				55D60C6C2EFC59A200C9067A /* SwiftUINavigation */,
 			);
 			productName = TimerLiveActivityExtension;
 			productReference = 5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */;
@@ -294,6 +314,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */,
+				55D60C612EFC582000C9067A /* XCRemoteSwiftPackageReference "swift-navigation" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 5517C2842E9720AB00F64C53 /* Products */;
@@ -785,6 +806,14 @@
 				minimumVersion = 1.4.0;
 			};
 		};
+		55D60C612EFC582000C9067A /* XCRemoteSwiftPackageReference "swift-navigation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-navigation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -802,6 +831,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5517C2952E973F1500F64C53 /* XCRemoteSwiftPackageReference "sqlite-data" */;
 			productName = SQLiteData;
+		};
+		55D60C6C2EFC59A200C9067A /* SwiftUINavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 55D60C612EFC582000C9067A /* XCRemoteSwiftPackageReference "swift-navigation" */;
+			productName = SwiftUINavigation;
+		};
+		55D60C6F2EFC5BB800C9067A /* SwiftUINavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 55D60C612EFC582000C9067A /* XCRemoteSwiftPackageReference "swift-navigation" */;
+			productName = SwiftUINavigation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

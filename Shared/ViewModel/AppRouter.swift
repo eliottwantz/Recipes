@@ -8,6 +8,7 @@
 import Dependencies
 import SQLiteData
 import SwiftUI
+import SwiftUINavigation
 import os
 
 @Observable
@@ -22,8 +23,13 @@ public final class AppRouter {
   var selectedTab: Tab = .recipeList
   var navigationPath = NavigationPath()
 
-  /// Active cooking session - controls fullScreenCover presentation
-  var activeCookingSession: CookingSession?
+  var destination: Destination?
+
+  @CasePathable
+  enum Destination: Equatable {
+    case cooking(CookingSession)
+    case editRecipe(RecipeDetails)
+  }
 
   struct CookingSession: Identifiable, Equatable {
     let id: Recipe.ID
@@ -62,11 +68,11 @@ public final class AppRouter {
   }
 
   func openCookingScreen(for recipeId: Recipe.ID, step: Int = 0) {
-    activeCookingSession = CookingSession(recipeId: recipeId, currentStep: step)
+    destination = .cooking(CookingSession(recipeId: recipeId, currentStep: step))
   }
 
   func closeCookingScreen() {
-    activeCookingSession = nil
+    destination = nil
   }
 
   @discardableResult
