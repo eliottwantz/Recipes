@@ -228,14 +228,12 @@ private struct CancelButton: View {
   var body: some View {
     Button(intent: CancelTimerIntent(alarmID: alarmID)) {
       Label("Cancel timer", systemImage: "xmark")
-        .font(.title2)
-        .fontWeight(.regular)
-        .foregroundStyle(.primary)
         .labelStyle(.iconOnly)
-        .padding(5)
+        .font(.system(size: 18))
+        .padding(3)
     }
-    .clipShape(.circle)
-    .buttonStyle(.bordered)
-    .tint(.secondary)
+    .buttonStyle(.borderedProminent)
+    .buttonBorderShape(.circle)
+    .tint(.gray.opacity(0.3))
   }
 }

@@ -16,7 +16,7 @@ struct ActiveTimerView: View {
   let onCancel: () -> Void
 
   var body: some View {
-    VStack(spacing: 20) {
+    VStack(spacing: 12) {
       // MARK: - Image and Step
       HStack(spacing: 10) {
         if let image = ImageManager.loadLiveActivityImage(for: alarm.id) {
@@ -53,7 +53,7 @@ struct ActiveTimerView: View {
               .padding(8)
           }
           .buttonStyle(.plain)
-          .glassEffect(.regular.interactive().tint(.gray.opacity(0.30)), in: .circle)
+          .glassEffect(.regular.interactive().tint(.gray.opacity(0.3)), in: .circle)
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -70,7 +70,7 @@ struct ActiveTimerView: View {
         Spacer()
 
         if let instructionStep {
-          Text(String("Step \(instructionStep)"))
+          Text(String("Step \(instructionStep + 1)"))
             .font(.callout)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)
