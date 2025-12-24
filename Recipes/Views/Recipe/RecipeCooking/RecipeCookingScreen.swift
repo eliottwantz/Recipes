@@ -18,6 +18,10 @@ struct RecipeCookingScreen: View {
   @State private var timerHours = 0
   @State private var timerMinutes = 0
   @State private var timerSeconds = 0
+  @State private var timerButtonRotation: Double = 0
+  @State private var timerButtonOffset: CGFloat = 0
+  @State private var timerButtonScale: CGFloat = 1.0
+
   private var timerManager = TimerManager.shared
   private var appRouter = AppRouter.shared
 
@@ -54,6 +58,47 @@ struct RecipeCookingScreen: View {
             VStack(alignment: .center) {
               Spacer()
 
+              HStack {
+                Button {
+                  showIngredientsSheet = false
+                  showTimerPicker.toggle()
+                } label: {
+                  Label("Start timer", systemImage: "timer")
+                    .rotationEffect(.degrees(timerButtonRotation))
+                    .offset(y: timerButtonOffset)
+                    .scaleEffect(timerButtonScale)
+                }
+                .buttonStyle(.toolbar)
+                .sensoryFeedback(
+                  .success, trigger: timerManager.upcomingAlarmsCount,
+                  condition: { oldValue, newValue in
+                    newValue > oldValue
+                  }
+                )
+                .overlay(alignment: .topTrailing) {
+                  if timerManager.upcomingAlarmsCount > 0 {
+                    Text("\(timerManager.upcomingAlarmsCount)")
+                      .font(.caption2)
+                      .fontWeight(.bold)
+                      .foregroundColor(.white)
+                      .frame(width: 16, height: 16)
+                      .background(Circle().fill(Color.red))
+                      .offset(x: 3, y: -3)
+                  }
+                }
+                .popover(
+                  isPresented: $showTimerPicker,
+                  attachmentAnchor: .point(.top),
+                  arrowEdge: .bottom
+                ) {
+                  TimerPopover(geometry: geometry)
+                    .presentationCompactAdaptation(.none)
+                }
+              }
+              .frame(maxWidth: .infinity, alignment: .trailing)
+              .padding(.bottom, 16)
+              .padding(.trailing, 16)
+
               CookingStepButtons(
                 currentStepIndex: $currentStep, totalSteps: recipeDetails.instructions.count
               )
@@ -74,64 +119,6 @@ struct RecipeCookingScreen: View {
             }
             ToolbarItemGroup(placement: .primaryAction) {
               Button {
-                showIngredientsSheet = false
-                showTimerPicker.toggle()
-              } label: {
-                Label("Start timer", systemImage: "timer")
-              }
-              .badge(timerManager.upcomingAlarmsCount)
-              .popover(isPresented: $showTimerPicker) {
-                VStack(spacing: 0) {
-                  // Active Timers Section
-                  if timerManager.hasUpcomingAlarms {
-                    ScrollView {
-                      VStack(spacing: 12) {
-                        ForEach(Array(timerManager.sortedAlarms)) { alarmData in
-                          ActiveTimerView(
-                            alarm: alarmData.alarm,
-                            endDate: alarmData.endDate,
-                            recipeName: alarmData.recipeName,
-                            instructionStep: alarmData.instructionStep,
-                            onCancel: {
-                              timerManager.unscheduleAlarm(with: alarmData.id)
-                            }
-                          )
-                        }
-                      }
-                      .padding()
-                    }
-                    .frame(maxHeight: 300)
-                  }
-
-                  // Timer Picker Section
-                  CountdownTimerPickerView(
-                    hours: $timerHours,
-                    minutes: $timerMinutes,
-                    seconds: $timerSeconds,
-                    onStart: {
-                      let currentInstruction = recipeDetails.instructions[currentStep]
-                      timerManager.scheduleAlarm(
-                        with: .init(
-                          recipeId: recipeDetails.recipe.id,
-                          recipeName: recipeDetails.recipe.name,
-                          instructionStep: currentInstruction.position,
-                          hour: timerHours,
-                          min: timerMinutes,
-                          sec: timerSeconds,
-                          imageData: recipeDetails.photos.first?.photoData ?? nil
-                        ))
-                    },
-                    close: {
-                      showTimerPicker = false
-                    }
-                  )
-                  .padding(.horizontal)
-                  .frame(width: geometry.size.width, height: 300)
-                }
-                .presentationCompactAdaptation(.popover)
-              }
-
-              Button {
                 showTimerPicker = false
                 showIngredientsSheet.toggle()
               } label: {
@@ -144,6 +131,18 @@ struct RecipeCookingScreen: View {
               .currentPageIndicatorTintColor = UIColor(.accentColor)
           }
         }
+        .onChange(
+          of: timerManager.upcomingAlarmsCount,
+          { oldValue, newValue in
+            #if DEBUG
+              print(
+                "🔔 TimerManager upcomingAlarmsCount trigger changed from \(oldValue) to \(newValue)"
+              )
+            #endif
+            guard newValue > oldValue else { return }
+            animateTimerButton()
+          }
+        )
         .sheet(isPresented: $showIngredientsSheet) {
           NavigationStack {
             CookingIngredientsListView(cookingIngredients: $cookingIngredients)
@@ -191,6 +190,90 @@ struct RecipeCookingScreen: View {
     .padding(.bottom, 40)
     .padding(.top, showIngredientsSheet ? 10 : 30)
     .animation(.easeOut(duration: 0.25), value: showIngredientsSheet)
+  }
+
+  @ViewBuilder
+  private func TimerPopover(geometry: GeometryProxy) -> some View {
+    VStack(spacing: 0) {
+      // Active Timers Section
+      if timerManager.hasUpcomingAlarms {
+        ScrollView {
+          VStack(spacing: 12) {
+            ForEach(Array(timerManager.sortedAlarms)) { alarmData in
+              ActiveTimerView(
+                alarm: alarmData.alarm,
+                endDate: alarmData.endDate,
+                recipeName: alarmData.recipeName,
+                instructionStep: alarmData.instructionStep,
+                onCancel: {
+                  timerManager.unscheduleAlarm(with: alarmData.id)
+                }
+              )
+            }
+          }
+          .padding()
+        }
+        .frame(maxHeight: 300)
+      }
+
+      // Timer Picker Section
+      CountdownTimerPickerView(
+        hours: $timerHours,
+        minutes: $timerMinutes,
+        seconds: $timerSeconds,
+        onStart: {
+          let currentInstruction = recipeDetails.instructions[currentStep]
+          timerManager.scheduleAlarm(
+            with: .init(
+              recipeId: recipeDetails.recipe.id,
+              recipeName: recipeDetails.recipe.name,
+              instructionStep: currentInstruction.position,
+              hour: timerHours,
+              min: timerMinutes,
+              sec: timerSeconds,
+              imageData: recipeDetails.photos.first?.photoData ?? nil
+            ))
+        },
+        close: {
+          showTimerPicker = false
+        }
+      )
+      .padding(.horizontal)
+      .frame(width: geometry.size.width, height: 300)
+    }
+  }
+
+  private func animateTimerButton() {
+    // Reset to initial state
+    timerButtonRotation = 0
+    timerButtonOffset = 0
+    timerButtonScale = 1.0
+
+    let rotationAngle: Double = 20
+
+    for i in 0..<8 {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * Double(i)) {
+        withAnimation(.linear(duration: 0.1)) {
+          timerButtonRotation = (i % 2 == 0) ? -rotationAngle : rotationAngle
+        }
+      }
+    }
+
+    DispatchQueue.main.asyncAfter(deadline: .now()) {
+      withAnimation(.easeOut(duration: 0.6)) {
+        timerButtonRotation = 0
+        timerButtonOffset = -20
+        timerButtonScale = 1.3
+      }
+    }
+
+    // Pause for 0.1s, then snap back
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
+      withAnimation(.snappy(duration: 0.12, extraBounce: 0.6)) {
+        timerButtonOffset = 0
+        timerButtonScale = 1.0
+      }
+    }
   }
 
   private struct CookingStepButtons: View {
