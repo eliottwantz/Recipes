@@ -9,8 +9,6 @@ import SwiftUI
 
 @main
 struct RecipesApp: App {
-  @State private var appRouter = AppRouter()
-
   init() {
     Storage.configure()
     Task.detached {
@@ -22,9 +20,8 @@ struct RecipesApp: App {
     WindowGroup {
       ContentView()
         .onOpenURL { url in
-          appRouter.handleDeepLink(url)
+          AppRouter.shared.handleDeepLink(url)
         }
     }
-    .environment(\.appRouter, appRouter)
   }
 }

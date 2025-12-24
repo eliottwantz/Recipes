@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-  @Environment(\.appRouter) private var appRouter
+  private var appRouter = AppRouter.shared
 
   var body: some View {
     @Bindable var appRouter = appRouter
@@ -41,5 +41,4 @@ struct ContentView: View {
   return Group {
     ContentView()
   }
-  .environment(\.appRouter, AppRouter())
 }

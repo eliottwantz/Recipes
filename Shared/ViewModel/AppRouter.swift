@@ -8,28 +8,37 @@
 import Dependencies
 import SQLiteData
 import SwiftUI
+import os
 
 @Observable
 public final class AppRouter {
-  var selectedTab: Tab
-  var navigationPath = NavigationPath()
-
-  /// Pending deep link destination to open cooking screen with a specific step
-  var pendingCookingStep: Int?
-
-  @ObservationIgnored @Dependency(\.defaultDatabase) private var database
+  static let shared = AppRouter()
 
   enum Tab {
     case recipeList
     case settings
   }
 
-  init(selectedTab: Tab = .recipeList) {
-    self.selectedTab = selectedTab
+  var selectedTab: Tab = .recipeList
+  var navigationPath = NavigationPath()
+
+  /// Active cooking session - controls fullScreenCover presentation
+  var activeCookingSession: CookingSession?
+
+  struct CookingSession: Identifiable, Equatable {
+    let id: Recipe.ID
+    var currentStep: Int
+
+    init(recipeId: Recipe.ID, currentStep: Int = 0) {
+      self.id = recipeId
+      self.currentStep = currentStep
+    }
   }
 
-  /// Navigate to a specific recipe, optionally opening the cooking screen at a specific step
+  private init() {}
+
   func navigateToRecipe(_ recipeId: Recipe.ID, cookingStep: Int? = nil) {
+    @Dependency(\.defaultDatabase) var database
     let recipeExists = withErrorReporting {
       let recipeId = try database.read { db in
         try Recipe.where { $0.id == recipeId }.select(\.id).fetchOne(db)
@@ -39,25 +48,32 @@ public final class AppRouter {
 
     guard let recipeExists else { return }
     guard recipeExists else {
-      // Recipe was deleted, clean up associated timers
       TimerManager.shared.cleanupTimersForRecipe(recipeId)
       return
     }
 
-    // Reset navigation and set up new path
     selectedTab = .recipeList
     navigationPath = NavigationPath()
-    pendingCookingStep = cookingStep
-
-    // Push the recipe onto the navigation stack
     navigationPath.append(recipeId)
+
+    if let step = cookingStep {
+      openCookingScreen(for: recipeId, step: step)
+    }
   }
 
-  /// Handle a deep link URL
-  /// - Returns: true if the URL was handled, false otherwise
+  func openCookingScreen(for recipeId: Recipe.ID, step: Int = 0) {
+    activeCookingSession = CookingSession(recipeId: recipeId, currentStep: step)
+  }
+
+  func closeCookingScreen() {
+    activeCookingSession = nil
+  }
+
   @discardableResult
   func handleDeepLink(_ url: URL) -> Bool {
     guard url.scheme == Constants.urlScheme else { return false }
+
+    logger.info("🚧 Handling deep link URL: \(url.absoluteString)")
 
     // Expected format: com.develiott.recipes://recipe/{recipeID}?step={instructionStep}
     guard url.host == "recipe" else { return false }
@@ -83,6 +99,4 @@ public final class AppRouter {
   }
 }
 
-extension EnvironmentValues {
-  @Entry var appRouter: AppRouter = AppRouter()
-}
+private let logger = Logger(subsystem: "com.develiott.Recipes", category: "AppRouter")

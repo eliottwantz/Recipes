@@ -33,7 +33,7 @@ struct TimerLiveActivity: Widget {
             }
 
             if let step = context.attributes.metadata?.instructionStep {
-              Text(String("Step \(step)"))
+              Text(String("Step \(step + 1)"))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             }
@@ -77,7 +77,7 @@ struct TimerLiveActivity: Widget {
               .accessibilityLabel("The recipe image")
           }
           if let step = context.attributes.metadata?.instructionStep {
-            Text(String("Step \(step)"))
+            Text(String("Step \(step + 1)"))
               .foregroundStyle(.primary)
               .fontWeight(.semibold)
           }
@@ -95,6 +95,7 @@ struct TimerLiveActivity: Widget {
         )
       }
       .keylineTint(context.attributes.tintColor)
+      .widgetURL(context.attributes.metadata?.deepLink)
     }
   }
 
@@ -123,7 +124,7 @@ struct TimerLiveActivity: Widget {
               .frame(maxWidth: .infinity, alignment: .leading)
 
             if let step = metadata.instructionStep {
-              Text(String("Step \(step)"))
+              Text(String("Step \(step + 1)"))
                 .font(.body)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)

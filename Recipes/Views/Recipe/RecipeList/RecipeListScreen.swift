@@ -12,7 +12,6 @@ import os
 
 struct RecipeListScreen: View {
   @Environment(\.scenePhase) private var scenePhase
-  @Environment(\.appRouter) private var appRouter
   @Dependency(\.defaultDatabase) private var database
 
   @FetchAll(Recipe.order(by: \.name), animation: .default)
@@ -30,6 +29,8 @@ struct RecipeListScreen: View {
   @State private var editMode: EditMode = .inactive
   @State private var selection = Set<Recipe.ID>()
   @State private var showDeleteConfirmation: Bool = false
+
+  private var appRouter = AppRouter.shared
 
   private var searchId: String {
     "\(searchText)_\(sortBy)_\(sortDirection)"

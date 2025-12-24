@@ -8,6 +8,7 @@
 import AlarmKit
 import AppIntents
 import Foundation
+import SwiftUI
 
 struct CancelTimerIntent: LiveActivityIntent {
   func perform() throws -> some IntentResult {
@@ -32,19 +33,11 @@ struct CancelTimerIntent: LiveActivityIntent {
 }
 
 struct OpenAppIntent: LiveActivityIntent {
-  func perform() throws -> some IntentResult {
+  @MainActor
+  func perform() async throws -> some IntentResult & OpensIntent {
     try AlarmManager.shared.stop(id: UUID(uuidString: alarmID)!)
-
-    var urlString = "\(Constants.urlScheme)://recipe/\(recipeID)"
-    if let step = instructionStep {
-      urlString += "?step=\(step)"
-    }
-
-    guard let url = URL(string: urlString) else {
-      return .result()
-    }
-
-    return .result(opensIntent: OpenURLIntent(url))
+    AppRouter.shared.handleDeepLink(URL(string: deepLink)!)
+    return .result()
   }
 
   static let title: LocalizedStringResource = "Open App"
@@ -55,21 +48,16 @@ struct OpenAppIntent: LiveActivityIntent {
   @Parameter(title: "alarmID")
   var alarmID: String
 
-  @Parameter(title: "recipeID")
-  var recipeID: String
+  @Parameter(title: "deepLink")
+  var deepLink: String
 
-  @Parameter(title: "instructionStep")
-  var instructionStep: Int?
-
-  init(alarmID: String, recipeID: String, instructionStep: Int? = nil) {
+  init(alarmID: String, deepLink: String) {
     self.alarmID = alarmID
-    self.recipeID = recipeID
-    self.instructionStep = instructionStep
+    self.deepLink = deepLink
   }
 
   init() {
     self.alarmID = ""
-    self.recipeID = ""
-    self.instructionStep = nil
+    self.deepLink = ""
   }
 }

@@ -80,27 +80,29 @@ final class TimerManager {
         title: "Cooking Timer",
       )
 
+      let metadata = CookingAlarmMetadata(
+        alarmID: id,
+        recipeID: userInput.recipeId,
+        recipeName: userInput.recipeName,
+        instructionStep: userInput.instructionStep
+      )
+
       let attributes = AlarmAttributes<CookingAlarmMetadata>(
         presentation: AlarmPresentation(
           alert: alertContent,
           countdown: countdownContent,
         ),
-        metadata: CookingAlarmMetadata(
-          alarmID: id,
-          recipeID: userInput.recipeId,
-          recipeName: userInput.recipeName,
-          instructionStep: userInput.instructionStep
-        ),
+        metadata: metadata,
         tintColor: .accent
       )
 
+      print("DEEPLINK: \(metadata.deepLink.absoluteString)")
       let alarmConfiguration = AlarmConfiguration.timer(
         duration: userInput.interval,
         attributes: attributes,
         secondaryIntent: OpenAppIntent(
           alarmID: id.uuidString,
-          recipeID: userInput.recipeId.uuidString,
-          instructionStep: userInput.instructionStep
+          deepLink: metadata.deepLink.absoluteString
         )
       )
 

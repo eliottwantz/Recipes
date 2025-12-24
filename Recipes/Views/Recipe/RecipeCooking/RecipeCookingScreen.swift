@@ -9,8 +9,7 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeCookingScreen: View {
-  @Environment(\.dismiss) private var dismiss
-  @State private var currentStepIndex: Int
+  @Binding var currentStep: Int
   @State private var showIngredientsSheet = false
   @State private var searchTerm = ""
   @State private var currentDetent: PresentationDetent = .fraction(0.45)
@@ -20,14 +19,15 @@ struct RecipeCookingScreen: View {
   @State private var timerMinutes = 0
   @State private var timerSeconds = 0
   private var timerManager = TimerManager.shared
+  private var appRouter = AppRouter.shared
 
   let recipeDetails: RecipeDetails
   let scaleFactor: Double
 
-  init(recipeDetails: RecipeDetails, scaleFactor: Double = 1.0, initialStepIndex: Int = 0) {
+  init(recipeDetails: RecipeDetails, scaleFactor: Double = 1.0, currentStep: Binding<Int>) {
     self.recipeDetails = recipeDetails
     self.scaleFactor = scaleFactor
-    self._currentStepIndex = State(initialValue: initialStepIndex)
+    self._currentStep = currentStep
     self._cookingIngredients = State(
       initialValue: recipeDetails.ingredients.map { ingredient in
         let parsed = ingredient.text.parseIngredient()
@@ -42,7 +42,7 @@ struct RecipeCookingScreen: View {
       NavigationStack {
         ZStack {
           ZStack {
-            TabView(selection: $currentStepIndex) {
+            TabView(selection: $currentStep) {
               ForEach(recipeDetails.instructions) { instruction in
                 Tab(value: instruction.position) {
                   CookingStepView(instruction: instruction)
@@ -55,7 +55,7 @@ struct RecipeCookingScreen: View {
               Spacer()
 
               CookingStepButtons(
-                currentStepIndex: $currentStepIndex, totalSteps: recipeDetails.instructions.count
+                currentStepIndex: $currentStep, totalSteps: recipeDetails.instructions.count
               )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -69,7 +69,7 @@ struct RecipeCookingScreen: View {
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {
               Button(role: .close) {
-                dismiss()
+                appRouter.closeCookingScreen()
               }
             }
             ToolbarItemGroup(placement: .primaryAction) {
@@ -109,7 +109,7 @@ struct RecipeCookingScreen: View {
                     minutes: $timerMinutes,
                     seconds: $timerSeconds,
                     onStart: {
-                      let currentInstruction = recipeDetails.instructions[currentStepIndex]
+                      let currentInstruction = recipeDetails.instructions[currentStep]
                       timerManager.scheduleAlarm(
                         with: .init(
                           recipeId: recipeDetails.recipe.id,
@@ -241,6 +241,8 @@ struct RecipeCookingScreen: View {
 }
 
 #Preview {
+  @Previewable @State var currentStep = 0
+
   let recipeDetails = Storage.configure { database in
     return try database.read { db in
       print("FETCHING RECIPE FOR PREVIEW")
@@ -252,5 +254,5 @@ struct RecipeCookingScreen: View {
     }
   }
 
-  RecipeCookingScreen(recipeDetails: recipeDetails)
+  return RecipeCookingScreen(recipeDetails: recipeDetails, currentStep: $currentStep)
 }
