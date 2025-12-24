@@ -5,12 +5,12 @@
 //  Created by Eliott on 18-12-2025.
 //
 
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 @main
 struct TimerLiveActivityBundle: WidgetBundle {
-    var body: some Widget {
-      TimerLiveActivity()
-    }
+  var body: some Widget {
+    TimerLiveActivity()
+  }
 }

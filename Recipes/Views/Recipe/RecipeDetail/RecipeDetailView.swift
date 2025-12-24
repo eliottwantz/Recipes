@@ -285,7 +285,7 @@ struct RecipeDetailView: View {
         } else {
           amountScaleControl
         }
-         
+
         if scaleFactor != 1.0 {
           Button {
             withAnimation {

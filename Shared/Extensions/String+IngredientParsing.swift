@@ -95,7 +95,8 @@ extension String {
         // Calculate full range including quantity and unit
         let unitEndIndex = trimmed.index(
           quantityRange.upperBound,
-          offsetBy: afterQuantity.distance(from: afterQuantity.startIndex, to: unitRangeInAfter.upperBound))
+          offsetBy: afterQuantity.distance(
+            from: afterQuantity.startIndex, to: unitRangeInAfter.upperBound))
         let fullRange = quantityRange.lowerBound..<unitEndIndex
 
         let remainder = String(trimmed[unitEndIndex...])
@@ -159,8 +160,7 @@ private enum IngredientParsingHelper {
       if trimmed.contains(fraction) {
         // Check for mixed number (e.g., "1 ½")
         let parts = trimmed.components(separatedBy: " ")
-        if parts.count == 2, let whole = Double(parts[0].replacingOccurrences(of: ",", with: "."))
-        {
+        if parts.count == 2, let whole = Double(parts[0].replacingOccurrences(of: ",", with: ".")) {
           return whole + value
         }
         return value
