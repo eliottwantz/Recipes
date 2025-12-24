@@ -46,8 +46,9 @@ struct RecipeListView: View {
         List(selection: $selection) {
           ForEach(recipes) { recipe in
             RecipeCard(recipe: recipe, photo: recipePhotos[recipe.id]?.first)
-              .background {
-                NavigationLink(value: recipe) { EmptyView() }.opacity(0)
+              .overlay {
+                NavigationLink(value: recipe) { EmptyView() }
+                  .opacity(0)
               }
               .contextMenu {
                 Button {
@@ -68,6 +69,12 @@ struct RecipeListView: View {
           }
         }
         .listStyle(.plain)
+        .navigationDestination(for: Recipe.ID.self) { recipeId in
+          RecipeDetailScreen(recipeId: recipeId)
+        }
+        .navigationDestination(for: Recipe.self) { recipe in
+          RecipeDetailScreen(recipeId: recipe.id)
+        }
         .alert(
           "Delete Recipe",
           isPresented: $showDeleteConfirmation,

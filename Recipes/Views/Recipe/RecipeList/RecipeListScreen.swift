@@ -12,6 +12,7 @@ import os
 
 struct RecipeListScreen: View {
   @Environment(\.scenePhase) private var scenePhase
+  @Environment(\.appRouter) private var appRouter
   @Dependency(\.defaultDatabase) private var database
 
   @FetchAll(Recipe.order(by: \.name), animation: .default)
@@ -39,7 +40,9 @@ struct RecipeListScreen: View {
   }
 
   var body: some View {
-    NavigationStack {
+    @Bindable var appRouter = appRouter
+
+    NavigationStack(path: $appRouter.navigationPath) {
       RecipeListView(recipes: recipes, recipePhotos: recipePhotosPerRecipe, selection: $selection)
         .navigationTitle("All recipes")
         .toolbarTitleDisplayMode(.inlineLarge)
@@ -129,12 +132,6 @@ struct RecipeListScreen: View {
             }
           }
         }
-        .navigationDestination(
-          for: Recipe.self,
-          destination: { recipe in
-            RecipeDetailScreen(recipeId: recipe.id)
-          }
-        )
         .safeAreaBar(edge: .bottom) {
           HStack {
             Spacer()

@@ -10,7 +10,6 @@ import SwiftUI
 @main
 struct RecipesApp: App {
   @State private var appRouter = AppRouter()
-//  @State private var timerManager = TimerManager()
 
   init() {
     Storage.configure()
@@ -22,8 +21,10 @@ struct RecipesApp: App {
   var body: some Scene {
     WindowGroup {
       ContentView()
+        .onOpenURL { url in
+          appRouter.handleDeepLink(url)
+        }
     }
     .environment(\.appRouter, appRouter)
-//    .environment(\.timerManager, timerManager)
   }
 }

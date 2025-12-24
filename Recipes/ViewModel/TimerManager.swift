@@ -15,6 +15,7 @@ import os
 struct AlarmData: Identifiable {
   let alarm: Alarm
   let endDate: Date
+  let recipeId: Recipe.ID
   let recipeName: String
   let instructionStep: Int?
 
@@ -85,9 +86,10 @@ final class TimerManager {
           countdown: countdownContent,
         ),
         metadata: CookingAlarmMetadata(
+          alarmID: id,
+          recipeID: userInput.recipeId,
           recipeName: userInput.recipeName,
-          instructionStep: userInput.instructionStep,
-          alarmID: id
+          instructionStep: userInput.instructionStep
         ),
         tintColor: .accent
       )
@@ -95,7 +97,11 @@ final class TimerManager {
       let alarmConfiguration = AlarmConfiguration.timer(
         duration: userInput.interval,
         attributes: attributes,
-        secondaryIntent: OpenAppIntent(alarmID: id.uuidString)
+        secondaryIntent: OpenAppIntent(
+          alarmID: id.uuidString,
+          recipeID: userInput.recipeId.uuidString,
+          instructionStep: userInput.instructionStep
+        )
       )
 
       ImageManager.saveImageForLiveActivity(
@@ -114,6 +120,7 @@ final class TimerManager {
         let alarmData = AlarmData(
           alarm: alarm,
           endDate: endDate,
+          recipeId: userInput.recipeId,
           recipeName: userInput.recipeName,
           instructionStep: userInput.instructionStep
         )
@@ -141,7 +148,7 @@ final class TimerManager {
       logger.error("Error cancelling alarm with ID \(alarmID): \(error.localizedDescription)")
     }
   }
-  
+
   private func cleanupAlarm(with alarmID: UUID) {
     logger.info("🔔 Cleaning up alarm with ID: \(alarmID)")
     alarmsMap[alarmID] = nil
@@ -179,6 +186,7 @@ final class TimerManager {
             let alarmData = AlarmData(
               alarm: alarm,
               endDate: timer.endDate,
+              recipeId: timer.recipeId,
               recipeName: timer.recipeName,
               instructionStep: timer.instructionStep
             )
@@ -204,7 +212,7 @@ final class TimerManager {
         }
       }
     }
-    
+
     if remoteAlarms.isEmpty && !timers.isEmpty {
       logger.info("No active alarms but timers exist in database, cleaning up all timers.")
       for timer in timers {
@@ -255,6 +263,12 @@ final class TimerManager {
         try CookingTimer.delete().where { $0.id == id }.execute(db)
         logger.info("✅ Timer deleted from database: \(id)")
       }
+    }
+  }
+
+  func cleanupTimersForRecipe(_ recipeId: Recipe.ID) {
+    for timer in timers.filter({ $0.recipeId == recipeId }) {
+      unscheduleAlarm(with: timer.id)
     }
   }
 

@@ -12,7 +12,8 @@ import UniformTypeIdentifiers
 import os
 
 nonisolated struct CookingAlarmMetadata: AlarmMetadata {
-  var recipeName: String
-  var instructionStep: Int?
-  var alarmID: UUID
+  let alarmID: UUID
+  let recipeID: UUID
+  let recipeName: String
+  let instructionStep: Int?
 }

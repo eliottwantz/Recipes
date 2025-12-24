@@ -10,11 +10,13 @@ import SQLiteData
 import SwiftUI
 
 struct RecipeDetailScreen: View {
+  @Environment(\.appRouter) private var appRouter
   @Fetch var recipeDetails: RecipeDetails
   @Dependency(\.defaultDatabase) private var defaultDatabase
   @State private var showEditSheet = false
   @State private var showCookingScreen = false
   @State private var scaleFactor: Double = 1.0
+  @State private var initialCookingStep: Int = 0
 
   init(recipeId: Recipe.ID) {
     self._recipeDetails = RecipeDetails.fetch(recipeId: recipeId)
@@ -44,12 +46,25 @@ struct RecipeDetailScreen: View {
             .interactiveDismissDisabled()
         }
         .fullScreenCover(isPresented: $showCookingScreen) {
-          RecipeCookingScreen(recipeDetails: recipeDetails, scaleFactor: scaleFactor)
+          RecipeCookingScreen(
+            recipeDetails: recipeDetails,
+            scaleFactor: scaleFactor,
+            initialStepIndex: initialCookingStep
+          )
         }
         .onChange(of: showCookingScreen) { _, newValue in
-          // Reset scale factor when returning from cooking mode
+          // Reset scale factor and initial step when returning from cooking mode
           if !newValue {
             scaleFactor = 1.0
+            initialCookingStep = 0
+          }
+        }
+        .onAppear {
+          // Check if there's a pending cooking step from a deep link
+          if let pendingStep = appRouter.pendingCookingStep {
+            initialCookingStep = pendingStep
+            appRouter.pendingCookingStep = nil
+            showCookingScreen = true
           }
         }
     }

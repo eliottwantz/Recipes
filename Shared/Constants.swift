@@ -10,4 +10,5 @@ import Foundation
 nonisolated enum Constants {
   static let appGroupID = "group.com.develiott.Recipes"
   static let bundleID = "com.develiott.Recipes"
+  static let urlScheme = "com.develiott.recipes"
 }

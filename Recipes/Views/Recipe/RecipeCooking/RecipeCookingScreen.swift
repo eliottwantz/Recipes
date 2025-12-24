@@ -10,7 +10,7 @@ import SwiftUI
 
 struct RecipeCookingScreen: View {
   @Environment(\.dismiss) private var dismiss
-  @State private var currentStepIndex = 0
+  @State private var currentStepIndex: Int
   @State private var showIngredientsSheet = false
   @State private var searchTerm = ""
   @State private var currentDetent: PresentationDetent = .fraction(0.45)
@@ -24,9 +24,10 @@ struct RecipeCookingScreen: View {
   let recipeDetails: RecipeDetails
   let scaleFactor: Double
 
-  init(recipeDetails: RecipeDetails, scaleFactor: Double = 1.0) {
+  init(recipeDetails: RecipeDetails, scaleFactor: Double = 1.0, initialStepIndex: Int = 0) {
     self.recipeDetails = recipeDetails
     self.scaleFactor = scaleFactor
+    self._currentStepIndex = State(initialValue: initialStepIndex)
     self._cookingIngredients = State(
       initialValue: recipeDetails.ingredients.map { ingredient in
         let parsed = ingredient.text.parseIngredient()
@@ -113,7 +114,7 @@ struct RecipeCookingScreen: View {
                         with: .init(
                           recipeId: recipeDetails.recipe.id,
                           recipeName: recipeDetails.recipe.name,
-                          instructionStep: currentInstruction.position + 1,
+                          instructionStep: currentInstruction.position,
                           hour: timerHours,
                           min: timerMinutes,
                           sec: timerSeconds,
