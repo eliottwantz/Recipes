@@ -32,7 +32,7 @@ struct CookingIngredientsListView: View {
                 systemImage: ingredient.isCompleted ? "checkmark.circle.fill" : "circle"
               )
               .labelStyle(.iconOnly)
-              .foregroundStyle(Color.accentColor)
+              .foregroundStyle(.accent)
               .font(.system(size: 24))
             }
 
@@ -71,7 +71,7 @@ struct CookingIngredientsListView: View {
           """
           \(Text(beforeRange))\
           \(Text(quantityUnit)
-          .foregroundStyle(Color.accentColor)
+          .foregroundStyle(.accent)
           .fontWeight(.semibold))\
           \(Text(afterRange))
           """

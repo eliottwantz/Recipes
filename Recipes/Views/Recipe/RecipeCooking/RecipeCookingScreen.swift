@@ -128,7 +128,7 @@ struct RecipeCookingScreen: View {
           }
           .onAppear {
             UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
-              .currentPageIndicatorTintColor = UIColor(.accentColor)
+              .currentPageIndicatorTintColor = UIColor(.accent)
           }
         }
         .onChange(

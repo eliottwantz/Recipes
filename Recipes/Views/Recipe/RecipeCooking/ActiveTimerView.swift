@@ -36,7 +36,7 @@ struct ActiveTimerView: View {
               .fontWeight(.semibold)
               .monospacedDigit()
               .lineLimit(1)
-              .foregroundStyle(Color.accentColor)
+              .foregroundStyle(Color.accent)
               .minimumScaleFactor(0.6)
               .frame(maxWidth: 280, alignment: .leading)
 

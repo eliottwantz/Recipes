@@ -69,7 +69,7 @@ struct CountdownTimerPickerView: View {
           resetPicker()
         }
         .buttonStyle(.glassProminent)
-        .tint(.accentColor)
+        .tint(.accent)
         .controlSize(.large)
         .buttonSizing(.flexible)
         .disabled(isStartDisabled)

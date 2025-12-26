@@ -6,12 +6,7 @@
 //
 
 import SwiftUI
-
-#if canImport(UIKit)
-  import UIKit
-#elseif canImport(AppKit)
-  import AppKit
-#endif
+import UIKit
 
 extension EnvironmentValues {
   var isDark: Bool {
@@ -53,26 +48,28 @@ extension Color {
 }
 
 extension Color {
+
+  static let accentContrasting: Color = {
+    Color.accent.contrastingForegroundColor()
+  }()
+
   /// Returns `.black` or `.white` to maximize contrast against the receiving color.
   /// Returns `.black` or `.white` to maximize contrast against the receiving color.
-  func contrastingForegroundColor() -> Color {
+  private func contrastingForegroundColor() -> Color {
     let uiColor = UIColor(self)
 
-    var r: CGFloat = 0
-    var g: CGFloat = 0
-    var b: CGFloat = 0
-    var a: CGFloat = 0
+    guard let components = uiColor.cgColor.components, components.count >= 3 else {
+      // Fallback if we can't get components
+      return .white
+    }
 
-    uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+    let r = components[0]
+    let g = components[1]
+    let b = components[2]
 
-    let R = sRGBToLinear(r)
-    let G = sRGBToLinear(g)
-    let B = sRGBToLinear(b)
+    let luminance = relativeLuminance(r: r, g: g, b: b)
 
-    let luminance = relativeLuminance(r: R, g: G, b: B)
-
-    // Return white for dark backgrounds, black for light backgrounds
-    return luminance > 0.5 ? .black : .white
+    return luminance >= 0.5 ? .black : .white
   }
 
   private func sRGBToLinear(_ c: CGFloat) -> CGFloat {

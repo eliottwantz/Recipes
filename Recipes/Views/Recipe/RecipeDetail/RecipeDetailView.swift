@@ -223,10 +223,10 @@ struct RecipeDetailView: View {
           } label: {
             Text(scaleButtonText)
               .font(.subheadline.weight(.semibold))
-              .foregroundStyle(.white)
+              .foregroundStyle(Color.accentContrasting)
               .padding(.horizontal, 20)
               .padding(.vertical, 4)
-              .background(Color.accentColor, in: .capsule)
+              .background(Color.accent, in: .capsule)
           }
 
           Button {
@@ -236,9 +236,9 @@ struct RecipeDetailView: View {
           } label: {
             Image(systemName: "slider.horizontal.3")
               .font(.subheadline.weight(.semibold))
-              .foregroundStyle(.white)
+              .foregroundStyle(Color.accentContrasting)
               .padding(6)
-              .background(Color.accentColor, in: .circle)
+              .background(Color.accent, in: .circle)
           }
         }
       }
@@ -256,6 +256,7 @@ struct RecipeDetailView: View {
           }
         }
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
       .padding()
       .card()
     }
@@ -322,7 +323,7 @@ struct RecipeDetailView: View {
         in: 1...30,
         step: 1
       )
-      .tint(Color.accentColor)
+      .tint(.accent)
 
       HStack(spacing: 8) {
         Image(systemName: "person.2.fill")
@@ -345,7 +346,7 @@ struct RecipeDetailView: View {
         .multilineTextAlignment(.leading)
         .font(.title3)
         .fontWeight(.semibold)
-        .foregroundStyle(Color.accentColor)
+        .foregroundStyle(.accent)
         .frame(maxWidth: 50)
       }
       .frame(maxWidth: 75)
@@ -362,7 +363,7 @@ struct RecipeDetailView: View {
         in: 0.5...10.0,
         step: 0.5
       )
-      .tint(Color.accentColor)
+      .tint(.accent)
 
       HStack(spacing: 8) {
         Image(systemName: "xmark")
@@ -378,7 +379,7 @@ struct RecipeDetailView: View {
         .multilineTextAlignment(.leading)
         .font(.title3)
         .fontWeight(.semibold)
-        .foregroundStyle(Color.accentColor)
+        .foregroundStyle(.accent)
         .frame(maxWidth: 60)
       }
       .frame(maxWidth: 75)
@@ -404,7 +405,7 @@ struct RecipeDetailView: View {
         """
         \(Text(beforeRange))\
         \(Text(quantityUnit)
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(.accent)
             .fontWeight(.semibold))\
         \(Text(afterRange))
         """
@@ -429,7 +430,7 @@ struct RecipeDetailView: View {
               .font(.body.weight(.semibold))
               .frame(width: 22, height: 22)
               .background { Circle().fill(.tint) }
-              .foregroundStyle(Color.accentColor.contrastingForegroundColor())
+              .foregroundStyle(Color.accentContrasting)
 
             Text(step.text)
               .font(.body)

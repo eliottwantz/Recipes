@@ -50,7 +50,7 @@ struct HighlightedTimeText: View {
       // Convert String.Index range to AttributedString.Index range
       if let attrRange = Range(detectedTime.range, in: attributedString) {
         // Apply accent color
-        attributedString[attrRange].foregroundColor = .accentColor
+        attributedString[attrRange].foregroundColor = .accent
 
         // Apply semibold weight
         attributedString[attrRange].font = font.weight(.semibold)
