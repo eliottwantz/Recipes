@@ -38,6 +38,12 @@ struct CountdownTimerPickerView: View {
 
   var body: some View {
     VStack(spacing: 0) {
+      HStack(spacing: 0) {
+        pickerRow(title: "h", range: 0..<24, selection: $hours)
+        pickerRow(title: "min", range: 0..<60, selection: $minutes)
+        pickerRow(title: "s", range: 0..<60, selection: $seconds)
+      }
+
       // Quick action buttons
       HStack(spacing: 12) {
         addButton(title: "+1 min", minutesToAdd: 1)
@@ -45,12 +51,7 @@ struct CountdownTimerPickerView: View {
         addButton(title: "+10 min", minutesToAdd: 10)
       }
       .padding(.horizontal, 14)
-
-      HStack(spacing: 0) {
-        pickerRow(title: "h", range: 0..<24, selection: $hours)
-        pickerRow(title: "min", range: 0..<60, selection: $minutes)
-        pickerRow(title: "s", range: 0..<60, selection: $seconds)
-      }
+      .padding(.bottom, 8)
 
       // Bottom action buttons
       HStack(spacing: 12) {
