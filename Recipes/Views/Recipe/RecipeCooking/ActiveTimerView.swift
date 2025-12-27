@@ -80,6 +80,6 @@ struct ActiveTimerView: View {
     }
     .padding(.horizontal, 12)
     .padding(.vertical, 10)
-    .background(.ultraThinMaterial, in: .rect(cornerRadius: 12))
+    .background(.ultraThinMaterial, in: .rect(corners: .concentric(minimum: 12)))
   }
 }

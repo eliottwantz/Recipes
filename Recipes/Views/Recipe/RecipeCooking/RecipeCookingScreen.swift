@@ -18,11 +18,7 @@ struct RecipeCookingScreen: View {
   @State private var timerHours = 0
   @State private var timerMinutes = 0
   @State private var timerSeconds = 0
-  @State private var timerButtonRotation: Double = 0
-  @State private var timerButtonOffset: CGFloat = 0
-  @State private var timerButtonScale: CGFloat = 1.0
   @State private var showTimerConfirmation = false
-  @State private var confirmationIcon = "timer"
 
   private var timerManager = TimerManager.shared
   private var appRouter = AppRouter.shared
@@ -84,9 +80,6 @@ struct RecipeCookingScreen: View {
                 showTimerPicker.toggle()
               } label: {
                 Label("Start timer", systemImage: "timer")
-                  .rotationEffect(.degrees(timerButtonRotation))
-                  .offset(y: timerButtonOffset)
-                  .scaleEffect(timerButtonScale)
               }
               .sensoryFeedback(
                 .success, trigger: timerManager.upcomingAlarmsCount,
@@ -98,6 +91,14 @@ struct RecipeCookingScreen: View {
               .popover(isPresented: $showTimerPicker) {
                 TimerPopover(geometry: geometry)
                   .presentationCompactAdaptation(.popover)
+                  .overlay {
+                    if showTimerConfirmation {
+                      TimerConfirmationOverlay {
+                        showTimerConfirmation = false
+                        showTimerPicker = false
+                      }
+                    }
+                  }
               }
 
               Button {
@@ -121,18 +122,7 @@ struct RecipeCookingScreen: View {
             )
           #endif
           guard newValue > oldValue else { return }
-
-          // Show full screen confirmation and animate
-          showTimerPicker = false
           showTimerConfirmation = true
-          animateTimerButton()
-
-          // Hide confirmation after animation completes (shake + morph + display time)
-          DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-            withAnimation(.easeOut(duration: 0.3)) {
-              showTimerConfirmation = false
-            }
-          }
         }
         .sheet(isPresented: $showIngredientsSheet) {
           NavigationStack {
@@ -144,33 +134,80 @@ struct RecipeCookingScreen: View {
           }
         }
       }
-      .overlay {
-        if showTimerConfirmation {
-          TimerConfirmationOverlay()
-        }
-      }
     }
   }
 
-  @ViewBuilder
-  private func TimerConfirmationOverlay() -> some View {
-    GeometryReader { geometry in
-      ZStack {
-        // Dark blur background
-        Rectangle()
-          .fill(.ultraThinMaterial)
-          .environment(\.colorScheme, .dark)
-          .ignoresSafeArea()
+  private struct TimerConfirmationOverlay: View {
+    struct AnimationValues {
+      enum ConfirmationIcon: String {
+        case timer = "timer"
+        case checkmark = "checkmark.circle.fill"
+      }
+      var confirmationIcon: ConfirmationIcon = .timer
+      var timerButtonRotation: Double = 0
+      var timerButtonOffset: CGFloat = 0
+      var timerButtonScale: CGFloat = 1.0
+    }
 
-        // Large animated timer icon
-        Image(systemName: confirmationIcon)
-          .font(.system(size: min(geometry.size.width, geometry.size.height) / 2))
-          .foregroundStyle(.accent)
-          .aspectRatio(1.0, contentMode: .fit)
-          .rotationEffect(.degrees(timerButtonRotation))
+    @State private var animationValues = AnimationValues()
+    let onEnd: () -> Void
+
+    var body: some View {
+      GeometryReader { geometry in
+        ZStack {
+          // Dark blur background
+          Rectangle()
+            .fill(.ultraThinMaterial)
+
+          // Large animated timer icon
+          Image(systemName: animationValues.confirmationIcon.rawValue)
+            .resizable()
+            .foregroundStyle(.accent)
+            .frame(width: 300 / 2, height: 300 / 2)
+            .aspectRatio(1.0, contentMode: .fit)
+            .rotationEffect(.degrees(animationValues.timerButtonRotation))
+            .scaleEffect(animationValues.timerButtonScale)
+            .offset(y: animationValues.timerButtonOffset)
+            .contentTransition(.symbolEffect(.replace))
+        }
+      }
+      .transition(.opacity)
+      .onAppear {
+        animateTimerButton()
       }
     }
-    .transition(.opacity)
+
+    private func animateTimerButton() {
+      print("Animating timer button...")
+      Task {
+        try await Task.sleep(for: .milliseconds(200))
+
+        withAnimation(.spring(response: 0.6)) {
+          animationValues.timerButtonRotation += 360
+        }
+
+        try await Task.sleep(for: .seconds(0.35))
+        animationValues.confirmationIcon = .checkmark
+        withAnimation(.easeIn) {
+          animationValues.timerButtonScale = 1.5
+        }
+
+        try await Task.sleep(for: .seconds(0.85))
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.3)) {
+          animationValues.timerButtonOffset = 0
+          animationValues.timerButtonScale = 1.0
+        }
+
+        try await Task.sleep(for: .seconds(0.6))
+        withAnimation {
+          onEnd()
+          animationValues.confirmationIcon = .timer
+          animationValues.timerButtonScale = 1
+          animationValues.timerButtonOffset = 0
+          animationValues.timerButtonRotation = 0
+        }
+      }
+    }
   }
 
   @ViewBuilder
@@ -211,86 +248,56 @@ struct RecipeCookingScreen: View {
 
   @ViewBuilder
   private func TimerPopover(geometry: GeometryProxy) -> some View {
-    VStack(spacing: 0) {
-      // Active Timers Section
-      if timerManager.hasUpcomingAlarms {
-        ScrollView {
-          VStack(spacing: 12) {
-            ForEach(Array(timerManager.sortedAlarms)) { alarmData in
-              ActiveTimerView(
-                alarm: alarmData.alarm,
-                endDate: alarmData.endDate,
-                recipeName: alarmData.recipeName,
-                instructionStep: alarmData.instructionStep,
-                onCancel: {
-                  timerManager.unscheduleAlarm(with: alarmData.id)
-                }
-              )
+    VStack {
+      VStack(spacing: 0) {
+        // Active Timers Section
+        if timerManager.hasUpcomingAlarms {
+          ScrollView {
+            VStack(spacing: 12) {
+              ForEach(Array(timerManager.sortedAlarms)) { alarmData in
+                ActiveTimerView(
+                  alarm: alarmData.alarm,
+                  endDate: alarmData.endDate,
+                  recipeName: alarmData.recipeName,
+                  instructionStep: alarmData.instructionStep,
+                  onCancel: {
+                    timerManager.unscheduleAlarm(with: alarmData.id)
+                  }
+                )
+              }
             }
           }
-          .padding()
+          .frame(maxHeight: 300)
         }
-        .frame(maxHeight: 300)
+
+        // Timer Picker Section
+        CountdownTimerPickerView(
+          hours: $timerHours,
+          minutes: $timerMinutes,
+          seconds: $timerSeconds,
+          onStart: {
+            let currentInstruction = recipeDetails.instructions[currentStep]
+            timerManager.scheduleAlarm(
+              with: .init(
+                recipeId: recipeDetails.recipe.id,
+                recipeName: recipeDetails.recipe.name,
+                instructionStep: currentInstruction.position,
+                hour: timerHours,
+                min: timerMinutes,
+                sec: timerSeconds,
+                imageData: recipeDetails.photos.first?.photoData ?? nil
+              ))
+          },
+          close: {
+            showTimerPicker = false
+          }
+        )
+        .frame(height: 300)
       }
-
-      // Timer Picker Section
-      CountdownTimerPickerView(
-        hours: $timerHours,
-        minutes: $timerMinutes,
-        seconds: $timerSeconds,
-        onStart: {
-          let currentInstruction = recipeDetails.instructions[currentStep]
-          timerManager.scheduleAlarm(
-            with: .init(
-              recipeId: recipeDetails.recipe.id,
-              recipeName: recipeDetails.recipe.name,
-              instructionStep: currentInstruction.position,
-              hour: timerHours,
-              min: timerMinutes,
-              sec: timerSeconds,
-              imageData: recipeDetails.photos.first?.photoData ?? nil
-            ))
-        },
-        close: {
-          showTimerPicker = false
-        }
-      )
-      .padding(.horizontal)
-      .frame(width: geometry.size.width, height: 300)
+      .padding(.horizontal, 20)
+      .padding(.vertical, 12)
     }
-  }
-
-  private func animateTimerButton() {
-    // Reset to initial state
-    timerButtonRotation = 0
-    timerButtonOffset = 0
-    timerButtonScale = 1.0
-    confirmationIcon = "timer"
-
-    let rotationAngle: Double = 20
-
-    // Shake animation
-    for i in 0..<8 {
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * Double(i)) {
-        withAnimation(.linear(duration: 0.1)) {
-          timerButtonRotation = (i % 2 == 0) ? -rotationAngle : rotationAngle
-        }
-      }
-    }
-
-    // Return to center after shake
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-      withAnimation(.easeOut(duration: 0.2)) {
-        timerButtonRotation = 0
-      }
-    }
-
-    // Morph to checkmark after shake completes
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-      withAnimation(.easeInOut(duration: 0.3)) {
-        confirmationIcon = "checkmark.circle.fill"
-      }
-    }
+    .frame(width: geometry.size.width)
   }
 
   private struct CookingStepButtons: View {
@@ -308,7 +315,7 @@ struct RecipeCookingScreen: View {
             Image(systemName: "arrow.left")
               .font(.title2)
               .fontWeight(.bold)
-              .foregroundStyle(.primary)
+              .foregroundStyle(Color.accentContrasting)
           }
           .buttonStyle(.glassProminent)
           .buttonBorderShape(.circle)
@@ -327,7 +334,7 @@ struct RecipeCookingScreen: View {
             Image(systemName: "arrow.right")
               .font(.title2)
               .fontWeight(.bold)
-              .foregroundStyle(.primary)
+              .foregroundStyle(Color.accentContrasting)
           }
           .buttonStyle(.glassProminent)
           .buttonBorderShape(.circle)

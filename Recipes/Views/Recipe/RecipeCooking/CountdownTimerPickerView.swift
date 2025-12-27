@@ -50,8 +50,7 @@ struct CountdownTimerPickerView: View {
         addButton(title: "+5 min", minutesToAdd: 5)
         addButton(title: "+10 min", minutesToAdd: 10)
       }
-      .padding(.horizontal, 14)
-      .padding(.bottom, 8)
+      .padding(.bottom)
 
       // Bottom action buttons
       HStack(spacing: 12) {
@@ -61,24 +60,21 @@ struct CountdownTimerPickerView: View {
         }
         .buttonStyle(.glass)
         .tint(.secondary)
+        .foregroundStyle(.secondary)
         .controlSize(.large)
         .buttonSizing(.flexible)
 
         Button("Start") {
           onStart()
-          close()
           resetPicker()
         }
         .buttonStyle(.glassProminent)
-        .tint(.accent)
+        .foregroundStyle(isStartDisabled ? .secondary : Color.accentContrasting)
         .controlSize(.large)
         .buttonSizing(.flexible)
         .disabled(isStartDisabled)
       }
-      .padding(.horizontal)
-      .padding(.top, 6)
     }
-    .padding(.vertical)
   }
 
   private func pickerRow(title: String, range: Range<Int>, selection: Binding<Int>) -> some View {

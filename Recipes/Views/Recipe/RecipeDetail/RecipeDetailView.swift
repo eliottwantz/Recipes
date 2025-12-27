@@ -95,7 +95,7 @@ struct RecipeDetailView: View {
       HStack(alignment: .center) {
         HStack(spacing: 8) {
           Image(systemName: "person.2.fill")
-            .foregroundStyle(.tint)
+            .foregroundStyle(.secondary)
           VStack(alignment: .leading, spacing: 4) {
             Text("\(Int((Double(recipeDetails.recipe.servings) * scaleFactor).rounded()))")
               .font(.body.weight(.semibold))
@@ -115,7 +115,7 @@ struct RecipeDetailView: View {
                 .textCase(.uppercase)
                 .foregroundStyle(.secondary)
               Image(systemName: "clock.fill")
-                .foregroundStyle(.tint)
+                .foregroundStyle(.secondary)
             }
             TimeView(totalMinutes: recipeDetails.recipe.prepTimeMinutes)
               .font(.body.weight(.semibold))
@@ -131,7 +131,7 @@ struct RecipeDetailView: View {
                 .textCase(.uppercase)
                 .foregroundStyle(.secondary)
               Image(systemName: "clock.fill")
-                .foregroundStyle(.tint)
+                .foregroundStyle(.secondary)
             }
             TimeView(totalMinutes: recipeDetails.recipe.cookTimeMinutes)
               .font(.body.weight(.semibold))

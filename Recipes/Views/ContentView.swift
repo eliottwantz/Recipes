@@ -18,7 +18,6 @@ struct ContentView: View {
         RecipeListScreen()
       } label: {
         Label("Recipes", systemImage: "book.pages")
-          .tint(.accent)
       }
 
       Tab(value: AppRouter.Tab.settings) {
@@ -29,7 +28,6 @@ struct ContentView: View {
         }
       } label: {
         Label("Settings", systemImage: "gear")
-          .tint(.accent)
       }
 
     }
