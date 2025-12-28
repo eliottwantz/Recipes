@@ -5,6 +5,7 @@
 //  Created by Eliott on 12-12-2025.
 //
 
+import Combine
 import SQLiteData
 import SwiftUI
 
@@ -19,6 +20,10 @@ struct RecipeCookingScreen: View {
   @State private var timerMinutes = 0
   @State private var timerSeconds = 0
   @State private var showTimerConfirmation = false
+
+  // Hands-free mode
+  @State private var faceTrackingManager = FaceTrackingManager()
+  @State private var winkCancellable: AnyCancellable?
 
   private var timerManager = TimerManager.shared
   private var appRouter = AppRouter.shared
@@ -74,6 +79,28 @@ struct RecipeCookingScreen: View {
               }
             }
             ToolbarItemGroup(placement: .primaryAction) {
+              if FaceTrackingManager.isSupported {
+                Button {
+                  if faceTrackingManager.isTracking {
+                    faceTrackingManager.stopTracking()
+                    winkCancellable?.cancel()
+                    winkCancellable = nil
+                  } else {
+                    faceTrackingManager.startTracking()
+                    winkCancellable = faceTrackingManager.winkEventSubject
+                      .receive(on: DispatchQueue.main)
+                      .sink { [self] event in
+                        handleWinkEvent(event)
+                      }
+                  }
+                } label: {
+                  Label(
+                    "Hands-free mode",
+                    systemImage: faceTrackingManager.isTracking
+                      ? "hand.raised.fill" : "hand.raised.slash"
+                  )
+                }
+              }
 
               Button {
                 showIngredientsSheet = false
@@ -114,6 +141,10 @@ struct RecipeCookingScreen: View {
             UIPageControl.appearance(whenContainedInInstancesOf: [UIViewController.self])
               .currentPageIndicatorTintColor = UIColor(.accent)
           }
+          .onDisappear {
+            faceTrackingManager.stopTracking()
+            winkCancellable?.cancel()
+          }
         }
         .onChange(of: timerManager.upcomingAlarmsCount) { oldValue, newValue in
           #if DEBUG
@@ -132,6 +163,28 @@ struct RecipeCookingScreen: View {
               .presentationContentInteraction(.scrolls)
               .presentationBackgroundInteraction(.enabled)
           }
+        }
+      }
+    }
+  }
+
+  // MARK: - Hands-free mode
+  private func handleWinkEvent(_ event: FaceTrackingManager.WinkEvent) {
+    let totalSteps = recipeDetails.instructions.count
+
+    switch event {
+    case .rightEyeWink:
+      // Right wink = next step
+      if currentStep < totalSteps - 1 {
+        withAnimation {
+          currentStep += 1
+        }
+      }
+    case .leftEyeWink:
+      // Left wink = previous step
+      if currentStep > 0 {
+        withAnimation {
+          currentStep -= 1
         }
       }
     }
