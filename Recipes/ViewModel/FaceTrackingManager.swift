@@ -13,9 +13,10 @@ import SwiftUI
 /// Detects left and right eye winks to trigger navigation actions.
 @Observable
 final class FaceTrackingManager: NSObject {
-  enum WinkEvent {
+  enum FaceTrackingEvent {
     case leftEyeWink
     case rightEyeWink
+    case jawOpen
   }
 
   /// Whether the device supports face tracking (requires TrueDepth camera)
@@ -25,16 +26,18 @@ final class FaceTrackingManager: NSObject {
   private(set) var isTracking = false
 
   /// Publisher for wink events
-  let winkEventSubject = PassthroughSubject<WinkEvent, Never>()
+  let winkEventSubject = PassthroughSubject<FaceTrackingEvent, Never>()
 
   private var session: ARSession?
 
   // Thresholds for wink detection
   private let winkThreshold: Float = 0.7  // Eye must be at least this closed
   private let openThreshold: Float = 0.3  // Other eye must be at least this open
+  private let jawOpenThreshold: Float = 0.5  // Jaw must be at least this open
   private let debounceInterval: TimeInterval = 0.5  // Minimum time between winks
 
   private var lastWinkTime: Date = .distantPast
+  private var lastJawOpenTime: Date = .distantPast
 
   override init() {
     super.init()
@@ -83,13 +86,15 @@ extension FaceTrackingManager: ARSessionDelegate {
 
     guard
       let leftEyeBlink = blendShapes[.eyeBlinkLeft]?.floatValue,
-      let rightEyeBlink = blendShapes[.eyeBlinkRight]?.floatValue
+      let rightEyeBlink = blendShapes[.eyeBlinkRight]?.floatValue,
+      let jawOpen = blendShapes[.jawOpen]?.floatValue
     else {
       return
     }
 
     Task { @MainActor in
-      self.detectWink(leftEyeBlink: leftEyeBlink, rightEyeBlink: rightEyeBlink)
+      self.detectGestures(
+        leftEyeBlink: leftEyeBlink, rightEyeBlink: rightEyeBlink, jawOpen: jawOpen)
     }
   }
 
@@ -101,10 +106,20 @@ extension FaceTrackingManager: ARSessionDelegate {
   }
 }
 
-// MARK: - Wink Detection Logic
+// MARK: - Gesture Detection Logic
 extension FaceTrackingManager {
-  private func detectWink(leftEyeBlink: Float, rightEyeBlink: Float) {
+  private func detectGestures(leftEyeBlink: Float, rightEyeBlink: Float, jawOpen: Float) {
     let now = Date()
+
+    // Detect jaw open gesture (separate debounce from winks)
+    if jawOpen >= jawOpenThreshold && now.timeIntervalSince(lastJawOpenTime) >= debounceInterval {
+      lastJawOpenTime = now
+      winkEventSubject.send(.jawOpen)
+      #if DEBUG
+        print("👄 Jaw open detected")
+      #endif
+      return
+    }
 
     // Debounce: ignore winks too close together
     guard now.timeIntervalSince(lastWinkTime) >= debounceInterval else {

@@ -95,7 +95,7 @@ struct RecipeCookingScreen: View {
                     winkCancellable = faceTrackingManager.winkEventSubject
                       .receive(on: DispatchQueue.main)
                       .sink { [self] event in
-                        handleWinkEvent(event)
+                        handleFaceTrackingEvent(event)
                       }
                     ToastManager.shared.show(
                       icon: "hand.raised.fill",
@@ -181,7 +181,7 @@ struct RecipeCookingScreen: View {
   }
 
   // MARK: - Hands-free mode
-  private func handleWinkEvent(_ event: FaceTrackingManager.WinkEvent) {
+  private func handleFaceTrackingEvent(_ event: FaceTrackingManager.FaceTrackingEvent) {
     let totalSteps = recipeDetails.instructions.count
 
     switch event {
@@ -199,6 +199,10 @@ struct RecipeCookingScreen: View {
           currentStep -= 1
         }
       }
+    case .jawOpen:
+      // Jaw open = toggle ingredients list
+      showTimerPicker = false
+      showIngredientsSheet.toggle()
     }
   }
 
