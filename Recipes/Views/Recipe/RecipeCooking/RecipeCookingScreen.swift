@@ -252,20 +252,29 @@ struct RecipeCookingScreen: View {
       VStack(spacing: 0) {
         // Active Timers Section
         if timerManager.hasUpcomingAlarms {
-          ScrollView {
-            VStack(spacing: 12) {
-              ForEach(Array(timerManager.sortedAlarms)) { alarmData in
-                ActiveTimerView(
-                  alarm: alarmData.alarm,
-                  endDate: alarmData.endDate,
-                  recipeName: alarmData.recipeName,
-                  instructionStep: alarmData.instructionStep,
-                  onCancel: {
-                    timerManager.unscheduleAlarm(with: alarmData.id)
-                  }
-                )
+          VStack {
+            ScrollView {
+              LazyVStack(spacing: 10) {
+                ForEach(Array(timerManager.sortedAlarms)) { alarmData in
+                  ActiveTimerView(
+                    alarm: alarmData.alarm,
+                    endDate: alarmData.endDate,
+                    recipeName: alarmData.recipeName,
+                    instructionStep: alarmData.instructionStep,
+                    onCancel: {
+                      timerManager.unscheduleAlarm(with: alarmData.id)
+                    }
+                  )
+                  .transition(.move(edge: .leading).combined(with: .opacity))
+                }
               }
+              .animation(
+                .spring(response: 0.35, dampingFraction: 0.55),
+                value: timerManager.sortedAlarms
+              )
             }
+            .listStyle(.grouped)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
           }
           .frame(maxHeight: 300)
         }

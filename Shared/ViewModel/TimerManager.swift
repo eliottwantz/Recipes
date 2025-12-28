@@ -12,7 +12,7 @@ import SQLiteData
 import SwiftUI
 import os
 
-struct AlarmData: Identifiable {
+struct AlarmData: Identifiable, Equatable {
   let alarm: Alarm
   let endDate: Date
   let recipeId: Recipe.ID
@@ -20,6 +20,10 @@ struct AlarmData: Identifiable {
   let instructionStep: Int?
 
   var id: UUID { alarm.id }
+
+  static func == (lhs: AlarmData, rhs: AlarmData) -> Bool {
+    lhs.alarm.id == rhs.alarm.id
+  }
 }
 
 @Observable
