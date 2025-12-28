@@ -85,6 +85,11 @@ struct RecipeCookingScreen: View {
                     faceTrackingManager.stopTracking()
                     winkCancellable?.cancel()
                     winkCancellable = nil
+                    ToastManager.shared.show(
+                      icon: "hand.raised.slash",
+                      title: "Hands Free",
+                      subtitle: "Disabled"
+                    )
                   } else {
                     faceTrackingManager.startTracking()
                     winkCancellable = faceTrackingManager.winkEventSubject
@@ -92,6 +97,12 @@ struct RecipeCookingScreen: View {
                       .sink { [self] event in
                         handleWinkEvent(event)
                       }
+                    ToastManager.shared.show(
+                      icon: "hand.raised.fill",
+                      title: "Hands Free",
+                      subtitle: "Enabled",
+                      tint: .green
+                    )
                   }
                 } label: {
                   Label(
@@ -166,6 +177,7 @@ struct RecipeCookingScreen: View {
         }
       }
     }
+    .toastPresenter()
   }
 
   // MARK: - Hands-free mode
