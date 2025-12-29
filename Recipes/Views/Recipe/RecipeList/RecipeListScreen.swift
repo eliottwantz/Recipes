@@ -21,6 +21,8 @@ struct RecipeListScreen: View {
   private var recipePhotos: [RecipePhoto]
 
   @State private var showRecipeImportScreen: Bool = false
+  @State private var showPhotoImportScreen: Bool = false
+  @State private var photoImportSource: PhotoRecipeImportScreen.Source = .photoLibrary
   @State private var searchText: String = ""
 
   @State private var sortBy: SortBy = .name
@@ -137,18 +139,49 @@ struct RecipeListScreen: View {
           HStack {
             Spacer()
 
-            Button {
-              showRecipeImportScreen = true
+            Menu {
+              Section {
+                Button {
+                  showRecipeImportScreen = true
+                } label: {
+                  Label("Add Manually", systemImage: "square.and.pencil")
+                }
+              }
+
+              if RecipeParsingService.isAvailable {
+                Section("Smart Import") {
+                  Button {
+                    photoImportSource = .camera
+                    showPhotoImportScreen = true
+                  } label: {
+                    Label("From Camera...", systemImage: "camera")
+                  }
+                  Button {
+                    photoImportSource = .photoLibrary
+                    showPhotoImportScreen = true
+                  } label: {
+                    Label("From Image...", systemImage: "photo")
+                  }
+                }
+              }
             } label: {
               Label("Add a recipe", systemImage: "plus")
+                .labelStyle(.iconOnly)
+                .font(.system(size: 22))
+                .frame(width: 48, height: 48)
+                .contentShape(.circle)
             }
-            .buttonStyle(.toolbar)
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .circle)
           }
           .padding(.trailing)
           .padding(.bottom, 8)
         }
         .sheet(isPresented: $showRecipeImportScreen) {
           RecipeImportScreen()
+        }
+        .sheet(isPresented: $showPhotoImportScreen) {
+          PhotoRecipeImportScreen(source: photoImportSource)
         }
         .onChange(of: scenePhase) { oldValue, newValue in
           if oldValue == .inactive && newValue == .active {
