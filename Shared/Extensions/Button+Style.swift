@@ -10,15 +10,18 @@ import SwiftUI
 struct ToolbarButtonStyle: PrimitiveButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
-      .frame(width: 48, height: 48)
+      .labelStyle(.iconOnly)
       .font(.system(size: 22))
       .tint(.primary)
-      .labelStyle(.iconOnly)
+      .foregroundColor(
+        configuration.role == .destructive ? Color.red : nil
+      )
+      .frame(width: 48, height: 48)
+      .contentShape(.circle)
       .glassEffect(.regular.interactive(), in: .circle)
       .onTapGesture {
         configuration.trigger()
       }
-      .contentShape(.circle)
   }
 }
 
