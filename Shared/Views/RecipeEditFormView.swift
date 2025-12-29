@@ -17,6 +17,7 @@ struct RecipeEditFormView: View {
   @State private var isSaving = false
   @State private var selectedPhotoItems: [PhotosPickerItem] = []
   @State private var deletePhotoTarget: RecipePhoto?
+  @FocusState private var keyboardFocused: Bool
 
   init(recipeDetails: Binding<RecipeDetails>) {
     self._recipeDetails = recipeDetails
@@ -28,6 +29,7 @@ struct RecipeEditFormView: View {
         TextField("Name", text: $recipeDetails.recipe.name)
           .multilineTextAlignment(.trailing)
           .foregroundStyle(.tint)
+          .focused($keyboardFocused)
       }
 
       Section("Recipe Details") {
@@ -49,6 +51,7 @@ struct RecipeEditFormView: View {
       Section("Ingredients") {
         ForEach($recipeDetails.ingredients) { $ingredient in
           TextField("Ingredient", text: $ingredient.text, axis: .vertical)
+            .focused($keyboardFocused)
         }
         .onDelete(perform: deleteIngredient)
         .onMove(perform: moveIngredient)
@@ -59,6 +62,7 @@ struct RecipeEditFormView: View {
       Section("Instructions") {
         ForEach($recipeDetails.instructions) { $instruction in
           TextField("Instruction", text: $instruction.text, axis: .vertical)
+            .focused($keyboardFocused)
         }
         .onDelete(perform: deleteInstruction)
         .onMove(perform: moveInstruction)
@@ -73,6 +77,7 @@ struct RecipeEditFormView: View {
           axis: .vertical
         )
         .multilineTextAlignment(.leading)
+        .focused($keyboardFocused)
       }
 
       Section("Nutrition") {
@@ -82,6 +87,7 @@ struct RecipeEditFormView: View {
           axis: .vertical
         )
         .multilineTextAlignment(.leading)
+        .focused($keyboardFocused)
       }
 
       Section("Photos") {
@@ -146,9 +152,22 @@ struct RecipeEditFormView: View {
           .autocapitalization(.none)
           .multilineTextAlignment(.trailing)
           .disableAutocorrection(true)
+          .focused($keyboardFocused)
       }
     }
     .environment(\.editMode, .constant(.active))
+    .scrollDismissesKeyboard(.immediately)
+    .toolbar {
+      ToolbarItemGroup(placement: .keyboard) {
+        Spacer()
+        Button {
+          keyboardFocused = false
+        } label: {
+          Label("Dismiss keyboard", systemImage: "keyboard.chevron.compact.down")
+            .labelStyle(.iconOnly)
+        }
+      }
+    }
   }
 
   nonisolated private func loadPhotos(from items: [PhotosPickerItem]) async {
