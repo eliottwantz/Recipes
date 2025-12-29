@@ -22,6 +22,7 @@ struct RecipesApp: App {
         .onOpenURL { url in
           AppRouter.shared.handleDeepLink(url)
         }
+        .toastPresenter()
     }
   }
 }

@@ -177,7 +177,6 @@ struct RecipeCookingScreen: View {
         }
       }
     }
-    .toastPresenter()
   }
 
   // MARK: - Hands-free mode
