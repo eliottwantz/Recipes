@@ -66,9 +66,14 @@ struct RecipeListView: View {
                 .tint(nil)
               }
               .listRowInsets(.init(top: 10, leading: 12, bottom: 10, trailing: 0))
+              .transition(.move(edge: .leading).combined(with: .opacity))
           }
         }
         .listStyle(.plain)
+        .animation(
+          .spring(response: 0.35, dampingFraction: 0.55),
+          value: recipes
+        )
         .navigationDestination(for: Recipe.ID.self) { recipeId in
           RecipeDetailScreen(recipeId: recipeId)
         }

@@ -8,12 +8,7 @@
 import Dependencies
 import Foundation
 import SQLiteData
-
-#if canImport(UIKit)
-  import UIKit
-#elseif canImport(AppKit)
-  import AppKit
-#endif
+import UIKit
 
 nonisolated struct RecipeImportManager {
   @discardableResult
@@ -366,11 +361,7 @@ nonisolated struct RecipeImportManager {
       let (data, _) = try await session.data(from: imageURL)
 
       // Verify it's a valid image
-      #if canImport(UIKit)
-        guard UIImage(data: data) != nil else { return [] }
-      #elseif canImport(AppKit)
-        guard NSImage(data: data) != nil else { return [] }
-      #endif
+      guard UIImage(data: data) != nil else { return [] }
 
       return [
         RecipePhoto(

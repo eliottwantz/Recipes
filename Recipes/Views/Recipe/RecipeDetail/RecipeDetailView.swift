@@ -8,12 +8,7 @@
 import Dependencies
 import SQLiteData
 import SwiftUI
-
-#if canImport(UIKit)
-  import UIKit
-#elseif canImport(AppKit)
-  import AppKit
-#endif
+import UIKit
 
 struct RecipeDetailView: View {
   let recipeDetails: RecipeDetails
@@ -22,7 +17,6 @@ struct RecipeDetailView: View {
   @State private var showScalingControl: Bool = false
   @Binding var scaleFactor: Double
   @State private var scaleMode: ScalingMode = .amount
-  @Environment(\.openWindow) private var openWindow
 
   enum ScalingMode: String, CaseIterable {
     case amount

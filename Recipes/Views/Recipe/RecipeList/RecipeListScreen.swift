@@ -19,7 +19,7 @@ struct RecipeListScreen: View {
   @FetchAll(Recipe.order(by: \.name), animation: .default)
   private var recipes
 
-  @FetchAll(RecipePhoto.order(by: \.position), animation: .default)
+  @FetchAll(RecipePhoto.order(by: \.position))
   private var recipePhotos: [RecipePhoto]
 
   @State private var searchText: String = ""

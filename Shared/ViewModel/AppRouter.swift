@@ -44,6 +44,14 @@ public final class AppRouter {
 
   private init() {}
 
+  func popToRoot() {
+    navigationPath = NavigationPath()
+  }
+
+  func back() {
+    navigationPath.removeLast()
+  }
+
   func navigateToRecipe(_ recipeId: Recipe.ID, cookingStep: Int? = nil) {
     @Dependency(\.defaultDatabase) var database
     let recipeExists = withErrorReporting {

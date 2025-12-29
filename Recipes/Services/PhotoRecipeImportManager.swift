@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 
 struct PhotoRecipeImportManager {
   private let textRecognitionService = TextRecognitionService()
@@ -52,12 +53,20 @@ struct PhotoRecipeImportManager {
       throw ImportError.ocrFailed(error)
     }
 
+    #if DEBUG
+      logger.info("OCR Text:\n\(ocrText)")
+    #endif
+
     try Task.checkCancellation()
 
     // Step 2: AI Parsing
     onStatusUpdate?(.parsingRecipe)
     do {
       var recipeDetails = try await recipeParsingService.parseRecipe(from: ocrText)
+
+      #if DEBUG
+        print("Recipe Details:\n\(recipeDetails)")
+      #endif
 
       try Task.checkCancellation()
 
@@ -96,3 +105,7 @@ struct PhotoRecipeImportManager {
     }
   }
 }
+
+nonisolated private let logger = Logger(
+  subsystem: Constants.bundleID, category: "PhotoRecipeImportManager"
+)

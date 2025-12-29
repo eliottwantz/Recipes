@@ -8,12 +8,7 @@
 import PhotosUI
 import SQLiteData
 import SwiftUI
-
-#if canImport(UIKit)
-  import UIKit
-#elseif canImport(AppKit)
-  import AppKit
-#endif
+import UIKit
 
 struct RecipeEditFormView: View {
   @Environment(\.dismiss) private var dismiss
@@ -152,9 +147,8 @@ struct RecipeEditFormView: View {
           .multilineTextAlignment(.trailing)
           .disableAutocorrection(true)
       }
-
-      .environment(\.editMode, .constant(.active))
     }
+    .environment(\.editMode, .constant(.active))
   }
 
   nonisolated private func loadPhotos(from items: [PhotosPickerItem]) async {

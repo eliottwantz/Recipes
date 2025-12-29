@@ -15,6 +15,8 @@ struct RecipeDetailScreen: View {
   @Dependency(\.defaultDatabase) private var defaultDatabase
   @State private var showEditSheet = false
   @State private var scaleFactor: Double = 1.0
+  @State private var showDeleteConfirmation = false
+  @State private var deleteConfirmed = false
 
   private var appRouter = AppRouter.shared
 
@@ -36,10 +38,14 @@ struct RecipeDetailScreen: View {
             }
             Menu("More", systemImage: "ellipsis") {
               Button {
-                //                showEditSheet = true
                 appRouter.destination = .editRecipe(recipeDetails)
               } label: {
                 Label("Edit recipe", systemImage: "pencil")
+              }
+              Section {
+                Button("Delete recipe", systemImage: "trash", role: .destructive) {
+                  showDeleteConfirmation = true
+                }
               }
             }
           }
@@ -55,14 +61,38 @@ struct RecipeDetailScreen: View {
             currentStep: $session.currentStep
           )
         }
+        .alert("Delete recipe", isPresented: $showDeleteConfirmation) {
+          Button(role: .destructive) {
+            deleteConfirmed = true
+            appRouter.popToRoot()
+          }
+          Button(role: .cancel) {}
+        } message: {
+          Text("Select Delete to permanently \(recipeDetails.recipe.name).")
+        }
         .onChange(of: appRouter.destination) { oldValue, newValue in
           if oldValue != nil && newValue == nil {
             scaleFactor = 1.0
           }
         }
     }
+    .onDisappear {
+      if deleteConfirmed {
+        deleteRecipe(id: recipeDetails.id)
+      }
+    }
   }
 
+  private func deleteRecipe(id: Recipe.ID) {
+    Task {
+      @Dependency(\.defaultDatabase) var database
+      await withErrorReporting {
+        try await database.write { db in
+          try Recipe.delete().where { $0.id == id }.execute(db)
+        }
+      }
+    }
+  }
 }
 
 #Preview {
