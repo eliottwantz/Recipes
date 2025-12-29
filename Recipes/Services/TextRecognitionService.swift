@@ -9,6 +9,11 @@ import UIKit
 import Vision
 
 struct TextRecognitionService {
+  nonisolated static let recognitionLanguages = [
+    Locale.Language(languageCode: .english),
+    Locale.Language(languageCode: .french),
+  ]
+
   enum RecognitionError: LocalizedError {
     case imageCreationFailed
     case noTextFound
@@ -26,46 +31,27 @@ struct TextRecognitionService {
     }
   }
 
- nonisolated func recognizeText(from imageData: Data) async throws -> String {
-    guard let image = UIImage(data: imageData),
-      let cgImage = image.cgImage
-    else {
-      throw RecognitionError.imageCreationFailed
-    }
+  nonisolated func recognizeText(from imageData: Data) async throws -> String {
+    var request = RecognizeTextRequest()
+    request.recognitionLevel = .accurate
+    request.usesLanguageCorrection = true
+    request.recognitionLanguages = Self.recognitionLanguages
+    #if DEBUG
+      print("Recognizing text with languages: \(request.recognitionLanguages)")
+    #endif
 
-    return try await withCheckedThrowingContinuation { continuation in
-      let request = VNRecognizeTextRequest { request, error in
-        if let error {
-          continuation.resume(throwing: RecognitionError.recognitionFailed(error))
-          return
-        }
-
-        guard let observations = request.results as? [VNRecognizedTextObservation] else {
-          continuation.resume(throwing: RecognitionError.noTextFound)
-          return
-        }
-
-        let text =
-          observations
-          .compactMap { $0.topCandidates(1).first?.string }
-          .joined(separator: "\n")
-
-        if text.isEmpty {
-          continuation.resume(throwing: RecognitionError.noTextFound)
-        } else {
-          continuation.resume(returning: text)
-        }
+    do {
+      let results = try await request.perform(on: imageData)
+      let text =
+        results
+        .compactMap { $0.topCandidates(1).first?.string }
+        .joined(separator: "\n")
+      if text.isEmpty {
+        throw RecognitionError.noTextFound
       }
-
-      request.recognitionLevel = .accurate
-      request.usesLanguageCorrection = true
-
-      let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-      do {
-        try handler.perform([request])
-      } catch {
-        continuation.resume(throwing: RecognitionError.recognitionFailed(error))
-      }
+      return text
+    } catch {
+      throw RecognitionError.recognitionFailed(error)
     }
   }
 }
