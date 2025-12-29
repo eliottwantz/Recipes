@@ -37,8 +37,14 @@ struct PhotoRecipeImportManager {
     case partialSuccess(RecipeDetails, ocrText: String, error: Error)
   }
 
-  nonisolated func importRecipe(from imageData: Data) async throws -> ImportResult {
+  typealias StatusUpdate = @Sendable (RecipeProcessingView.Status) -> Void
+
+  nonisolated func importRecipe(
+    from imageData: Data,
+    onStatusUpdate: StatusUpdate? = nil
+  ) async throws -> ImportResult {
     // Step 1: OCR
+    onStatusUpdate?(.extractingText)
     let ocrText: String
     do {
       ocrText = try await textRecognitionService.recognizeText(from: imageData)
@@ -46,9 +52,14 @@ struct PhotoRecipeImportManager {
       throw ImportError.ocrFailed(error)
     }
 
+    try Task.checkCancellation()
+
     // Step 2: AI Parsing
+    onStatusUpdate?(.parsingRecipe)
     do {
       var recipeDetails = try await recipeParsingService.parseRecipe(from: ocrText)
+
+      try Task.checkCancellation()
 
       // Add the source image as a recipe photo
       let photo = RecipePhoto(
@@ -60,6 +71,8 @@ struct PhotoRecipeImportManager {
       recipeDetails.photos = [photo]
 
       return .success(recipeDetails)
+    } catch is CancellationError {
+      throw CancellationError()
     } catch {
       // Fallback: Return empty recipe with OCR text in notes and source image
       let recipeId = UUID()

@@ -29,6 +29,7 @@ public final class AppRouter {
   enum Destination: Equatable {
     case cooking(CookingSession)
     case editRecipe(RecipeDetails)
+    case addRecipe(RecipeDetails)
   }
 
   struct CookingSession: Identifiable, Equatable {

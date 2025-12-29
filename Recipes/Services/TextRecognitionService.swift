@@ -26,7 +26,7 @@ struct TextRecognitionService {
     }
   }
 
-  func recognizeText(from imageData: Data) async throws -> String {
+ nonisolated func recognizeText(from imageData: Data) async throws -> String {
     guard let image = UIImage(data: imageData),
       let cgImage = image.cgImage
     else {

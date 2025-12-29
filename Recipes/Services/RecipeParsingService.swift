@@ -65,7 +65,7 @@ struct RecipeParsingService {
     return nil
   }
 
-  func parseRecipe(from ocrText: String) async throws -> RecipeDetails {
+ nonisolated func parseRecipe(from ocrText: String) async throws -> RecipeDetails {
     let model = SystemLanguageModel.default
 
     guard case .available = model.availability else {

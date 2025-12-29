@@ -6,8 +6,10 @@
 //
 
 import Dependencies
+import PhotosUI
 import SQLiteData
 import SwiftUI
+import SwiftUINavigation
 import os
 
 struct RecipeListScreen: View {
@@ -20,9 +22,6 @@ struct RecipeListScreen: View {
   @FetchAll(RecipePhoto.order(by: \.position), animation: .default)
   private var recipePhotos: [RecipePhoto]
 
-  @State private var showRecipeImportScreen: Bool = false
-  @State private var showPhotoImportScreen: Bool = false
-  @State private var photoImportSource: PhotoRecipeImportScreen.Source = .photoLibrary
   @State private var searchText: String = ""
 
   @State private var sortBy: SortBy = .name
@@ -32,7 +31,16 @@ struct RecipeListScreen: View {
   @State private var selection = Set<Recipe.ID>()
   @State private var showDeleteConfirmation: Bool = false
 
+  // Photo import state
+  @State private var showPhotosPicker: Bool = false
+  @State private var selectedPhotoItem: PhotosPickerItem?
+  @State private var showCamera: Bool = false
+  @State private var showProcessingSheet: Bool = false
+  @State private var processingStatus: RecipeProcessingView.Status = .extractingText
+  @State private var processingTask: Task<Void, Never>?
+
   private var appRouter = AppRouter.shared
+  private let importManager = PhotoRecipeImportManager()
 
   private var searchId: String {
     "\(searchText)_\(sortBy)_\(sortDirection)"
@@ -142,7 +150,13 @@ struct RecipeListScreen: View {
             Menu {
               Section {
                 Button {
-                  showRecipeImportScreen = true
+                  let emptyRecipe = RecipeDetails(
+                    recipe: Recipe(id: UUID()),
+                    ingredients: [],
+                    instructions: [],
+                    photos: []
+                  )
+                  appRouter.destination = .addRecipe(emptyRecipe)
                 } label: {
                   Label("Add Manually", systemImage: "square.and.pencil")
                 }
@@ -151,14 +165,12 @@ struct RecipeListScreen: View {
               if RecipeParsingService.isAvailable {
                 Section("Smart Import") {
                   Button {
-                    photoImportSource = .camera
-                    showPhotoImportScreen = true
+                    showCamera = true
                   } label: {
                     Label("From Camera...", systemImage: "camera")
                   }
                   Button {
-                    photoImportSource = .photoLibrary
-                    showPhotoImportScreen = true
+                    showPhotosPicker = true
                   } label: {
                     Label("From Image...", systemImage: "photo")
                   }
@@ -177,11 +189,31 @@ struct RecipeListScreen: View {
           .padding(.trailing)
           .padding(.bottom, 8)
         }
-        .sheet(isPresented: $showRecipeImportScreen) {
-          RecipeImportScreen()
+        .photosPicker(
+          isPresented: $showPhotosPicker,
+          selection: $selectedPhotoItem,
+          matching: .images
+        )
+        .onChange(of: selectedPhotoItem) { _, newItem in
+          guard let newItem else { return }
+          processPhotoItem(newItem)
         }
-        .sheet(isPresented: $showPhotoImportScreen) {
-          PhotoRecipeImportScreen(source: photoImportSource)
+        .fullScreenCover(isPresented: $showCamera) {
+          CameraView { imageData in
+            showCamera = false
+            if let imageData {
+              processImageData(imageData)
+            }
+          }
+          .ignoresSafeArea()
+        }
+        .sheet(isPresented: $showProcessingSheet) {
+          RecipeProcessingView(status: processingStatus) {
+            cancelProcessing()
+          }
+        }
+        .sheet(item: $appRouter.destination.addRecipe) { recipeDetails in
+          RecipeImportScreen(recipeDetails: recipeDetails)
         }
         .onChange(of: scenePhase) { oldValue, newValue in
           if oldValue == .inactive && newValue == .active {
@@ -203,6 +235,115 @@ struct RecipeListScreen: View {
           }
         }
     }
+  }
+
+  private func processPhotoItem(_ item: PhotosPickerItem) {
+    processingStatus = .extractingText
+    showProcessingSheet = true
+
+    processingTask = Task {
+      guard let data = try? await item.loadTransferable(type: Data.self) else {
+        //        await MainActor.run {
+        showProcessingSheet = false
+        selectedPhotoItem = nil
+        ToastManager.shared.show(
+          icon: "xmark.circle.fill",
+          title: "Failed to load image",
+          tint: .red,
+          duration: 3.0
+        )
+        //        }
+        return
+      }
+
+      await processImageDataAsync(data)
+    }
+  }
+
+  private func processImageData(_ data: Data) {
+    processingStatus = .extractingText
+    showProcessingSheet = true
+
+    processingTask = Task {
+      await processImageDataAsync(data)
+    }
+  }
+
+  nonisolated private func processImageDataAsync(_ data: Data) async {
+    do {
+      let result = try await importManager.importRecipe(from: data) { status in
+        Task { @MainActor in
+          processingStatus = status
+        }
+      }
+
+      await MainActor.run {
+        showProcessingSheet = false
+        selectedPhotoItem = nil
+
+        switch result {
+        case .success(let details):
+          appRouter.destination = .addRecipe(details)
+
+        case .partialSuccess(let details, _, _):
+          ToastManager.shared.show(
+            icon: "exclamationmark.triangle.fill",
+            title: "Parsing incomplete",
+            subtitle: "Extracted text added to notes",
+            tint: .orange,
+            duration: 3.0
+          )
+          appRouter.destination = .addRecipe(details)
+        }
+      }
+    } catch is CancellationError {
+      // User cancelled - do nothing
+      await MainActor.run {
+        selectedPhotoItem = nil
+      }
+    } catch let error as PhotoRecipeImportManager.ImportError {
+      await MainActor.run {
+        showProcessingSheet = false
+        selectedPhotoItem = nil
+
+        switch error {
+        case .ocrFailed:
+          ToastManager.shared.show(
+            icon: "xmark.circle.fill",
+            title: "Could not read image",
+            subtitle: "No text found in the photo",
+            tint: .red,
+            duration: 3.0
+          )
+        case .parsingFailed:
+          ToastManager.shared.show(
+            icon: "xmark.circle.fill",
+            title: "Import failed",
+            tint: .red,
+            duration: 3.0
+          )
+        }
+      }
+    } catch {
+      await MainActor.run {
+        showProcessingSheet = false
+        selectedPhotoItem = nil
+        ToastManager.shared.show(
+          icon: "xmark.circle.fill",
+          title: "Import failed",
+          subtitle: error.localizedDescription,
+          tint: .red,
+          duration: 3.0
+        )
+      }
+    }
+  }
+
+  private func cancelProcessing() {
+    processingTask?.cancel()
+    processingTask = nil
+    showProcessingSheet = false
+    selectedPhotoItem = nil
   }
 
   private func updateSearchQuery() async {
