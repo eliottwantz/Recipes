@@ -14,9 +14,7 @@
 		</dict>
 	</array>
 	<key>NSAlarmKitUsageDescription</key>
-	<string>App schedules alerts for cooking timer</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Take a photo of a recipe to import it into the app.</string>
+	<string>Alarms are used for the cooking timer.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

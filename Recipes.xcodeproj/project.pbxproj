@@ -10,6 +10,7 @@
 		55005D6B2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		55005D6C2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5517C2962E973F1500F64C53 /* SQLiteData */; };
+		553312882F02245B000A84ED /* Recipes-InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */; };
 		555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5580A3FB2EF4C18200112748 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55BC7ABE2EF33B2400B7D42D /* WidgetKit.framework */; };
 		5580A3FC2EF4C18200112748 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55BC7AC02EF33B2400B7D42D /* SwiftUI.framework */; };
@@ -53,6 +54,7 @@
 /* Begin PBXFileReference section */
 		55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5517C2832E9720AB00F64C53 /* Recipes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recipes.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = "Recipes-InfoPlist.xcstrings"; sourceTree = "<group>"; };
 		555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecipeShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimerLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		55BC7ABE2EF33B2400B7D42D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -177,6 +179,7 @@
 		5517C27A2E9720AB00F64C53 = {
 			isa = PBXGroup;
 			children = (
+				553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */,
 				55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */,
 				5517C2852E9720AB00F64C53 /* Recipes */,
 				555EDC692EAC3960006DC041 /* RecipeShareExtension */,
@@ -309,6 +312,7 @@
 			knownRegions = (
 				en,
 				Base,
+				fr,
 			);
 			mainGroup = 5517C27A2E9720AB00F64C53;
 			minimizedProjectReferenceProxies = 1;
@@ -333,6 +337,7 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				55005D6C2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */,
+				553312882F02245B000A84ED /* Recipes-InfoPlist.xcstrings in Resources */,
 			);
 		};
 		555EDC662EAC3960006DC041 /* Resources */ = {
@@ -521,7 +526,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Recipes/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
-				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used for hands-free cooking.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used for hands-free cooking, as well as taking photos of recipes.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -573,7 +578,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Recipes/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
-				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used for hands-free cooking.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used for hands-free cooking, as well as taking photos of recipes.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

@@ -164,7 +164,7 @@ extension DependencyValues {
       ).execute(db)
     }
 
-    #if DEBUG
+    #if DEBUG && targetEnvironment(simulator)
       migrator.registerMigration("Seed recipes") { db in
         @Dependency(\.date.now) var now
         @Dependency(\.uuid) var uuid
