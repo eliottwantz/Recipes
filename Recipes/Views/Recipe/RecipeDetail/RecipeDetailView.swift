@@ -6,6 +6,7 @@
 //
 
 import Dependencies
+import PhotosUI
 import SQLiteData
 import SwiftUI
 import UIKit
@@ -17,6 +18,12 @@ struct RecipeDetailView: View {
   @State private var showScalingControl: Bool = false
   @Binding var scaleFactor: Double
   @State private var scaleMode: ScalingMode = .amount
+
+  // Photo addition state
+  @Dependency(\.defaultDatabase) private var database
+  @State private var showPhotosPicker: Bool = false
+  @State private var selectedPhotoItems: [PhotosPickerItem] = []
+  @State private var showCamera: Bool = false
 
   enum ScalingMode: String, CaseIterable {
     case amount
@@ -46,9 +53,7 @@ struct RecipeDetailView: View {
           instructionsSection
         }
 
-        if !recipeDetails.photos.isEmpty {
-          photosSection
-        }
+        photosSection
 
         if let nutrition = recipeDetails.recipe.nutrition, !nutrition.isEmpty {
           nutritionSection
@@ -79,7 +84,64 @@ struct RecipeDetailView: View {
         .presentationBackground(.black)
         .statusBarHidden()
       }
+      .fullScreenCover(isPresented: $showCamera) {
+        CameraView { imageData in
+          showCamera = false
+          if let imageData {
+            savePhoto(data: imageData)
+          }
+        }
+        .ignoresSafeArea()
+      }
+      .photosPicker(
+        isPresented: $showPhotosPicker,
+        selection: $selectedPhotoItems,
+        maxSelectionCount: 10,
+        matching: .images
+      )
+      .onChange(of: selectedPhotoItems) { _, newItems in
+        Task {
+          await loadAndSavePhotos(from: newItems)
+        }
+      }
     #endif
+  }
+
+  private func savePhoto(data: Data) {
+    let newPhoto = RecipePhoto(
+      id: UUID(),
+      recipeId: recipeDetails.recipe.id,
+      position: recipeDetails.photos.count,
+      photoData: data
+    )
+    withErrorReporting {
+      try database.write { db in
+        try RecipePhoto.insert { newPhoto }.execute(db)
+      }
+    }
+  }
+
+  nonisolated private func loadAndSavePhotos(from items: [PhotosPickerItem]) async {
+    for (index, item) in items.enumerated() {
+      if let data = try? await item.loadTransferable(type: Data.self) {
+        await MainActor.run {
+          let newPhoto = RecipePhoto(
+            id: UUID(),
+            recipeId: recipeDetails.recipe.id,
+            position: recipeDetails.photos.count + index,
+            photoData: data
+          )
+          withErrorReporting {
+            try database.write { db in
+              try RecipePhoto.insert { newPhoto }.execute(db)
+            }
+          }
+        }
+      }
+    }
+    await MainActor.run {
+      selectedPhotoItems = []
+    }
   }
 
   private var header: some View {
@@ -496,23 +558,46 @@ struct RecipeDetailView: View {
 
   private var photosSection: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text("Photos")
-        .font(.title3.weight(.semibold))
-        .foregroundStyle(.primary)
+      HStack {
+        Text("Photos")
+          .font(.title3.weight(.semibold))
+          .foregroundStyle(.primary)
 
-      ScrollView(.horizontal, showsIndicators: false) {
-        HStack(spacing: 12) {
-          ForEach(recipeDetails.photos) { photo in
-            if let image = photo.image {
-              image
-                .resizable()
-                .scaledToFill()
-                .frame(width: 200, height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .onTapGesture {
-                  selectedPhotoID = photo.id
-                  showImageCarousel = true
-                }
+        Spacer()
+
+        Menu {
+          Button {
+            showCamera = true
+          } label: {
+            Label("Take Photo", systemImage: "camera")
+          }
+          Button {
+            showPhotosPicker = true
+          } label: {
+            Label("Choose from Library", systemImage: "photo.on.rectangle")
+          }
+        } label: {
+          Image(systemName: "plus.circle.fill")
+            .font(.title2)
+            .foregroundStyle(.accent)
+        }
+      }
+
+      if !recipeDetails.photos.isEmpty {
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(spacing: 12) {
+            ForEach(recipeDetails.photos) { photo in
+              if let image = photo.image {
+                image
+                  .resizable()
+                  .scaledToFill()
+                  .frame(width: 200, height: 200)
+                  .clipShape(RoundedRectangle(cornerRadius: 20))
+                  .onTapGesture {
+                    selectedPhotoID = photo.id
+                    showImageCarousel = true
+                  }
+              }
             }
           }
         }
