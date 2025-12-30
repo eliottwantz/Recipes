@@ -11,6 +11,7 @@
 		55005D6C2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5517C2962E973F1500F64C53 /* SQLiteData */; };
 		553312882F02245B000A84ED /* Recipes-InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */; };
+		5556347D2F03627D0001B799 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5580A3FB2EF4C18200112748 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55BC7ABE2EF33B2400B7D42D /* WidgetKit.framework */; };
 		5580A3FC2EF4C18200112748 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55BC7AC02EF33B2400B7D42D /* SwiftUI.framework */; };
@@ -349,6 +350,7 @@
 		5580A3F82EF4C18200112748 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				5556347D2F03627D0001B799 /* Localizable.xcstrings in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */

@@ -44,7 +44,7 @@ struct RecipeEditScreen: View {
           }
         }
         .environment(\.editMode, .constant(.active))
-        .navigationTitle("Modify Recipe")
+        .navigationTitle("Edit Recipe")
         .navigationBarTitleDisplayMode(.inline)
         // MARK: Space for bottom sheet to not overlap content
         .safeAreaBar(edge: .bottom) {

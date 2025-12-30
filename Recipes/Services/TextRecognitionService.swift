@@ -7,6 +7,7 @@
 
 import UIKit
 import Vision
+import SwiftUI
 
 struct TextRecognitionService {
   nonisolated static let recognitionLanguages = [
@@ -19,7 +20,7 @@ struct TextRecognitionService {
     case noTextFound
     case recognitionFailed(Error)
 
-    var errorDescription: String? {
+    var errorDescription: LocalizedStringKey? {
       switch self {
       case .imageCreationFailed:
         return "Failed to process the image."

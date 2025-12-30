@@ -41,7 +41,7 @@ struct RecipeProcessingView: View {
     .interactiveDismissDisabled()
   }
 
-  private var title: String {
+  private var title: LocalizedStringKey {
     switch status {
     case .extractingText:
       "Reading photo..."
@@ -50,7 +50,7 @@ struct RecipeProcessingView: View {
     }
   }
 
-  private var subtitle: String {
+  private var subtitle: LocalizedStringKey {
     switch status {
     case .extractingText:
       "Extracting text from image"

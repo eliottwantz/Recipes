@@ -7,6 +7,7 @@
 
 import Foundation
 import os
+import SwiftUI
 
 struct PhotoRecipeImportManager {
   private let textRecognitionService = TextRecognitionService()
@@ -16,7 +17,7 @@ struct PhotoRecipeImportManager {
     case ocrFailed(Error)
     case parsingFailed(Error, ocrText: String)
 
-    var errorDescription: String? {
+    var errorDescription: LocalizedStringKey? {
       switch self {
       case .ocrFailed(let error):
         return "Failed to read text from image: \(error.localizedDescription)"

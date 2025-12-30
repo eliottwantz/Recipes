@@ -32,7 +32,7 @@ struct RecipeEditFormView: View {
           .focused($keyboardFocused)
       }
 
-      Section("Recipe Details") {
+      Section("Details") {
         FormIntegerPickerLabeledContent(
           "Servings",
           amount: $recipeDetails.recipe.servings

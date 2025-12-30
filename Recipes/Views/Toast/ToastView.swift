@@ -10,21 +10,22 @@ import SwiftUI
 /// A toast notification view that displays an icon and message in a capsule
 struct ToastView: View {
   let icon: String
-  let title: String
-  let subtitle: String?
+  let title: LocalizedStringKey
+  let subtitle: LocalizedStringKey?
   let tint: Color
 
   var body: some View {
     HStack(spacing: 12) {
       Image(systemName: icon)
         .font(.title2)
+        .foregroundStyle(tint == .clear ? Color.accent : .primary)
 
       HStack(alignment: .center) {
         VStack(alignment: .center, spacing: 2) {
           Text(title)
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.primary)
-          
+
           if let subtitle {
             Text(subtitle)
               .font(.footnote.weight(.semibold))

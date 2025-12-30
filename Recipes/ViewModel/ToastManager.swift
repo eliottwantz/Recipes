@@ -15,8 +15,8 @@ final class ToastManager {
   struct Toast: Equatable {
     let id = UUID()
     let icon: String
-    let title: String
-    let subtitle: String?
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey?
     let tint: Color
 
     static func == (lhs: Toast, rhs: Toast) -> Bool {
@@ -38,8 +38,8 @@ final class ToastManager {
   ///   - duration: How long to show the toast in seconds (defaults to 2)
   func show(
     icon: String,
-    title: String,
-    subtitle: String? = nil,
+    title: LocalizedStringKey,
+    subtitle: LocalizedStringKey? = nil,
     tint: Color = .clear,
     duration: TimeInterval = 2.0
   ) {

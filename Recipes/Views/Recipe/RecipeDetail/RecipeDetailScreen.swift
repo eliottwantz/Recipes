@@ -40,7 +40,7 @@ struct RecipeDetailScreen: View {
               Button {
                 appRouter.destination = .editRecipe(recipeDetails)
               } label: {
-                Label("Edit recipe", systemImage: "pencil")
+                Label("Edit Recipe", systemImage: "pencil")
               }
               Section {
                 Button("Delete recipe", systemImage: "trash", role: .destructive) {
@@ -68,7 +68,7 @@ struct RecipeDetailScreen: View {
           }
           Button(role: .cancel) {}
         } message: {
-          Text("Select Delete to permanently \(recipeDetails.recipe.name).")
+          Text("Select Delete to permanently remove \(recipeDetails.recipe.name).")
         }
         .onChange(of: appRouter.destination) { oldValue, newValue in
           if oldValue != nil && newValue == nil {

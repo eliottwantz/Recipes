@@ -106,7 +106,7 @@ struct RecipeCookingScreen: View {
                   }
                 } label: {
                   Label(
-                    "Hands-free mode",
+                    "Hands Free",
                     systemImage: faceTrackingManager.isTracking
                       ? "hand.raised.fill" : "hand.raised.slash"
                   )

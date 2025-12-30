@@ -158,7 +158,7 @@ struct RecipeListScreen: View {
                   )
                   appRouter.destination = .addRecipe(emptyRecipe)
                 } label: {
-                  Label("Add Manually", systemImage: "square.and.pencil")
+                  Label("Add manually", systemImage: "square.and.pencil")
                 }
               }
 
@@ -331,7 +331,7 @@ struct RecipeListScreen: View {
         ToastManager.shared.show(
           icon: "xmark.circle.fill",
           title: "Import failed",
-          subtitle: error.localizedDescription,
+          subtitle: .init(stringLiteral: error.localizedDescription),
           tint: .red,
           duration: 3.0
         )

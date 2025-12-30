@@ -7,6 +7,7 @@
 
 import Foundation
 import FoundationModels
+import SwiftUI
 
 struct RecipeParsingService {
   enum ParsingError: LocalizedError {
@@ -14,7 +15,7 @@ struct RecipeParsingService {
     case parsingFailed(Error)
     case emptyResult
 
-    var errorDescription: String? {
+    var errorDescription: LocalizedStringKey? {
       switch self {
       case .modelUnavailable(let reason):
         return "AI model unavailable: \(reason)"

@@ -47,7 +47,7 @@ struct ActiveTimerView: View {
           Button {
             onCancel()
           } label: {
-            Label("Cancel timer", systemImage: "xmark")
+            Label("Cancel the timer", systemImage: "xmark")
               .labelStyle(.iconOnly)
               .font(.system(size: 14))
               .padding(8)
@@ -70,7 +70,7 @@ struct ActiveTimerView: View {
         Spacer()
 
         if let instructionStep {
-          Text(String("Step \(instructionStep + 1)"))
+          Text("Step \(instructionStep + 1)")
             .font(.callout)
             .fontWeight(.semibold)
             .foregroundStyle(.secondary)

@@ -33,7 +33,7 @@ struct TimerLiveActivity: Widget {
             }
 
             if let step = context.attributes.metadata?.instructionStep {
-              Text(String("Step \(step + 1)"))
+              Text("Step \(step + 1)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             }
@@ -77,7 +77,7 @@ struct TimerLiveActivity: Widget {
               .accessibilityLabel("The recipe image")
           }
           if let step = context.attributes.metadata?.instructionStep {
-            Text(String("Step \(step + 1)"))
+            Text("Step \(step + 1)")
               .foregroundStyle(.primary)
               .fontWeight(.semibold)
           }
@@ -124,7 +124,7 @@ struct TimerLiveActivity: Widget {
               .frame(maxWidth: .infinity, alignment: .leading)
 
             if let step = metadata.instructionStep {
-              Text(String("Step \(step + 1)"))
+              Text("Step \(step + 1)")
                 .font(.body)
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
@@ -227,7 +227,7 @@ private struct CancelButton: View {
 
   var body: some View {
     Button(intent: CancelTimerIntent(alarmID: alarmID)) {
-      Label("Cancel timer", systemImage: "xmark")
+      Label("Cancel the timer", systemImage: "xmark")
         .labelStyle(.iconOnly)
         .font(.system(size: 18))
         .padding(3)

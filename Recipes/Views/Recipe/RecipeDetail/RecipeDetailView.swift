@@ -25,10 +25,16 @@ struct RecipeDetailView: View {
   @State private var selectedPhotoItems: [PhotosPickerItem] = []
   @State private var showCamera: Bool = false
 
+  @State private var ingredientsCopiedCount = 0
+
   enum ScalingMode: String, CaseIterable {
     case amount
     case serving
     case ingredient
+    
+    var localizedKey: LocalizedStringKey {
+      .init("ScalingMode.\(rawValue)")
+    }
   }
 
   init(recipeDetails: RecipeDetails, scaleFactor: Binding<Double> = .constant(1.0)) {
@@ -277,25 +283,40 @@ struct RecipeDetailView: View {
               showScalingControl.toggle()
             }
           } label: {
-            Text(scaleButtonText)
+            //            Text(scaleButtonText)
+            scaleButtonText
               .font(.subheadline.weight(.semibold))
-              .foregroundStyle(Color.accentContrasting)
               .padding(.horizontal, 20)
               .padding(.vertical, 4)
-              .background(Color.accent, in: .capsule)
           }
+          .glassEffect(.regular.interactive().tint(.accent.opacity(0.22)), in: .capsule)
 
-          Button {
-            withAnimation(.snappy) {
-              showScalingControl.toggle()
+          Menu {
+            Section {
+              Button {
+                let ingredients = recipeDetails.ingredients
+                let text =
+                  ingredients
+                  .map { $0.text.parseIngredient().scaled(by: scaleFactor) }
+                  .joined(separator: "\n")
+                UIPasteboard.general.string = text
+                ToastManager.shared.show(
+                  icon: "doc.on.doc",
+                  title: "Clipboard",
+                  subtitle: "\(ingredients.count) ingredients"
+                )
+                ingredientsCopiedCount += 1
+              } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+              }
+              .sensoryFeedback(.success, trigger: ingredientsCopiedCount)
             }
           } label: {
             Image(systemName: "slider.horizontal.3")
               .font(.subheadline.weight(.semibold))
-              .foregroundStyle(Color.accentContrasting)
               .padding(6)
-              .background(Color.accent, in: .circle)
           }
+          .glassEffect(.regular.interactive().tint(.accent.opacity(0.22)), in: .circle)
         }
       }
 
@@ -318,11 +339,11 @@ struct RecipeDetailView: View {
     }
   }
 
-  private var scaleButtonText: String {
+  private var scaleButtonText: Text {
     if scaleFactor == 1.0 {
-      return showScalingControl ? "Default" : "Scale"
+      return Text(showScalingControl ? "Default" : "Scale")
     } else {
-      return String(format: "Scale: x %.1f", scaleFactor)
+      return Text("Scale: x \(scaleFactor.formatted(.number.precision(.fractionLength(2))))")
     }
   }
 
@@ -330,7 +351,7 @@ struct RecipeDetailView: View {
     VStack(spacing: 16) {
       Picker("Scale Mode", selection: $scaleMode) {
         ForEach(ScalingMode.allCases, id: \.self) { mode in
-          Text(mode.rawValue.capitalized)
+          Text(mode.localizedKey)
             .tag(mode)
         }
       }
@@ -574,7 +595,7 @@ struct RecipeDetailView: View {
           Button {
             showPhotosPicker = true
           } label: {
-            Label("Choose from Library", systemImage: "photo.on.rectangle")
+            Label("Choose from library", systemImage: "photo.on.rectangle")
           }
         } label: {
           Image(systemName: "plus.circle.fill")
@@ -623,3 +644,4 @@ struct RecipeDetailView: View {
     RecipeDetailView(recipeDetails: recipeDetails)
   }
 }
+

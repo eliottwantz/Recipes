@@ -81,7 +81,7 @@ struct RecipeListView: View {
           RecipeDetailScreen(recipeId: recipe.id)
         }
         .alert(
-          "Delete Recipe",
+          "Delete recipe",
           isPresented: $showDeleteConfirmation,
           presenting: recipeToDelete
         ) { recipe in
