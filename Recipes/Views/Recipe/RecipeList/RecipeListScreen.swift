@@ -129,6 +129,12 @@ struct RecipeListScreen: View {
 
                 Section {
                   Button {
+                    appRouter.destination = .ingredientFinder
+                  } label: {
+                    Label("Find by ingredients", systemImage: "fork.knife")
+                  }
+
+                  Button {
                     withAnimation {
                       selection.removeAll()
                       editMode = .active
@@ -214,6 +220,10 @@ struct RecipeListScreen: View {
         }
         .sheet(item: $appRouter.destination.addRecipe) { recipeDetails in
           RecipeImportScreen(recipeDetails: recipeDetails)
+        }
+        .sheet(isPresented: $appRouter.destination.ingredientFinder) {
+          IngredientFinderScreen()
+            .interactiveDismissDisabled()
         }
         .onChange(of: scenePhase) { oldValue, newValue in
           if oldValue == .inactive && newValue == .active {

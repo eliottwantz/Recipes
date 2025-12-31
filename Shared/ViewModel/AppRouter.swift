@@ -30,6 +30,7 @@ public final class AppRouter {
     case cooking(CookingSession)
     case editRecipe(RecipeDetails)
     case addRecipe(RecipeDetails)
+    case ingredientFinder
   }
 
   struct CookingSession: Identifiable, Equatable {
