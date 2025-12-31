@@ -531,6 +531,7 @@
 				INFOPLIST_FILE = Recipes/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used for hands-free cooking, as well as taking photos of recipes.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The microphone is used for text to speech capabilities.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -583,6 +584,7 @@
 				INFOPLIST_FILE = Recipes/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The camera is used for hands-free cooking, as well as taking photos of recipes.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The microphone is used for text to speech capabilities.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

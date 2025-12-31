@@ -5,252 +5,306 @@
 //  Created by Eliott on 2025-12-31.
 //
 
-import Dependencies
-import SQLiteData
 import SwiftUI
 
 struct IngredientFinderScreen: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.openURL) private var openURL
-  @Dependency(\.defaultDatabase) private var database
 
+  @State private var speechRecognizer = SpeechRecognizer()
   @State private var ingredientsText: String = ""
-  @State private var myRecipesOnly: Bool = true
-  @State private var searchResults: [RecipeMatch] = []
-  @State private var isSearching: Bool = false
-  @State private var searchError: String?
+  @State private var errorMessage: String?
+  /// Tracks how much of finalizedText we've already appended to ingredientsText
+  @State private var lastFinalizedLength: Int = 0
 
-  @FocusState private var keyboardFocused: Bool
+  @FocusState private var isTextEditorFocused: Bool
 
-  @FetchAll(RecipePhoto.order(by: \.position))
-  private var recipePhotos: [RecipePhoto]
+  private var hasIngredients: Bool {
+    !ingredientsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+  }
 
-  private var recipePhotosPerRecipe: [Recipe.ID: [RecipePhoto]] {
-    Dictionary(grouping: recipePhotos, by: \.recipeId)
+  /// The text to display: base text + volatile text while listening
+  private var displayText: String {
+    if speechRecognizer.state.isListening && !speechRecognizer.volatileText.characters.isEmpty {
+      return ingredientsText + String(speechRecognizer.volatileText.characters)
+    }
+    return ingredientsText
   }
 
   var body: some View {
     NavigationStack {
-      VStack(spacing: 0) {
-        // Input Section
-        VStack(alignment: .leading, spacing: 12) {
-          Text("Available Ingredients")
-            .font(.subheadline)
-            .fontWeight(.medium)
-            .foregroundStyle(.secondary)
+      ScrollView {
+        VStack(spacing: 0) {
+          // Input Section
+          VStack(alignment: .leading, spacing: 16) {
+            Text("What ingredients do you have?")
+              .font(.subheadline)
+              .fontWeight(.medium)
+              .foregroundStyle(.secondary)
 
-          TextEditor(text: $ingredientsText)
-            .frame(minHeight: 120, maxHeight: 200)
-            .padding(8)
+            // Text Editor with live transcription
+            ZStack(alignment: .topLeading) {
+              // Editable TextEditor (disabled while recording)
+              if !speechRecognizer.state.isListening {
+                TextEditor(text: $ingredientsText)
+                  .frame(minHeight: 120, maxHeight: 200)
+                  .padding(8)
+                  .scrollContentBackground(.hidden)
+                  .focused($isTextEditorFocused)
+              } else {
+                // Non-editable text display while recording
+                Text(displayText)
+                  .font(.body)
+                  .frame(maxWidth: .infinity, minHeight: 120, maxHeight: 200, alignment: .topLeading)
+                  .padding(.horizontal, 12)
+                  .padding(.vertical, 16)
+              }
+
+              // Placeholder text
+              if ingredientsText.isEmpty && !speechRecognizer.state.isListening {
+                Text("Tap the microphone to speak your ingredients, or type them here...")
+                  .font(.body)
+                  .foregroundStyle(.tertiary)
+                  .padding(.horizontal, 12)
+                  .padding(.vertical, 16)
+                  .allowsHitTesting(false)
+              }
+            }
             .background(Color(uiColor: .systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(
               RoundedRectangle(cornerRadius: 10)
-                .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
+                .stroke(
+                  speechRecognizer.state.isListening ? Color.red : Color(uiColor: .systemGray4),
+                  lineWidth: speechRecognizer.state.isListening ? 2 : 1
+                )
             )
-            .focused($keyboardFocused)
 
-          if ingredientsText.isEmpty {
-            Text(
-              "Enter ingredients separated by commas or new lines\nExample: tomatoes, pasta, garlic, olive oil"
-            )
-            .font(.caption)
-            .foregroundStyle(.tertiary)
-            .padding(.horizontal, 4)
-          }
+            // Microphone Button
+            HStack {
+              Spacer()
 
-          // Toggle
-          Toggle("My recipes only", isOn: $myRecipesOnly)
-            .tint(.accent)
+              Button {
+                Task {
+                  if speechRecognizer.state.isListening {
+                    await speechRecognizer.stopListening()
+                    // Reset tracking for next recording session
+                    lastFinalizedLength = 0
+                    speechRecognizer.clearTranscription()
+                  } else {
+                    isTextEditorFocused = false
+                    // Add space separator if needed before starting
+                    if !ingredientsText.isEmpty
+                      && !ingredientsText.hasSuffix(" ")
+                      && !ingredientsText.hasSuffix("\n")
+                    {
+                      ingredientsText += " "
+                    }
+                    lastFinalizedLength = 0
+                    await speechRecognizer.startListening()
+                  }
+                }
+              } label: {
+                ZStack {
+                  Circle()
+                    .fill(micButtonColor)
+                    .frame(width: 72, height: 72)
 
-          // Action Buttons
-          if myRecipesOnly {
-            Button {
-              searchLocalRecipes()
-            } label: {
-              HStack {
-                Image(systemName: "magnifyingglass")
-                Text("Search my recipes")
+                  if case .processing = speechRecognizer.state {
+                    ProgressView()
+                      .tint(.white)
+                  } else if case .downloadingModel = speechRecognizer.state {
+                    ProgressView()
+                      .tint(.white)
+                  } else {
+                    Image(systemName: speechRecognizer.state.isListening ? "stop.fill" : "mic.fill")
+                      .font(.system(size: 28))
+                      .foregroundStyle(.white)
+                  }
+                }
+                .shadow(color: micButtonColor.opacity(0.4), radius: 8, y: 4)
               }
-              .frame(maxWidth: .infinity)
-              .padding(.vertical, 12)
+              .disabled(!canToggleMic)
+              .opacity(canToggleMic ? 1 : 0.5)
+              .sensoryFeedback(.impact, trigger: speechRecognizer.state.isListening)
+
+              Spacer()
             }
-            .buttonStyle(.glassProminent)
-            .disabled(
-              ingredientsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSearching
-            )
-          } else {
-            HStack(spacing: 12) {
+
+            // Status Text
+            Text(statusText)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+              .frame(maxWidth: .infinity, alignment: .center)
+
+            // Clear Button
+            if hasIngredients || !ingredientsText.isEmpty {
+              Button(role: .destructive) {
+                ingredientsText = ""
+                speechRecognizer.clearTranscription()
+                lastFinalizedLength = 0
+              } label: {
+                Label("Clear all", systemImage: "xmark.circle")
+                  .font(.subheadline)
+              }
+              .frame(maxWidth: .infinity, alignment: .center)
+            }
+          }
+          .padding()
+          .background(Color(uiColor: .systemBackground))
+
+          Divider()
+
+          // ChatGPT Section
+          VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "bubble.left.and.bubble.right")
+              .font(.system(size: 48))
+              .foregroundStyle(.accent)
+
+            Text("Find recipes with ChatGPT")
+              .font(.headline)
+
+            Text("ChatGPT will search online for recipes using your ingredients")
+              .font(.subheadline)
+              .foregroundStyle(.secondary)
+              .multilineTextAlignment(.center)
+              .fixedSize(horizontal: false, vertical: true)
+              .padding(.horizontal)
+
+            Spacer()
+
+            // Action Buttons
+            VStack(spacing: 12) {
               Button {
                 openChatGPT()
               } label: {
-                HStack {
-                  Image(systemName: "bubble.left.and.bubble.right")
-                  Text("Ask ChatGPT")
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                Label("Ask ChatGPT", systemImage: "bubble.left.and.bubble.right")
+                  .padding(.vertical, 12)
+                  .foregroundStyle(!hasIngredients ? .secondary : Color.accentContrasting)
               }
               .buttonStyle(.glassProminent)
-              .disabled(ingredientsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+              .buttonSizing(.flexible)
+              .disabled(!hasIngredients)
 
               Button {
                 copyPrompt()
               } label: {
-                Image(systemName: "doc.on.doc")
-                  .frame(width: 44, height: 44)
+                Label("Copy Prompt", systemImage: "doc.on.doc")
+                  .padding(.vertical, 12)
               }
               .buttonStyle(.glass)
-              .buttonBorderShape(.circle)
-              .tint(.accent)
-              .disabled(ingredientsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+              .buttonSizing(.flexible)
+              .disabled(!hasIngredients)
             }
+            .padding(.horizontal)
+            .padding(.bottom)
           }
 
-          if let error = searchError {
+          if let error = errorMessage {
             Text(error)
               .font(.caption)
               .foregroundStyle(.red)
-              .padding(.horizontal, 4)
-          }
-        }
-        .padding()
-        .background(Color(uiColor: .systemBackground))
-
-        Divider()
-
-        // Results Section
-        if myRecipesOnly {
-          if isSearching {
-            VStack {
-              Spacer()
-              ProgressView()
-              Text("Searching recipes...")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.top, 8)
-              Spacer()
-            }
-          } else if searchResults.isEmpty && !ingredientsText.isEmpty {
-            VStack(spacing: 12) {
-              Spacer()
-              Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundStyle(.tertiary)
-              Text("No matching recipes found")
-                .font(.headline)
-              Text("Try different ingredients or turn off 'My recipes only'")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-              Spacer()
-            }
-          } else if !searchResults.isEmpty {
-            ScrollView {
-              LazyVStack(spacing: 12) {
-                ForEach(searchResults) { match in
-                  RecipeMatchRow(match: match, photos: recipePhotosPerRecipe[match.id] ?? [])
-                }
-              }
-              .padding()
-            }
-          } else {
-            VStack {
-              Spacer()
-              Image(systemName: "frying.pan")
-                .font(.system(size: 48))
-                .foregroundStyle(.tertiary)
-              Text("Enter your ingredients to find recipes")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .padding(.top, 8)
-              Spacer()
-            }
-          }
-        } else {
-          VStack(spacing: 12) {
-            Spacer()
-            Image(systemName: "bubble.left.and.bubble.right")
-              .font(.system(size: 48))
-              .foregroundStyle(.accent)
-            Text("Use ChatGPT to find recipes")
-              .font(.headline)
-            Text("ChatGPT will search online recipes using your ingredients")
-              .font(.subheadline)
-              .foregroundStyle(.secondary)
-              .multilineTextAlignment(.center)
               .padding(.horizontal)
-            Spacer()
+              .padding(.bottom, 8)
           }
         }
-      }
-      .navigationTitle("Find Recipes")
-      .navigationBarTitleDisplayMode(.inline)
-      .navigationDestination(for: Recipe.ID.self) { recipeId in
-        RecipeDetailScreen(recipeId: recipeId)
-      }
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button(role: .close) {
-            dismiss()
+        .navigationTitle("Find Recipes")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
+              dismiss()
+            }
           }
-        }
 
-        ToolbarItemGroup(placement: .keyboard) {
-          Spacer()
-          Button {
-            keyboardFocused = false
-          } label: {
-            Label("Dismiss keyboard", systemImage: "keyboard.chevron.compact.down")
-              .labelStyle(.iconOnly)
+          ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button {
+              isTextEditorFocused = false
+            } label: {
+              Label("Dismiss keyboard", systemImage: "keyboard.chevron.compact.down")
+                .labelStyle(.iconOnly)
+            }
+          }
+        }
+        .task {
+          await speechRecognizer.checkAvailability()
+        }
+        // Stream finalized text into ingredientsText as it arrives
+        .onChange(of: speechRecognizer.finalizedText) { oldValue, newValue in
+          // Only append the new portion that we haven't seen yet
+          let currentLength = newValue.count
+          if currentLength > lastFinalizedLength {
+            let startIndex = newValue.index(newValue.startIndex, offsetBy: lastFinalizedLength)
+            let newPortion = String(newValue[startIndex...])
+            ingredientsText += newPortion
+            lastFinalizedLength = currentLength
           }
         }
       }
+      .scrollIndicators(.hidden)
+      .scrollBounceBehavior(.basedOnSize, axes: .vertical)
     }
     .toastPresenter()
   }
 
-  // MARK: - Actions
+  // MARK: - Computed Properties
 
-  private func searchLocalRecipes() {
-    searchError = nil
-    isSearching = true
-    searchResults = []
-
-    Task {
-      do {
-        let results = try IngredientMatchingService.findMatches(
-          userIngredients: ingredientsText,
-          database: database
-        )
-
-        await MainActor.run {
-          searchResults = results
-          isSearching = false
-
-          if results.isEmpty {
-            searchError = "No recipes found matching your ingredients"
-          }
-        }
-      } catch {
-        await MainActor.run {
-          searchError = "Search failed: \(error.localizedDescription)"
-          isSearching = false
-        }
-      }
+  private var micButtonColor: Color {
+    if speechRecognizer.state.isListening {
+      return .red
+    } else if !speechRecognizer.state.isSupported {
+      return .gray
+    } else {
+      return .accent
     }
   }
 
+  private var canToggleMic: Bool {
+    switch speechRecognizer.state {
+    case .ready, .listening:
+      return true
+    case .idle, .checkingAvailability, .downloadingModel, .processing:
+      return false
+    case .unsupported, .error:
+      return false
+    }
+  }
+
+  private var statusText: LocalizedStringKey {
+    switch speechRecognizer.state {
+    case .idle, .checkingAvailability:
+      return "Checking speech recognition availability..."
+    case .downloadingModel(let progress):
+      return "Downloading speech model: \(Int(progress.fractionCompleted * 100))%"
+    case .ready:
+      return "Tap the microphone to start speaking"
+    case .listening:
+      return "Listening... Tap to stop"
+    case .processing:
+      return "Processing..."
+    case .unsupported(let reason):
+      print("SpeechRecognizer unsupported: \(reason)")
+      return "Voice input unavailable. Please type your ingredients."
+    case .error(let message):
+      print("SpeechRecognizer error: \(message)")
+      return "Voice input error. Please type your ingredients."
+    }
+  }
+
+  // MARK: - Actions
+
   private func openChatGPT() {
     guard let url = ChatGPTPromptService.createChatGPTDeeplink(ingredients: ingredientsText) else {
-      searchError = "Failed to create ChatGPT link"
+      errorMessage = "Failed to create ChatGPT link"
       return
     }
 
     openURL(url) { success in
       if !success {
-        searchError = "Could not open ChatGPT app"
+        errorMessage = "Could not open ChatGPT. Try copying the prompt instead."
       }
     }
   }
@@ -262,94 +316,13 @@ struct IngredientFinderScreen: View {
     ToastManager.shared.show(
       icon: "doc.on.doc.fill",
       title: "Prompt copied",
-      subtitle: "Paste in ChatGPT app",
+      subtitle: "Paste in ChatGPT or any AI assistant",
       tint: .accent,
       duration: 2.5
     )
   }
 }
 
-// MARK: - Recipe Match Row
-
-struct RecipeMatchRow: View {
-  let match: RecipeMatch
-  let photos: [RecipePhoto]
-
-  private var matchPercentageText: String {
-    let percentage = Int(match.matchPercentage * 100)
-    return "\(percentage)%"
-  }
-
-  private var matchDetailsText: String {
-    let total = match.matchedIngredients.count + match.missingIngredients.count
-    return "\(match.matchedIngredients.count)/\(total) ingredients"
-  }
-
-  var body: some View {
-    NavigationLink(value: match.recipeDetails.recipe.id) {
-      HStack(spacing: 12) {
-        // Recipe Photo
-        Group {
-          if let photo = photos.first, let image = photo.image {
-            image
-              .resizable()
-              .aspectRatio(contentMode: .fill)
-          } else {
-            Image(systemName: "frying.pan.fill")
-              .font(.system(size: 24))
-              .foregroundStyle(.secondary)
-          }
-        }
-        .frame(width: 64, height: 64)
-        .background(Color(uiColor: .systemGray5))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-
-        // Recipe Details
-        VStack(alignment: .leading, spacing: 4) {
-          Text(match.recipeDetails.recipe.name)
-            .font(.headline)
-            .lineLimit(2)
-
-          HStack(spacing: 8) {
-            Label(matchDetailsText, systemImage: "checkmark.circle.fill")
-              .font(.caption)
-              .foregroundStyle(
-                match.matchPercentage >= 0.8
-                  ? .green : match.matchPercentage >= 0.5 ? .orange : .secondary)
-
-            if !match.missingIngredients.isEmpty {
-              Text("• Missing: \(match.missingIngredients.prefix(2).joined(separator: ", "))")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            }
-          }
-        }
-
-        Spacer()
-
-        // Match Badge
-        Text(matchPercentageText)
-          .font(.caption)
-          .fontWeight(.semibold)
-          .foregroundStyle(.white)
-          .padding(.horizontal, 8)
-          .padding(.vertical, 4)
-          .background(
-            match.matchPercentage >= 0.8
-              ? Color.green : match.matchPercentage >= 0.5 ? Color.orange : Color.gray
-          )
-          .clipShape(Capsule())
-      }
-      .padding(12)
-      .background(Color(uiColor: .systemGray6))
-      .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-    .buttonStyle(.plain)
-  }
-}
-
 #Preview {
-  Storage.configure()
-  return IngredientFinderScreen()
+  IngredientFinderScreen()
 }

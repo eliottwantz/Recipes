@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChatGPTPromptService {
+nonisolated enum ChatGPTPromptService {
 
   /// Generates a ChatGPT prompt for recipe recommendations based on available ingredients
   /// - Parameter ingredients: Raw text input from user (comma or newline separated)

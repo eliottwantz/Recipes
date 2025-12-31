@@ -68,6 +68,23 @@
           }
         }
       }
+    },
+    "NSMicrophoneUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The microphone is used for text to speech capabilities."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le microphone est utilisé pour les fonctionnalités de synthèse vocale."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
