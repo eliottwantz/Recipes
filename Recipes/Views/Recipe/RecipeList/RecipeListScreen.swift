@@ -360,7 +360,15 @@ struct RecipeListScreen: View {
     _ = await withErrorReporting {
       try await $recipes.load(
         Recipe
-          .where { $0.name.lower().contains(searchText) }
+          .where { recipe in
+            if searchText.isEmpty {
+              true
+            } else {
+              RecipeText
+                .where { $0.match(searchText) && $0.rowid.eq(recipe.rowid) }
+                .exists()
+            }
+          }
           .order {
             switch (sortBy, sortDirection) {
             case (.name, .asc):

@@ -164,6 +164,18 @@ extension DependencyValues {
       ).execute(db)
     }
 
+    migrator.registerMigration("Create FTS5 table for recipe search") { db in
+      try #sql(
+        """
+        CREATE VIRTUAL TABLE "recipeTexts" USING fts5(
+          "name",
+          "ingredients",
+          tokenize = 'trigram'
+        )
+        """
+      ).execute(db)
+    }
+
     #if DEBUG && targetEnvironment(simulator)
       migrator.registerMigration("Seed recipes") { db in
         @Dependency(\.date.now) var now
@@ -255,6 +267,86 @@ extension DependencyValues {
     #endif
 
     try migrator.migrate(database)
+
+    // Set up triggers to keep FTS5 index in sync
+    try database.write { db in
+      // Insert into RecipeText when a new Recipe is created
+      try Recipe.createTemporaryTrigger(
+        after: .insert { new in
+          RecipeText.insert {
+            RecipeText.Columns(
+              rowid: new.rowid,
+              name: new.name,
+              ingredients: ""
+            )
+          }
+        }
+      )
+      .execute(db)
+
+      // Update RecipeText when Recipe name changes
+      try Recipe.createTemporaryTrigger(
+        after: .update {
+          $0.name
+        } forEachRow: { _, new in
+          RecipeText
+            .where { $0.rowid.eq(new.rowid) }
+            .update { $0.name = new.name }
+        }
+      )
+      .execute(db)
+
+      // Delete from RecipeText when Recipe is deleted
+      try Recipe.createTemporaryTrigger(
+        after: .delete { old in
+          RecipeText
+            .where { $0.rowid.eq(old.rowid) }
+            .delete()
+        }
+      )
+      .execute(db)
+
+      // Helper function to update ingredients text for a recipe
+      func updateRecipeTextIngredients(
+        for recipeID: some QueryExpression<Recipe.ID>
+      ) -> UpdateOf<RecipeText> {
+        RecipeText
+          .where { $0.rowid.eq(Recipe.find(recipeID).select(\.rowid)) }
+          .update {
+            $0.ingredients =
+              RecipeIngredient
+              .order(by: \.position)
+              .where { $0.recipeId.eq(recipeID) }
+              .select { $0.text.groupConcat(" ") ?? "" }
+          }
+      }
+
+      // Update RecipeText ingredients when ingredient is inserted
+      try RecipeIngredient.createTemporaryTrigger(
+        after: .insert { new in
+          updateRecipeTextIngredients(for: new.recipeId)
+        }
+      )
+      .execute(db)
+
+      // Update RecipeText ingredients when ingredient is updated
+      try RecipeIngredient.createTemporaryTrigger(
+        after: .update {
+          ($0.text, $0.position)
+        } forEachRow: { _, new in
+          updateRecipeTextIngredients(for: new.recipeId)
+        }
+      )
+      .execute(db)
+
+      // Update RecipeText ingredients when ingredient is deleted
+      try RecipeIngredient.createTemporaryTrigger(
+        after: .delete { old in
+          updateRecipeTextIngredients(for: old.recipeId)
+        }
+      )
+      .execute(db)
+    }
 
     defaultDatabase = database
     #if !targetEnvironment(simulator) && !DEBUG

@@ -60,6 +60,13 @@ nonisolated struct CookingTimer: Identifiable, Hashable, Sendable {
   var createdAt: Date = .now
 }
 
+@Table
+struct RecipeText: FTS5 {
+  let rowid: Int
+  let name: String
+  let ingredients: String
+}
+
 enum SortBy: String {
   case name, createdAt
 }
