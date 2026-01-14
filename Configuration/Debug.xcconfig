@@ -1,0 +1,9 @@
+//
+//  Debug.xcconfig
+//  Recipes
+//
+//  Debug build configuration
+//
+
+// Video Recipe Import API URL
+VIDEO_RECIPE_API_URL = http:/$()/localhost:8080

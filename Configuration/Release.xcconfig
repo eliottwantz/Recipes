@@ -1,0 +1,9 @@
+//
+//  Release.xcconfig
+//  Recipes
+//
+//  Release build configuration
+//
+
+// Video Recipe Import API URL
+VIDEO_RECIPE_API_URL = https:/$()/recipes.develiott.com

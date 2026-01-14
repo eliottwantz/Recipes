@@ -39,6 +39,9 @@ struct RecipeListScreen: View {
   @State private var processingStatus: RecipeProcessingView.Status = .extractingText
   @State private var processingTask: Task<Void, Never>?
 
+  // Video import state
+  @State private var showVideoImport: Bool = false
+
   private var appRouter = AppRouter.shared
   private let importManager = PhotoRecipeImportManager()
 
@@ -171,6 +174,11 @@ struct RecipeListScreen: View {
               if RecipeParsingService.isAvailable {
                 Section("Smart Import") {
                   Button {
+                    showVideoImport = true
+                  } label: {
+                    Label("From Social Media...", systemImage: "link")
+                  }
+                  Button {
                     showCamera = true
                   } label: {
                     Label("From Camera...", systemImage: "camera")
@@ -223,6 +231,10 @@ struct RecipeListScreen: View {
         }
         .sheet(isPresented: $appRouter.destination.ingredientFinder) {
           IngredientFinderScreen()
+            .interactiveDismissDisabled()
+        }
+        .sheet(isPresented: $showVideoImport) {
+          VideoRecipeImportScreen()
             .interactiveDismissDisabled()
         }
         .onChange(of: scenePhase) { oldValue, newValue in

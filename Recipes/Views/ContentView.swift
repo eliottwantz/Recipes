@@ -21,11 +21,7 @@ struct ContentView: View {
       }
 
       Tab(value: AppRouter.Tab.settings) {
-        Button {
-          appRouter.selectedTab = .recipeList
-        } label: {
-          Label("Go to recipe list", systemImage: "book.pages")
-        }
+        SettingsScreen()
       } label: {
         Label("Settings", systemImage: "gear")
       }

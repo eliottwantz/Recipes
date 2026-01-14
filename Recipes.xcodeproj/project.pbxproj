@@ -53,6 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		312522D8FCF64FAAB84B464F /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5517C2832E9720AB00F64C53 /* Recipes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recipes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = "Recipes-InfoPlist.xcstrings"; sourceTree = "<group>"; };
@@ -61,6 +62,7 @@
 		55BC7ABE2EF33B2400B7D42D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		55BC7AC02EF33B2400B7D42D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		55BC7AD72EF36E4000B7D42D /* AlarmKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AlarmKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk/System/Library/Frameworks/AlarmKit.framework; sourceTree = DEVELOPER_DIR; };
+		A1FFA5232804413BB5F8512A /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -177,9 +179,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2082B5BB6DB042C49A9CADDC /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				312522D8FCF64FAAB84B464F /* Debug.xcconfig */,
+				A1FFA5232804413BB5F8512A /* Release.xcconfig */,
+			);
+			path = Configuration;
+			sourceTree = "<group>";
+		};
 		5517C27A2E9720AB00F64C53 = {
 			isa = PBXGroup;
 			children = (
+				2082B5BB6DB042C49A9CADDC /* Configuration */,
 				553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */,
 				55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */,
 				5517C2852E9720AB00F64C53 /* Recipes */,
@@ -389,6 +401,7 @@
 /* Begin XCBuildConfiguration section */
 		5517C28C2E9720AC00F64C53 /* Debug configuration for PBXProject "Recipes" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 312522D8FCF64FAAB84B464F /* Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -456,6 +469,7 @@
 		};
 		5517C28D2E9720AC00F64C53 /* Release configuration for PBXProject "Recipes" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1FFA5232804413BB5F8512A /* Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
