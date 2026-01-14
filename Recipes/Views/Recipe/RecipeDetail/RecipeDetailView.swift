@@ -214,7 +214,7 @@ struct RecipeDetailView: View {
       if let website = recipeDetails.recipe.website,
         let url = URL(string: website),
         let host = url.host,
-        let photo = recipeDetails.photos.first
+        recipeDetails.photos.first != nil
       {
         Link(destination: url) {
           titleImageCover
