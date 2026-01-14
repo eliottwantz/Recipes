@@ -14,7 +14,8 @@ nonisolated enum Constants {
 
   static var videoRecipeAPIURL: URL? {
     guard let urlString = Bundle.main.infoDictionary?["VIDEO_RECIPE_API_URL"] as? String,
-          !urlString.isEmpty else {
+      !urlString.isEmpty
+    else {
       return nil
     }
     return URL(string: urlString)

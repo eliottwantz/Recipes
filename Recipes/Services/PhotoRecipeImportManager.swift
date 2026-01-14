@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import os
 import SwiftUI
+import os
 
 struct PhotoRecipeImportManager {
   private let textRecognitionService = TextRecognitionService()

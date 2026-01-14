@@ -10,7 +10,8 @@ import SwiftUI
 struct VideoRecipeImportScreen: View {
   @Environment(\.dismiss) private var dismiss
   @State private var urlText: String = ""
-  @State private var selectedLanguage: String = Locale.current.language.languageCode?.identifier == "fr" ? "fr" : "en"
+  @State private var selectedLanguage: String =
+    Locale.current.language.languageCode?.identifier == "fr" ? "fr" : "en"
   @State private var isLoading = false
   @State private var errorMessage: String?
 
@@ -114,7 +115,8 @@ struct VideoRecipeImportScreen: View {
 
   nonisolated private func performImport(from url: URL) async {
     do {
-      let recipeDetails = try await importService.importRecipe(from: url, language: selectedLanguage)
+      let recipeDetails = try await importService.importRecipe(
+        from: url, language: selectedLanguage)
       await MainActor.run {
         isLoading = false
         dismiss()

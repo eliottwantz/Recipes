@@ -55,7 +55,9 @@ struct IngredientFinderScreen: View {
                 // Non-editable text display while recording
                 Text(displayText)
                   .font(.body)
-                  .frame(maxWidth: .infinity, minHeight: 120, maxHeight: 200, alignment: .topLeading)
+                  .frame(
+                    maxWidth: .infinity, minHeight: 120, maxHeight: 200, alignment: .topLeading
+                  )
                   .padding(.horizontal, 12)
                   .padding(.vertical, 16)
               }

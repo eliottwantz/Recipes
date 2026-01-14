@@ -5,9 +5,9 @@
 //  Created by Eliott on 2025-12-28.
 //
 
+import SwiftUI
 import UIKit
 import Vision
-import SwiftUI
 
 struct TextRecognitionService {
   nonisolated static let recognitionLanguages = [

@@ -31,7 +31,7 @@ struct RecipeDetailView: View {
     case amount
     case serving
     case ingredient
-    
+
     var localizedKey: LocalizedStringKey {
       .init("ScalingMode.\(rawValue)")
     }
@@ -213,7 +213,8 @@ struct RecipeDetailView: View {
     Group {
       if let website = recipeDetails.recipe.website,
         let url = URL(string: website),
-        let host = url.host
+        let host = url.host,
+        let photo = recipeDetails.photos.first
       {
         Link(destination: url) {
           titleImageCover
@@ -644,4 +645,3 @@ struct RecipeDetailView: View {
     RecipeDetailView(recipeDetails: recipeDetails)
   }
 }
-
