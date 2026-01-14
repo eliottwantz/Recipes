@@ -47,6 +47,10 @@ struct RecipeDetailView: View {
       VStack(alignment: .leading, spacing: 24) {
         header
 
+        if let website = recipeDetails.recipe.website, !website.isEmpty {
+          websiteSection
+        }
+
         if let notes = recipeDetails.recipe.notes, !notes.isEmpty {
           notesSection
         }
@@ -527,19 +531,21 @@ struct RecipeDetailView: View {
         .font(.title3.weight(.semibold))
         .foregroundStyle(.primary)
 
-      if let website = recipeDetails.recipe.website, let url = URL(string: website) {
+      if let website = recipeDetails.recipe.website,
+        let url = URL(string: website),
+        let host = url.host
+      {
         Link(destination: url) {
           HStack {
             Image(systemName: "safari")
               .foregroundStyle(.tint)
-            Text(website)
+            Text(host)
               .font(.body)
               .foregroundStyle(.tint)
-              .lineLimit(2)
+              .lineLimit(1)
             Spacer()
             Image(systemName: "arrow.up.right")
               .font(.caption)
-              .foregroundStyle(.secondary)
           }
           .padding()
           .card()
