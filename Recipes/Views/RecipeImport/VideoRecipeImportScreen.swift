@@ -65,7 +65,9 @@ struct VideoRecipeImportScreen: View {
         } header: {
           Text("Recipe Language")
         } footer: {
-          Text("Language of the video content")
+          Text(
+            "Select the language of the video's spoken content. For YouTube videos, this must match an available caption language."
+          )
         }
 
         if let errorMessage {
@@ -115,8 +117,17 @@ struct VideoRecipeImportScreen: View {
 
   nonisolated private func performImport(from url: URL) async {
     do {
-      let recipeDetails = try await importService.importRecipe(
-        from: url, language: selectedLanguage)
+      let recipeDetails: RecipeDetails
+
+      // Check if it's a YouTube URL and use appropriate import method
+      if YouTubeTranscriptService.isYouTubeURL(url) {
+        recipeDetails = try await importService.importFromYouTube(
+          videoURL: url, language: selectedLanguage)
+      } else {
+        recipeDetails = try await importService.importRecipe(
+          from: url, language: selectedLanguage)
+      }
+
       await MainActor.run {
         isLoading = false
         dismiss()

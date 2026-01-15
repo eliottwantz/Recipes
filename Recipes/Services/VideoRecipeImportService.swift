@@ -18,6 +18,11 @@ nonisolated struct VideoRecipeImportService: Sendable {
     let language: String
   }
 
+  nonisolated struct TranscriptAPIRequest: Encodable, Sendable {
+    let transcript: String
+    let language: String
+  }
+
   nonisolated struct APIRecipeResponse: Decodable, Sendable {
     let name: String
     let ingredients: [String]
@@ -39,6 +44,7 @@ nonisolated struct VideoRecipeImportService: Sendable {
     case httpError(statusCode: Int)
     case decodingError(String)
     case apiError(String)
+    case youtubeTranscriptError(Error)
 
     nonisolated var errorDescription: String? {
       switch self {
@@ -58,11 +64,37 @@ nonisolated struct VideoRecipeImportService: Sendable {
         return "Failed to parse recipe from response."
       case .apiError(let message):
         return message
+      case .youtubeTranscriptError(let error):
+        return error.localizedDescription
       }
     }
   }
 
   // MARK: - Public Methods
+
+  @concurrent
+  func importFromYouTube(videoURL: URL, language: String) async throws -> RecipeDetails {
+    let transcriptService = YouTubeTranscriptService()
+
+    // Extract video ID
+    guard let videoID = YouTubeTranscriptService.extractVideoID(from: videoURL) else {
+      throw ImportError.invalidVideoURL
+    }
+
+    logger.debug("Fetching YouTube transcript for video ID: \(videoID)")
+
+    // Fetch transcript from YouTube
+    let transcript: String
+    do {
+      transcript = try await transcriptService.fetchTranscript(videoID: videoID, language: language)
+    } catch {
+      logger.error("YouTube transcript fetch failed: \(error.localizedDescription)")
+      throw ImportError.youtubeTranscriptError(error)
+    }
+
+    // Parse transcript into recipe
+    return try await parseTranscript(transcript, language: language, sourceURL: videoURL)
+  }
 
   @concurrent
   func importRecipe(from videoURL: URL, language: String) async throws -> RecipeDetails {
@@ -126,6 +158,75 @@ nonisolated struct VideoRecipeImportService: Sendable {
 
     // Convert to RecipeDetails
     return convertToRecipeDetails(apiRecipe, sourceURL: videoURL)
+  }
+
+  @concurrent
+  func parseTranscript(_ transcript: String, language: String, sourceURL: URL) async throws
+    -> RecipeDetails
+  {
+    guard let baseURL = Constants.videoRecipeAPIURL else {
+      throw ImportError.missingAPIURL
+    }
+
+    // Construct full endpoint URL
+    guard
+      let apiURL = URL(string: "/api/recipe/parse-transcript", relativeTo: baseURL)?
+        .absoluteURL
+    else {
+      throw ImportError.missingAPIURL
+    }
+
+    logger.debug("Using transcript parse API url: \(apiURL.absoluteString)")
+
+    // Get API key on main actor then continue
+    let apiKey = await MainActor.run {
+      SecureStorage.get(.videoRecipeAPIKey)
+    }
+
+    guard let apiKey else {
+      throw ImportError.missingAPIKey
+    }
+
+    @Dependency(\.urlSession) var session
+
+    // Build request
+    var request = URLRequest(url: apiURL)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+
+    let body = TranscriptAPIRequest(transcript: transcript, language: language)
+    request.httpBody = try JSONEncoder().encode(body)
+
+    // Make request
+    let (data, response): (Data, URLResponse)
+    do {
+      (data, response) = try await session.data(for: request)
+    } catch {
+      logger.error("Network error during transcript parsing: \(error.localizedDescription)")
+      throw ImportError.networkError(error.localizedDescription)
+    }
+
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw ImportError.invalidResponse
+    }
+
+    guard (200...299).contains(httpResponse.statusCode) else {
+      logger.error("HTTP error \(httpResponse.statusCode) during transcript parsing.")
+      throw ImportError.httpError(statusCode: httpResponse.statusCode)
+    }
+
+    // Decode response
+    let apiRecipe: APIRecipeResponse
+    do {
+      apiRecipe = try JSONDecoder().decode(APIRecipeResponse.self, from: data)
+    } catch {
+      logger.error("Decoding error during transcript parsing: \(error.localizedDescription)")
+      throw ImportError.decodingError(error.localizedDescription)
+    }
+
+    // Convert to RecipeDetails
+    return convertToRecipeDetails(apiRecipe, sourceURL: sourceURL)
   }
 
   // MARK: - Private Methods
