@@ -10,6 +10,7 @@
 		55005D6B2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		55005D6C2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		5517C2972E973F1500F64C53 /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = 5517C2962E973F1500F64C53 /* SQLiteData */; };
+		5528267A2F1C4A50005F152F /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 552826772F1C4A50005F152F /* AppIcon.icon */; };
 		553312882F02245B000A84ED /* Recipes-InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */; };
 		5556347D2F03627D0001B799 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */; };
 		555EDC722EAC3960006DC041 /* RecipeShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -56,6 +57,7 @@
 		312522D8FCF64FAAB84B464F /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		55005D6A2EE9FA1D0064D679 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5517C2832E9720AB00F64C53 /* Recipes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recipes.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		552826772F1C4A50005F152F /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		553312862F02245B000A84ED /* Recipes-InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = "Recipes-InfoPlist.xcstrings"; sourceTree = "<group>"; };
 		555EDC682EAC3960006DC041 /* RecipeShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecipeShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5580A3FA2EF4C18200112748 /* TimerLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimerLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -200,6 +202,7 @@
 				5580A3FD2EF4C18200112748 /* TimerLiveActivity */,
 				55FA1DD82EAC3EBD00468B17 /* Frameworks */,
 				5517C2842E9720AB00F64C53 /* Products */,
+				552826772F1C4A50005F152F /* AppIcon.icon */,
 			);
 			sourceTree = "<group>";
 		};
@@ -349,6 +352,7 @@
 		5517C2812E9720AB00F64C53 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				5528267A2F1C4A50005F152F /* AppIcon.icon in Resources */,
 				55005D6C2EE9FA1D0064D679 /* Localizable.xcstrings in Resources */,
 				553312882F02245B000A84ED /* Recipes-InfoPlist.xcstrings in Resources */,
 			);
