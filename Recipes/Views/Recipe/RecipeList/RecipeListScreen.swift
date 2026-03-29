@@ -170,15 +170,15 @@ struct RecipeListScreen: View {
                   Label("Add manually", systemImage: "square.and.pencil")
                 }
 
+              }
+
+              Section("Smart Import") {
                 Button {
                   showVideoImport = true
                 } label: {
                   Label("From Social Media...", systemImage: "link")
                 }
-              }
-
-              if RecipeParsingService.isAvailable {
-                Section("Smart Import") {
+                if RecipeParsingService.isAvailable {
                   Button {
                     showCamera = true
                   } label: {

@@ -88,7 +88,7 @@ struct RecipeDetailScreen: View {
       @Dependency(\.defaultDatabase) var database
       await withErrorReporting {
         try await database.write { db in
-          try Recipe.delete().where { $0.id == id }.execute(db)
+          try Recipe.delete().where { $0.id.eq(id) }.execute(db)
         }
       }
     }

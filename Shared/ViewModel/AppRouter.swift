@@ -57,7 +57,7 @@ public final class AppRouter {
     @Dependency(\.defaultDatabase) var database
     let recipeExists = withErrorReporting {
       let recipeId = try database.read { db in
-        try Recipe.where { $0.id == recipeId }.select(\.id).fetchOne(db)
+        try Recipe.where { $0.id.eq(recipeId) }.select(\.id).fetchOne(db)
       }
       return recipeId != nil
     }

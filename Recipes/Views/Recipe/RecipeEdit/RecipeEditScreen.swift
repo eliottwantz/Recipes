@@ -92,7 +92,7 @@ struct RecipeEditScreen: View {
 
         // MARK: Replace ingredients
         try RecipeIngredient.delete()
-          .where { $0.recipeId == normalized.recipe.id }
+          .where { $0.recipeId.eq(normalized.recipe.id) }
           .execute(db)
         for ingredient in normalized.ingredients {
           try RecipeIngredient.insert { ingredient }.execute(db)
@@ -100,7 +100,7 @@ struct RecipeEditScreen: View {
 
         // MARK: Replace instructions
         try RecipeInstruction.delete()
-          .where { $0.recipeId == normalized.id }
+          .where { $0.recipeId.eq(normalized.id) }
           .execute(db)
         for instruction in normalized.instructions {
           try RecipeInstruction.insert { instruction }.execute(db)

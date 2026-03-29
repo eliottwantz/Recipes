@@ -1,0 +1,18 @@
+schemaVersion: 1
+enabledWorkflows:
+  - debugging
+  - doctor
+  - logging
+  - project-discovery
+  - simulator
+  - utilities
+  - xcode-ide
+  - ui-automation
+debug: true
+sentryDisabled: true
+sessionDefaults:
+  projectPath: Recipes.xcodeproj
+  scheme: Recipes
+  simulatorName: iPhone 17 Pro
+  simulatorId: 675661F0-057D-42B1-A16B-9F82D4B6E660
+  deviceId: F3968B01-8621-597C-93A6-4A4514802442

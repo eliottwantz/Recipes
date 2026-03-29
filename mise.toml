@@ -1,0 +1,42 @@
+[tools]
+tuist = "latest"
+
+[env]
+SENTRY_DISABLED = "true"
+
+[tasks.archive]
+run = ["echo 'Starting archive process...'", """xcodebuild \
+    -project Recipes.xcodeproj \
+    -scheme 'Recipes Release' \
+    -configuration Release \
+    -destination 'generic/platform=iOS' \
+    -skipMacroValidation \
+    -archivePath .archives/Recipes \
+    archive | xcbeautify""", "echo 'Done with archive process!'"]
+description = "Creates an archive of the app for distribution"
+sources = ["Recipes/**/*", "Recipes.xcodeproj/**/*", "ExportOptions.plist", "Tuist.swift"]
+outputs = [".archives/Recipes.xcarchive"]
+depends = ["clean"]
+
+[tasks.clean]
+run = "xcodebuildmcp utilities clean"
+description = "Cleans the build artifacts"
+
+[tasks.create-ipa]
+run = ["""xcodebuild \
+  -exportArchive \
+  -archivePath .archives/Recipes.xcarchive \
+  -exportOptionsPlist ./ExportOptions.plist \
+  -exportPath .archives/export
+""", "tuist inspect bundle .archives/Recipes.xcarchive"]
+description = "Creates an IPA file from the archive for distribution"
+depends = ["archive"]
+
+[tasks.release]
+run = "tuist share .archives/export/Recipes.ipa"
+description = "Creates a Tuist preview for the latest release build"
+depends = ["create-ipa"]
+
+[tasks.tuist-web]
+run = "tuist project show --web"
+description = "Opens the Tuist web page for the project"

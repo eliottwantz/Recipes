@@ -33,17 +33,17 @@ nonisolated struct RecipeDetails {
           .fetchOne(db)!,
         ingredients:
           RecipeIngredient
-          .where { $0.recipeId == recipeId }
+          .where { $0.recipeId.eq(recipeId) }
           .order(by: \.position)
           .fetchAll(db),
         instructions:
           RecipeInstruction
-          .where { $0.recipeId == recipeId }
+          .where { $0.recipeId.eq(recipeId) }
           .order(by: \.position)
           .fetchAll(db),
         photos:
           RecipePhoto
-          .where { $0.recipeId == recipeId }
+          .where { $0.recipeId.eq(recipeId) }
           .order(by: \.position)
           .fetchAll(db)
       )

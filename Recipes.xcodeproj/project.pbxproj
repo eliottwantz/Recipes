@@ -834,8 +834,10 @@
 			repositoryURL = "https://github.com/pointfreeco/sqlite-data";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.4.0;
+				minimumVersion = 1.6.1;
 			};
+			traits = (
+			);
 		};
 		55D60C612EFC582000C9067A /* XCRemoteSwiftPackageReference "swift-navigation" */ = {
 			isa = XCRemoteSwiftPackageReference;

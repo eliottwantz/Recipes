@@ -266,7 +266,7 @@ final class TimerManager {
   private func deleteTimerFromDatabase(id: UUID) {
     withErrorReporting {
       try database.write { db in
-        try CookingTimer.delete().where { $0.id == id }.execute(db)
+        try CookingTimer.delete().where { $0.id.eq(id) }.execute(db)
         logger.info("✅ Timer deleted from database: \(id)")
       }
     }
