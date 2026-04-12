@@ -1,14 +1,11 @@
 schemaVersion: 1
 enabledWorkflows:
   - debugging
-  - doctor
   - logging
   - project-discovery
   - simulator
-  - utilities
-  - xcode-ide
   - ui-automation
-debug: true
+debug: false
 sentryDisabled: true
 sessionDefaults:
   projectPath: Recipes.xcodeproj
