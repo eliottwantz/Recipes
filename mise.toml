@@ -1,4 +1,5 @@
 [tools]
+fd = "latest"
 tuist = "latest"
 
 [env]
@@ -16,7 +17,7 @@ run = ["echo 'Starting archive process...'", """xcodebuild \
 description = "Creates an archive of the app for distribution"
 sources = ["Recipes/**/*", "Recipes.xcodeproj/**/*", "ExportOptions.plist", "Tuist.swift"]
 outputs = [".archives/Recipes.xcarchive"]
-depends = ["clean"]
+depends = ["clean", "bump"]
 
 [tasks.clean]
 run = "xcodebuildmcp utilities clean"
